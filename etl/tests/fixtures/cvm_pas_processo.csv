@@ -1,6 +1,6 @@
-pas_id,numero_processo,relator,data_instauracao,tipo_processo
-PAS-2023-001,RJ2023/0001,Relator A,01/01/2023,Administrativo Sancionador
-PAS-2023-002,RJ2023/0002,Relator B,15/02/2023,Administrativo Sancionador
-PAS-2024-001,RJ2024/0001,Relator C,01/10/2023,Administrativo Sancionador
-PAS-2024-002,SP2024/0001,Relator D,20/12/2023,Administrativo Sancionador
-PAS-2024-003,RJ2024/0003,Relator E,05/03/2024,Administrativo Sancionador
+NUP;Objeto;Ementa;Data_Abertura;Componente_Organizacional_Instrucao;Fase_Atual;Subfase_Atual;Local_Atual;Data_Ultima_Movimentacao
+19957000073202414;Apuracao de irregularidades em ofertas publicas;Termo de Acusacao instaurado para apurar responsabilidade de administradores;2023-03-15;GEA-3;Finalizado;Processo arquivado;Finalizado;2024-01-10
+19957000128202301;Uso de informacao privilegiada no mercado de capitais;Investigacao de operacoes atipicas no mercado de acoes;2023-06-20;GEA-2;Em andamento;Instrucao;GEA-2;2024-06-15
+19957000045202205;Atuacao irregular de agente autonomo;Apuracao de responsabilidade por atuacao sem registro;2022-11-01;GEA-1;Finalizado;Julgado;Finalizado;2023-12-20
+19957000091202312;Descumprimento de obrigacoes de divulgacao;Emissora deixou de publicar demonstracoes financeiras;2024-01-10;GEA-4;Em andamento;Citacao;GEA-4;2024-08-01
+19957000156202207;Manipulacao de precos;Operacoes coordenadas para influenciar cotacoes;2022-08-15;GEA-1;Finalizado;Processo arquivado por Termo de Compromisso;Finalizado;2023-05-30

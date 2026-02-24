@@ -82,7 +82,7 @@ class CamaraPipeline(Pipeline):
                 f,
                 sep=";",
                 dtype=str,
-                encoding="latin-1",
+                encoding="utf-8-sig",
                 keep_default_na=False,
             )
             frames.append(df)

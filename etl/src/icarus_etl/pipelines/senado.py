@@ -82,6 +82,7 @@ class SenadoPipeline(Pipeline):
                 dtype=str,
                 encoding="latin-1",
                 keep_default_na=False,
+                skiprows=1,
             )
             frames.append(df)
             logger.info("  Loaded %d rows from %s", len(df), f.name)

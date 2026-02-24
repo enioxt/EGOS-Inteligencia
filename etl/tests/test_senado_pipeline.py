@@ -23,6 +23,7 @@ def _load_fixture_data(pipeline: SenadoPipeline) -> None:
         dtype=str,
         encoding="latin-1",
         keep_default_na=False,
+        skiprows=1,
     )
 
 

@@ -1,6 +1,7 @@
-pas_id,cpf_cnpj,nome,tipo_penalidade,valor_penalidade,data_julgamento,status,descricao
-PAS-2023-001,12345678000199,ACME INVESTIMENTOS SA,Multa,"1.234.567,89",15/03/2023,Julgado,Operacao irregular no mercado de capitais
-PAS-2023-002,52998224725,Joao da Silva,Inabilitacao,"0,00",22/06/2023,Julgado,Uso indevido de informacao privilegiada
-PAS-2024-001,98765432000188,BETA CORRETORA LTDA,Multa,"500.000,00",10/01/2024,Julgado,Manipulacao de mercado
-PAS-2024-002,11122233344,Maria Santos,Suspensao,"0,00",05/04/2024,Julgado,Exercicio irregular de atividade
-PAS-2024-003,55566677000100,GAMA FUNDO DE INVESTIMENTO,Multa,"2.500.000,00",18/07/2024,Julgado,Irregularidades na gestao de fundo
+NUP;Nome_Acusado;Situacao;Data_Situacao
+19957000073202414;EDMOND CHAKER FARHAT JUNIOR;Acusado envia proposta de Termo de Compromisso;2024-04-25
+19957000073202414;ACME INVESTIMENTOS SA;Julgado;2024-01-10
+19957000128202301;JOAO DA SILVA;Citado;2023-08-15
+19957000045202205;BETA ASSESSORIA LTDA;Termo de Compromisso firmado;2023-05-30
+19957000091202312;MARIA SANTOS;Citado;2024-03-20
+19957000156202207;GAMA FUNDO DE INVESTIMENTO;Termo de Compromisso firmado;2023-04-15

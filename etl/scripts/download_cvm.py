@@ -15,17 +15,13 @@ from pathlib import Path
 import click
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _download_utils import download_file, validate_csv
+from _download_utils import download_file, extract_zip, validate_csv
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# CVM open data portal CSVs
-BASE_URL = "https://dados.cvm.gov.br/dados/PAS"
-DATASETS = {
-    "pas_resultado": f"{BASE_URL}/RESULTADO/DADOS/pas_resultado.csv",
-    "pas_processo": f"{BASE_URL}/PROCESSO/DADOS/pas_processo.csv",
-}
+# CVM open data portal — restructured to PROCESSO/SANCIONADOR path (ZIP)
+ZIP_URL = "https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip"
 
 
 @click.command()
@@ -37,24 +33,22 @@ def main(output_dir: str, skip_existing: bool, timeout: int) -> None:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    success_count = 0
-    for name, url in DATASETS.items():
-        dest = out / f"{name}.csv"
-        if skip_existing and dest.exists():
-            logger.info("Skipping (exists): %s", dest.name)
-            success_count += 1
-            continue
+    zip_dest = out / "processo_sancionador.zip"
+    csv_marker = list(out.glob("*.csv"))
+    if skip_existing and csv_marker:
+        logger.info("Skipping (CSVs already exist): %d files", len(csv_marker))
+        return
 
-        logger.info("=== %s ===", name)
-        if download_file(url, dest, timeout=timeout):
-            validate_csv(dest, encoding="utf-8", sep=",")
-            success_count += 1
-        else:
-            logger.warning("Failed to download %s", name)
-
-    logger.info("=== Done: %d/%d datasets downloaded ===", success_count, len(DATASETS))
-    if success_count == 0:
+    logger.info("=== Downloading processo_sancionador.zip ===")
+    if not download_file(ZIP_URL, zip_dest, timeout=timeout):
+        logger.error("Failed to download processo_sancionador.zip")
         sys.exit(1)
+
+    extracted = extract_zip(zip_dest, out)
+    logger.info("Extracted %d files", len(extracted))
+    for f in sorted(out.glob("*.csv")):
+        validate_csv(f, encoding="latin-1", sep=";")
+    logger.info("=== Done ===")
 
 
 if __name__ == "__main__":

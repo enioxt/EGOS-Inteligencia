@@ -16,28 +16,14 @@ from icarus_etl.base import Pipeline
 from icarus_etl.loader import Neo4jBatchLoader
 from icarus_etl.transforms import (
     deduplicate_rows,
-    format_cnpj,
-    format_cpf,
     normalize_name,
     parse_date,
-    strip_document,
 )
 
 if TYPE_CHECKING:
     from neo4j import Driver
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_brl_value(value: str) -> float:
-    """Parse Brazilian numeric format (1.234.567,89) to float."""
-    if not value or not value.strip():
-        return 0.0
-    cleaned = value.strip().replace(".", "").replace(",", ".")
-    try:
-        return float(cleaned)
-    except ValueError:
-        return 0.0
 
 
 class CvmPipeline(Pipeline):
@@ -54,105 +40,101 @@ class CvmPipeline(Pipeline):
         chunk_size: int = 50_000,
     ) -> None:
         super().__init__(driver, data_dir, limit=limit, chunk_size=chunk_size)
-        self._raw_resultado: pd.DataFrame = pd.DataFrame()
-        self._raw_processo: pd.DataFrame = pd.DataFrame()
+        self._raw_processos: pd.DataFrame = pd.DataFrame()
+        self._raw_acusados: pd.DataFrame = pd.DataFrame()
         self.proceedings: list[dict[str, Any]] = []
-        self.sanctioned_entities: list[dict[str, Any]] = []
+        self.accused_entities: list[dict[str, Any]] = []
 
     def extract(self) -> None:
         cvm_dir = Path(self.data_dir) / "cvm"
 
-        self._raw_resultado = pd.read_csv(
-            cvm_dir / "pas_resultado.csv",
+        # New CVM format (processo_sancionador.zip contents)
+        proc_path = cvm_dir / "processo_sancionador.csv"
+        acusado_path = cvm_dir / "processo_sancionador_acusado.csv"
+
+        if not proc_path.exists():
+            msg = f"CVM proceedings file not found: {proc_path}"
+            raise FileNotFoundError(msg)
+
+        self._raw_processos = pd.read_csv(
+            proc_path,
+            sep=";",
             dtype=str,
             keep_default_na=False,
+            encoding="latin-1",
         )
-        processo_path = cvm_dir / "pas_processo.csv"
-        if processo_path.exists():
-            self._raw_processo = pd.read_csv(
-                processo_path,
+        if acusado_path.exists():
+            self._raw_acusados = pd.read_csv(
+                acusado_path,
+                sep=";",
                 dtype=str,
                 keep_default_na=False,
+                encoding="latin-1",
             )
 
     def transform(self) -> None:
-        # Build process metadata lookup
-        process_meta: dict[str, dict[str, str]] = {}
-        if not self._raw_processo.empty:
-            for _, row in self._raw_processo.iterrows():
-                pas_id = str(row.get("pas_id", "")).strip()
-                if pas_id:
-                    process_meta[pas_id] = {
-                        "numero_processo": str(row.get("numero_processo", "")).strip(),
-                        "relator": str(row.get("relator", "")).strip(),
-                        "data_instauracao": parse_date(str(row.get("data_instauracao", ""))),
-                    }
+        # Build accused lookup by NUP
+        accused_by_nup: dict[str, list[dict[str, str]]] = {}
+        if not self._raw_acusados.empty:
+            for _, row in self._raw_acusados.iterrows():
+                nup = str(row.get("NUP", "")).strip()
+                if not nup:
+                    continue
+                nome = normalize_name(str(row.get("Nome_Acusado", "")))
+                situacao = str(row.get("Situacao", "")).strip()
+                data_sit = parse_date(str(row.get("Data_Situacao", "")))
+                accused_by_nup.setdefault(nup, []).append({
+                    "name": nome,
+                    "status": situacao,
+                    "date": data_sit,
+                })
 
         proceedings: list[dict[str, Any]] = []
         entities: list[dict[str, Any]] = []
 
-        for _, row in self._raw_resultado.iterrows():
-            pas_id = str(row.get("pas_id", "")).strip()
-            if not pas_id:
+        for _, row in self._raw_processos.iterrows():
+            nup = str(row.get("NUP", "")).strip()
+            if not nup:
                 continue
 
-            doc_raw = str(row.get("cpf_cnpj", ""))
-            digits = strip_document(doc_raw)
-            nome = normalize_name(str(row.get("nome", "")))
-            is_company = len(digits) == 14
-
-            if is_company:
-                doc_formatted = format_cnpj(doc_raw)
-            elif len(digits) == 11:
-                doc_formatted = format_cpf(doc_raw)
-            else:
-                doc_formatted = digits
-
-            penalty_type = str(row.get("tipo_penalidade", "")).strip()
-            penalty_value = _parse_brl_value(str(row.get("valor_penalidade", "")))
-            date = parse_date(str(row.get("data_julgamento", "")))
-            status = str(row.get("status", "")).strip()
-            description = str(row.get("descricao", "")).strip()
-
-            # Enrich with process metadata
-            meta = process_meta.get(pas_id, {})
+            date = parse_date(str(row.get("Data_Abertura", "")))
+            fase = str(row.get("Fase_Atual", "")).strip()
+            objeto = str(row.get("Objeto", "")).strip()
+            ementa = str(row.get("Ementa", "")).strip()
 
             proceedings.append({
-                "pas_id": pas_id,
+                "pas_id": nup,
                 "date": date,
-                "penalty_type": penalty_type,
-                "penalty_value": penalty_value,
-                "status": status,
-                "description": description,
-                "numero_processo": meta.get("numero_processo", ""),
-                "relator": meta.get("relator", ""),
-                "data_instauracao": meta.get("data_instauracao", ""),
+                "penalty_type": "",
+                "penalty_value": 0.0,
+                "status": fase,
+                "description": ementa or objeto,
+                "numero_processo": nup,
+                "relator": "",
+                "data_instauracao": date,
                 "source": "cvm",
             })
 
-            entity_label = "Company" if is_company else "Person"
-            entity_key_field = "cnpj" if is_company else "cpf"
-
-            entities.append({
-                "source_key": doc_formatted,
-                "target_key": pas_id,
-                "entity_label": entity_label,
-                "entity_key_field": entity_key_field,
-                "entity_name": nome,
-                "entity_doc": doc_formatted,
-            })
+            # Link accused persons (name-based, no CPF/CNPJ in new format)
+            for accused in accused_by_nup.get(nup, []):
+                entities.append({
+                    "target_key": nup,
+                    "entity_name": accused["name"],
+                    "accused_status": accused["status"],
+                    "accused_date": accused["date"],
+                })
 
         self.proceedings = deduplicate_rows(proceedings, ["pas_id"])
-        self.sanctioned_entities = entities
+        self.accused_entities = entities
 
         if self.limit:
             self.proceedings = self.proceedings[: self.limit]
-            self.sanctioned_entities = self.sanctioned_entities[: self.limit]
+            self.accused_entities = self.accused_entities[: self.limit]
 
         logger.info(
-            "Transformed: %d proceedings, %d sanctioned entities",
+            "Transformed: %d proceedings, %d accused entities",
             len(self.proceedings),
-            len(self.sanctioned_entities),
+            len(self.accused_entities),
         )
 
     def load(self) -> None:
@@ -161,29 +143,23 @@ class CvmPipeline(Pipeline):
         if self.proceedings:
             loader.load_nodes("CVMProceeding", self.proceedings, key_field="pas_id")
 
-        for ent in self.sanctioned_entities:
-            label = ent["entity_label"]
-            key_field = ent["entity_key_field"]
-            doc = ent["entity_doc"]
-            name = ent["entity_name"]
-
-            node_row: dict[str, Any] = {key_field: doc, "name": name}
-            if label == "Company":
-                node_row["razao_social"] = name
-            loader.load_nodes(label, [node_row], key_field=key_field)
-
-        if self.sanctioned_entities:
+        # Name-based matching: find existing Person/Company by name
+        if self.accused_entities:
             rel_rows = [
-                {"source_key": e["source_key"], "target_key": e["target_key"]}
-                for e in self.sanctioned_entities
+                {
+                    "target_key": e["target_key"],
+                    "entity_name": e["entity_name"],
+                }
+                for e in self.accused_entities
+                if e["entity_name"]
             ]
 
             query = (
                 "UNWIND $rows AS row "
                 "MATCH (p:CVMProceeding {pas_id: row.target_key}) "
-                "OPTIONAL MATCH (c:Company {cnpj: row.source_key}) "
-                "OPTIONAL MATCH (pe:Person {cpf: row.source_key}) "
-                "WITH p, coalesce(c, pe) AS entity "
+                "OPTIONAL MATCH (pe:Person) WHERE pe.name = row.entity_name "
+                "OPTIONAL MATCH (c:Company) WHERE c.razao_social = row.entity_name "
+                "WITH p, coalesce(pe, c) AS entity "
                 "WHERE entity IS NOT NULL "
                 "MERGE (entity)-[:CVM_SANCIONADA]->(p)"
             )
