@@ -1,7 +1,7 @@
 """Tests for DOU (Diario Oficial da Uniao) pipeline.
 
-Tests extraction from Imprensa Nacional JSON format, act-type classification,
-CPF/CNPJ extraction from text, and Neo4j load operations.
+Tests extraction from Imprensa Nacional JSON format, BigQuery parquet format,
+act-type classification, CPF/CNPJ extraction from text, and Neo4j load operations.
 """
 
 from __future__ import annotations
@@ -10,6 +10,9 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pandas as pd
+import pytest
+
 from icarus_etl.pipelines.dou import (
     DouPipeline,
     _classify_act,
@@ -17,6 +20,13 @@ from icarus_etl.pipelines.dou import (
     _extract_cpfs,
     _make_act_id,
 )
+
+try:
+    import pyarrow  # noqa: F401
+
+    _HAS_PYARROW = True
+except ImportError:
+    _HAS_PYARROW = False
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -103,6 +113,70 @@ class TestExtract:
         pipeline = _make_pipeline(data_dir=str(tmp_path))
         pipeline.extract()
         assert len(pipeline._raw_acts) == 0
+
+    @pytest.mark.skipif(not _HAS_PYARROW, reason="pyarrow not installed")
+    def test_reads_parquet_from_bigquery(self, tmp_path: Path) -> None:
+        """Parquet files from BigQuery should be extracted correctly."""
+        dou_dir = tmp_path / "dou" / "bigquery"
+        dou_dir.mkdir(parents=True)
+
+        df = pd.DataFrame([
+            {
+                "titulo": "PORTARIA N 123",
+                "orgao": "Ministerio da Economia",
+                "ementa": "Nomear FULANO, CPF 529.982.247-25",
+                "excerto": "para o cargo de Diretor",
+                "secao": "1",
+                "data_publicacao": "2024-03-15",
+                "url": "https://www.in.gov.br/web/dou/-/portaria-n-123-456",
+                "tipo_edicao": "Normal",
+            },
+            {
+                "titulo": "EXTRATO DE CONTRATO",
+                "orgao": "Ministerio da Saude",
+                "ementa": "Contratada: XYZ LTDA, CNPJ 11.222.333/0001-81",
+                "excerto": "",
+                "secao": "3",
+                "data_publicacao": "2024-03-16",
+                "url": "https://www.in.gov.br/web/dou/-/extrato-de-contrato-789",
+                "tipo_edicao": "Normal",
+            },
+        ])
+        df.to_parquet(dou_dir / "secao_1.parquet", index=False)
+
+        pipeline = _make_pipeline(data_dir=str(tmp_path))
+        pipeline.extract()
+        assert len(pipeline._raw_acts) == 2
+        assert pipeline._raw_acts[0]["title"] == "PORTARIA N 123"
+        assert pipeline._raw_acts[0]["pubDate"] == "2024-03-15"
+        assert pipeline._raw_acts[0]["pubName"] == "DO1"
+        assert "529.982.247-25" in pipeline._raw_acts[0]["abstract"]
+
+    @pytest.mark.skipif(not _HAS_PYARROW, reason="pyarrow not installed")
+    def test_parquet_transform_extracts_documents(self, tmp_path: Path) -> None:
+        """Parquet data should be transformed with CPF/CNPJ extraction."""
+        dou_dir = tmp_path / "dou" / "bigquery"
+        dou_dir.mkdir(parents=True)
+
+        df = pd.DataFrame([{
+            "titulo": "PORTARIA DE NOMEACAO",
+            "orgao": "Test",
+            "ementa": "Nomear FULANO CPF 529.982.247-25",
+            "excerto": "para cargo",
+            "secao": "1",
+            "data_publicacao": "2024-01-01",
+            "url": "https://www.in.gov.br/web/dou/-/test-act-123",
+            "tipo_edicao": "Normal",
+        }])
+        df.to_parquet(dou_dir / "test.parquet", index=False)
+
+        pipeline = _make_pipeline(data_dir=str(tmp_path))
+        pipeline.extract()
+        pipeline.transform()
+        assert len(pipeline.acts) == 1
+        assert pipeline.acts[0]["act_type"] == "nomeacao"
+        assert len(pipeline.person_rels) == 1
+        assert pipeline.person_rels[0]["source_key"] == "529.982.247-25"
 
 
 # -- Classification --

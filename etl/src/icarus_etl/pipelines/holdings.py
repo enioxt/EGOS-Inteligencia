@@ -74,8 +74,13 @@ class HoldingsPipeline(Pipeline):
         rels: list[dict[str, Any]] = []
 
         for _, row in self._raw.iterrows():
-            cnpj_empresa_raw = str(row.get("cnpj_empresa", "")).strip()
-            cnpj_socia_raw = str(row.get("cnpj_socia", "")).strip()
+            # Support both column naming conventions
+            cnpj_empresa_raw = str(
+                row.get("cnpj_empresa") or row.get("cnpj") or ""
+            ).strip()
+            cnpj_socia_raw = str(
+                row.get("cnpj_socia") or row.get("holding_cnpj") or ""
+            ).strip()
 
             # Validate both CNPJs have exactly 14 digits
             digits_empresa = strip_document(cnpj_empresa_raw)

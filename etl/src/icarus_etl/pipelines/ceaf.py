@@ -54,18 +54,23 @@ class CeafPipeline(Pipeline):
             cpf_raw = str(row.get("cpf", ""))
             digits = strip_document(cpf_raw)
 
-            if len(digits) != 11:
+            nome = normalize_name(str(row.get("nome", "")))
+            if not nome:
                 continue
 
-            cpf_formatted = format_cpf(cpf_raw)
-            nome = normalize_name(str(row.get("nome", "")))
             position = str(row.get("cargo_efetivo", "")).strip()
             punishment_type = str(row.get("tipo_punicao", "")).strip()
             date = parse_date(str(row.get("data_publicacao", "")))
             decree = str(row.get("portaria", "")).strip()
             uf = str(row.get("uf", "")).strip()
 
-            expulsion_id = f"ceaf_{digits}_{idx}"
+            # Use full CPF when available, otherwise use partial + index
+            if len(digits) == 11:
+                cpf_formatted = format_cpf(cpf_raw)
+                expulsion_id = f"ceaf_{digits}_{idx}"
+            else:
+                cpf_formatted = cpf_raw.strip()  # Keep masked format
+                expulsion_id = f"ceaf_{digits}_{idx}"
 
             expulsions.append({
                 "expulsion_id": expulsion_id,
@@ -79,11 +84,13 @@ class CeafPipeline(Pipeline):
                 "source": "ceaf",
             })
 
-            person_rels.append({
-                "source_key": cpf_formatted,
-                "target_key": expulsion_id,
-                "person_name": nome,
-            })
+            # Only create person relationships for full CPFs
+            if len(digits) == 11:
+                person_rels.append({
+                    "source_key": cpf_formatted,
+                    "target_key": expulsion_id,
+                    "person_name": nome,
+                })
 
         self.expulsions = deduplicate_rows(expulsions, ["expulsion_id"])
         self.person_rels = person_rels

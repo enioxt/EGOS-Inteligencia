@@ -26,9 +26,27 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://portaldatransparencia.gov.br/download-de-dados"
 
-# Real government CSV columns (UPPER CASE) -> pipeline expected columns.
-# The government CSVs typically use UPPER CASE without accents for column headers.
+# Real government CSV columns -> pipeline expected columns.
+# The government CSVs use underscore-delimited names with accents (e.g. Nome_PEP).
+# We also keep UPPER CASE aliases for robustness.
 COLUMN_MAP: dict[str, str] = {
+    # Current format (underscore-delimited with accents)
+    "NOME_PEP": "Nome",
+    "SIGLA_FUNÇÃO": "Sigla Função",
+    "SIGLA_FUNCAO": "Sigla Função",
+    "DESCRIÇÃO_FUNÇÃO": "Descrição Função",
+    "DESCRICAO_FUNCAO": "Descrição Função",
+    "NÍVEL_FUNÇÃO": "Nível Função",
+    "NIVEL_FUNCAO": "Nível Função",
+    "NOME_ÓRGÃO": "Nome Órgão",
+    "NOME_ORGAO": "Nome Órgão",
+    "DATA_INÍCIO_EXERCÍCIO": "Data Início Exercício",
+    "DATA_INICIO_EXERCICIO": "Data Início Exercício",
+    "DATA_FIM_EXERCÍCIO": "Data Fim Exercício",
+    "DATA_FIM_EXERCICIO": "Data Fim Exercício",
+    "DATA_FIM_CARÊNCIA": "Data Fim Carência",
+    "DATA_FIM_CARENCIA": "Data Fim Carência",
+    # Older format (space-delimited UPPER CASE)
     "CPF": "CPF",
     "NOME": "Nome",
     "SIGLA FUNCAO": "Sigla Função",

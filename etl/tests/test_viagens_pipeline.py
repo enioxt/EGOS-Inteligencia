@@ -100,8 +100,8 @@ class TestViagensTransform:
         _load_fixture_data(pipeline)
         pipeline.transform()
 
-        # 3 valid CPFs out of 5 rows (1 bad CPF, 1 empty CPF)
-        assert len(pipeline.travels) == 3
+        # All 5 rows have names, so all produce travel records (masked CPFs kept)
+        assert len(pipeline.travels) == 5
 
     def test_produces_person_rels(self) -> None:
         pipeline = _make_pipeline()
@@ -130,24 +130,26 @@ class TestViagensTransform:
         assert "111.444.777-35" in cpfs
         assert "987.654.321-00" in cpfs
 
-    def test_skips_invalid_cpf(self) -> None:
+    def test_invalid_cpf_kept_but_not_linked(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
 
-        cpf_digits = {
-            t["traveler_cpf"].replace(".", "").replace("-", "")
-            for t in pipeline.travels
-        }
-        assert "1234" not in cpf_digits
+        # Invalid CPF rows are kept as travel records but NOT linked to Person
+        names = {t["traveler_name"] for t in pipeline.travels}
+        assert "NOME INVALIDO" in names
+        # Only 3 valid CPFs get person rels
+        assert len(pipeline.person_rels) == 3
 
-    def test_skips_empty_cpf(self) -> None:
+    def test_empty_cpf_kept_as_travel(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
 
         names = {t["traveler_name"] for t in pipeline.travels}
-        assert "SEM CPF" not in names
+        assert "SEM CPF" in names
+        rel_names = {r.get("person_name") for r in pipeline.person_rels}
+        assert "SEM CPF" not in rel_names
 
     def test_parses_dates(self) -> None:
         pipeline = _make_pipeline()

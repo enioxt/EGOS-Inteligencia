@@ -26,10 +26,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Only keep funds with these statuses (active/normal operation)
-_ACTIVE_STATUSES = frozenset({
-    "EM FUNCIONAMENTO NORMAL",
-})
+# Keep all fund statuses — historical data valuable for connection analysis.
+# Status is stored on each Fund node for downstream filtering.
+_EXCLUDED_STATUSES: frozenset[str] = frozenset()
 
 
 class CvmFundsPipeline(Pipeline):
@@ -83,9 +82,8 @@ class CvmFundsPipeline(Pipeline):
 
             fund_cnpj = format_cnpj(fund_digits)
 
-            # Filter to active funds only
             status = str(row.get("SIT", "")).strip().upper()
-            if status not in _ACTIVE_STATUSES:
+            if status in _EXCLUDED_STATUSES:
                 continue
 
             fund_name = normalize_name(str(row.get("DENOM_SOCIAL", "")))

@@ -93,6 +93,15 @@ class SiopPipeline(Pipeline):
 
         self._raw = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
+    @staticmethod
+    def _resolve_col(row: Any, *candidates: str) -> str:
+        """Return the first non-empty value found among column name candidates."""
+        for c in candidates:
+            val = row.get(c)
+            if val is not None and str(val).strip():
+                return str(val).strip()
+        return ""
+
     def transform(self) -> None:
         if self._raw.empty:
             return
@@ -101,46 +110,68 @@ class SiopPipeline(Pipeline):
         authors: list[dict[str, Any]] = []
         author_rels: list[dict[str, Any]] = []
 
-        # Group by amendment code to aggregate values across sub-functions
-        col_code = "CÓDIGO EMENDA"
-        if col_code not in self._raw.columns:
+        # Detect the amendment code column (two naming conventions)
+        col_code: str | None = None
+        for candidate in ("CÓDIGO EMENDA", "Código da Emenda"):
+            if candidate in self._raw.columns:
+                col_code = candidate
+                break
+        if col_code is None:
             return
 
         grouped = self._raw.groupby(col_code)
 
         for code, group in grouped:
             code_str = str(code).strip()
-            if not code_str:
+            if not code_str or code_str.lower() == "sem informação":
                 continue
 
             first = group.iloc[0]
 
-            year = str(first.get("ANO", "")).strip()
-            amendment_number = str(first.get("NÚMERO EMENDA", "")).strip()
-            raw_type = str(first.get("TIPO EMENDA", "")).strip()
+            year = self._resolve_col(first, "ANO", "Ano da Emenda")
+            amendment_number = self._resolve_col(
+                first, "NÚMERO EMENDA", "Número da emenda"
+            )
+            raw_type = self._resolve_col(first, "TIPO EMENDA", "Tipo de Emenda")
             amendment_type = _classify_amendment_type(raw_type)
-            author_name = normalize_name(str(first.get("AUTOR EMENDA", "")))
-            author_doc = str(first.get("CPF/CNPJ AUTOR", "")).strip()
-            locality = str(first.get("LOCALIDADE", "")).strip()
+            author_name = normalize_name(
+                self._resolve_col(first, "AUTOR EMENDA", "Nome do Autor da Emenda")
+            )
+            author_doc = self._resolve_col(
+                first, "CPF/CNPJ AUTOR", "Código do Autor da Emenda"
+            )
+            locality = self._resolve_col(
+                first, "LOCALIDADE", "Localidade de aplicação do recurso"
+            )
 
             # Program/action from first row (consistent within an amendment)
-            program = normalize_name(str(first.get("NOME PROGRAMA", "")))
-            program_code = str(first.get("CÓDIGO PROGRAMA", "")).strip()
-            action = normalize_name(str(first.get("NOME AÇÃO", "")))
-            action_code = str(first.get("CÓDIGO AÇÃO", "")).strip()
-            function_name = normalize_name(str(first.get("NOME FUNÇÃO", "")))
+            program = normalize_name(
+                self._resolve_col(first, "NOME PROGRAMA", "Nome Programa")
+            )
+            program_code = self._resolve_col(
+                first, "CÓDIGO PROGRAMA", "Código Programa"
+            )
+            action = normalize_name(
+                self._resolve_col(first, "NOME AÇÃO", "Nome Ação")
+            )
+            action_code = self._resolve_col(
+                first, "CÓDIGO AÇÃO", "Código Ação"
+            )
+            function_name = normalize_name(
+                self._resolve_col(first, "NOME FUNÇÃO", "Nome Função")
+            )
 
             # Sum monetary values across all rows for this amendment
             amount_committed = sum(
-                _parse_brl(str(r.get("VALOR EMPENHADO", "")))
+                _parse_brl(self._resolve_col(r, "VALOR EMPENHADO", "Valor Empenhado"))
                 for _, r in group.iterrows()
             )
             amount_settled = sum(
-                _parse_brl(str(r.get("VALOR LIQUIDADO", "")))
+                _parse_brl(self._resolve_col(r, "VALOR LIQUIDADO", "Valor Liquidado"))
                 for _, r in group.iterrows()
             )
             amount_paid = sum(
-                _parse_brl(str(r.get("VALOR PAGO", "")))
+                _parse_brl(self._resolve_col(r, "VALOR PAGO", "Valor Pago"))
                 for _, r in group.iterrows()
             )
 

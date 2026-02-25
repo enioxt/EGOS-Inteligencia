@@ -28,7 +28,9 @@ BQ_DATASET = "br_tse_filiacao_partidaria"
 BQ_TABLE = "microdados"
 
 COLUMNS = [
+    "cpf",
     "nome",
+    "nome_social",
     "sigla_uf",
     "id_municipio_tse",
     "sigla_partido",
@@ -36,10 +38,9 @@ COLUMNS = [
     "situacao_registro",
     "data_desfiliacao",
     "data_cancelamento",
-    "data_regularizacao",
     "motivo_cancelamento",
-    "data_nascimento",
-    "numero_inscricao",
+    "motivo_desfiliacao",
+    "titulo_eleitor",
 ]
 
 PAGE_SIZE = 100_000
@@ -63,7 +64,7 @@ def _download(
     table_ref = f"{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE}"
 
     cols = ", ".join(COLUMNS)
-    where = "" if all_statuses else "WHERE situacao_registro = 'REGULAR'"
+    where = "" if all_statuses else "WHERE situacao_registro = 'Regular'"
     query = f"SELECT {cols} FROM `{table_ref}` {where}"  # noqa: S608
 
     logger.info("Running query: %s", query[:200])

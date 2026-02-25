@@ -68,10 +68,16 @@ class StfPipeline(Pipeline):
             case_id = _generate_case_id(case_class, case_number, year)
             rapporteur_raw = str(row.get("relator", "")).strip()
             rapporteur = normalize_name(rapporteur_raw)
-            decision_type = str(row.get("tipo_decisao", "")).strip()
+            decision_type = str(
+                row.get("tipo_decisao", "") or row.get("andamento", "")
+            ).strip()
             decision_date = str(row.get("data_decisao", "")).strip()
-            subject = str(row.get("assunto", "")).strip()
-            origin = str(row.get("procedencia", "")).strip()
+            subject = str(
+                row.get("assunto", "") or row.get("assunto_processo", "")
+            ).strip()
+            origin = str(
+                row.get("procedencia", "") or row.get("ramo_direito", "")
+            ).strip()
 
             case: dict[str, Any] = {
                 "case_id": case_id,

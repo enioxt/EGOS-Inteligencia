@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Government CSV columns may appear in different cases.
 # Map UPPER CASE (as downloaded) -> canonical mixed-case for the pipeline.
 _COLUMN_ALIASES: dict[str, str] = {
+    # Canonical (space-delimited with accents)
     "CPF": "CPF",
     "NOME": "Nome",
     "SIGLA FUNCAO": "Sigla Função",
@@ -40,6 +41,22 @@ _COLUMN_ALIASES: dict[str, str] = {
     "DATA FIM EXERCÍCIO": "Data Fim Exercício",
     "DATA FIM CARENCIA": "Data Fim Carência",
     "DATA FIM CARÊNCIA": "Data Fim Carência",
+    # Underscore-delimited format (government CSV as of 2025)
+    "NOME_PEP": "Nome",
+    "SIGLA_FUNCAO": "Sigla Função",
+    "SIGLA_FUNÇÃO": "Sigla Função",
+    "DESCRICAO_FUNCAO": "Descrição Função",
+    "DESCRIÇÃO_FUNÇÃO": "Descrição Função",
+    "NIVEL_FUNCAO": "Nível Função",
+    "NÍVEL_FUNÇÃO": "Nível Função",
+    "NOME_ORGAO": "Nome Órgão",
+    "NOME_ÓRGÃO": "Nome Órgão",
+    "DATA_INICIO_EXERCICIO": "Data Início Exercício",
+    "DATA_INÍCIO_EXERCÍCIO": "Data Início Exercício",
+    "DATA_FIM_EXERCICIO": "Data Fim Exercício",
+    "DATA_FIM_EXERCÍCIO": "Data Fim Exercício",
+    "DATA_FIM_CARENCIA": "Data Fim Carência",
+    "DATA_FIM_CARÊNCIA": "Data Fim Carência",
 }
 
 
@@ -96,13 +113,13 @@ class PepCguPipeline(Pipeline):
         for idx, row in self._raw.iterrows():
             cpf_raw = str(row.get("CPF", "")).strip()
             digits = strip_document(cpf_raw)
-            if len(digits) != 11:
-                continue
 
-            cpf_formatted = format_cpf(cpf_raw)
             nome = normalize_name(str(row.get("Nome", "")))
             if not nome:
                 continue
+
+            # Use full CPF when available, else keep masked format
+            cpf_formatted = format_cpf(cpf_raw) if len(digits) == 11 else cpf_raw
 
             sigla = str(row.get("Sigla Função", "")).strip()
             descricao = str(row.get("Descrição Função", "")).strip()
@@ -128,10 +145,12 @@ class PepCguPipeline(Pipeline):
                 "source": "cgu_pep",
             })
 
-            links.append({
-                "source_key": cpf_formatted,
-                "target_key": pep_id,
-            })
+            # Only link to Person nodes when we have a full CPF
+            if len(digits) == 11:
+                links.append({
+                    "source_key": cpf_formatted,
+                    "target_key": pep_id,
+                })
 
             if self.limit and len(records) >= self.limit:
                 break

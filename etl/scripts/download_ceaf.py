@@ -26,11 +26,20 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://portaldatransparencia.gov.br/download-de-dados"
 
-# Real government CSV columns -> pipeline expected columns
+# Real government CSV columns -> pipeline expected columns.
+# The government changed column names; support both old and new formats.
 COLUMN_MAP = {
+    # Current format (as of 2026)
+    "CPF OU CNPJ DO SANCIONADO": "cpf",
+    "NOME DO SANCIONADO": "nome",
+    "CARGO EFETIVO": "cargo_efetivo",
+    "CATEGORIA DA SANÇÃO": "tipo_punicao",
+    "DATA PUBLICAÇÃO": "data_publicacao",
+    "NÚMERO DO DOCUMENTO": "portaria",
+    "UF ÓRGÃO SANCIONADOR": "uf",
+    # Older format (kept for backward compatibility)
     "CPF SERVIDOR": "cpf",
     "NOME SERVIDOR": "nome",
-    "CARGO EFETIVO": "cargo_efetivo",
     "TIPO DE PUNIÇÃO": "tipo_punicao",
     "DATA DA PUBLICAÇÃO": "data_publicacao",
     "PORTARIA DE PUNIÇÃO": "portaria",

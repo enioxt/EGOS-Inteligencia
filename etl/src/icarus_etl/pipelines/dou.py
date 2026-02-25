@@ -153,19 +153,74 @@ class DouPipeline(Pipeline):
             msg = f"DOU data directory not found at {dou_dir}"
             raise FileNotFoundError(msg)
 
-        # Try XML files first (Imprensa Nacional dumps), then JSON (legacy)
+        # Try parquet (BigQuery), then XML (Imprensa Nacional), then JSON (legacy)
+        parquet_files = sorted(dou_dir.rglob("*.parquet"))
         xml_files = sorted(dou_dir.rglob("*.xml"))
         json_files = sorted(dou_dir.glob("*.json"))
 
-        if xml_files:
+        if parquet_files:
+            self._extract_parquet(parquet_files)
+        elif xml_files:
             self._extract_xml(xml_files)
         elif json_files:
             self._extract_json(json_files)
         else:
-            logger.warning("[dou] No XML or JSON files found in %s", dou_dir)
+            logger.warning("[dou] No parquet, XML, or JSON files found in %s", dou_dir)
             return
 
         logger.info("[dou] Extracted %d act records", len(self._raw_acts))
+
+    def _extract_parquet(self, parquet_files: list[Path]) -> None:
+        """Extract acts from BigQuery parquet exports (basedosdados DOU)."""
+        import pyarrow as pa  # type: ignore[import-not-found]
+        import pyarrow.compute as pc  # type: ignore[import-not-found]
+        import pyarrow.parquet as pq  # type: ignore[import-not-found]
+
+        parquet_cols = [
+            "titulo", "orgao", "ementa", "excerto",
+            "secao", "data_publicacao", "url", "tipo_edicao",
+        ]
+
+        for f in parquet_files:
+            try:
+                table = pq.read_table(f, columns=parquet_cols)
+                # Cast all to string — avoids date32/dbdate pandas incompatibility
+                str_cols = [pc.cast(table.column(c), pa.string()) for c in table.column_names]
+                df = pa.table(dict(zip(table.column_names, str_cols, strict=True))).to_pandas()
+            except Exception:
+                logger.warning("[dou] Failed to read parquet: %s", f.name)
+                continue
+
+            logger.info("[dou] Reading %d rows from %s", len(df), f.name)
+
+            for _, row in df.iterrows():
+                titulo = str(row.get("titulo", "") or "").strip()
+                orgao = str(row.get("orgao", "") or "").strip()
+                ementa = str(row.get("ementa", "") or "").strip()
+                excerto = str(row.get("excerto", "") or "").strip()
+                secao = str(row.get("secao", "") or "").strip()
+                pub_date = str(row.get("data_publicacao", "") or "").strip()
+                url = str(row.get("url", "") or "").strip()
+                tipo_edicao = str(row.get("tipo_edicao", "") or "").strip()
+
+                # Use URL as identifier (stable across editions)
+                url_title = url.rsplit("/", 1)[-1] if url else titulo[:60]
+
+                # Combine ementa + excerto for abstract text
+                abstract = f"{ementa} {excerto}".strip()
+
+                self._raw_acts.append({
+                    "urlTitle": url_title,
+                    "title": titulo,
+                    "abstract": abstract[:2000],
+                    "pubDate": pub_date,
+                    "pubName": f"DO{secao}" if secao else "",
+                    "artCategory": tipo_edicao,
+                    "hierarchyStr": orgao,
+                })
+
+                if self.limit and len(self._raw_acts) >= self.limit:
+                    return
 
     def _extract_xml(self, xml_files: list[Path]) -> None:
         """Extract acts from Imprensa Nacional XML dumps."""

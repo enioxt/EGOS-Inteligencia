@@ -21,28 +21,8 @@ import click
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-BQ_TABLE = "basedosdados.br_tse_eleicoes.bens_candidato"
-
-COLUMNS = [
-    "ano",
-    "tipo_eleicao",
-    "sigla_uf",
-    "id_municipio",
-    "id_municipio_tse",
-    "id_candidato_bd",
-    "cpf",
-    "titulo_eleitoral",
-    "sequencial_candidato",
-    "numero_candidato",
-    "nome_candidato",
-    "nome_urna_candidato",
-    "numero_partido",
-    "sigla_partido",
-    "nome_partido",
-    "tipo_bem",
-    "descricao_bem",
-    "valor_bem",
-]
+BQ_BENS = "basedosdados.br_tse_eleicoes.bens_candidato"
+BQ_CANDIDATOS = "basedosdados.br_tse_eleicoes.candidatos"
 
 PAGE_SIZE = 100_000
 
@@ -77,10 +57,19 @@ def main(
         location="US",
     )
 
-    cols = ", ".join(COLUMNS)
-    query = f"SELECT {cols} FROM `{BQ_TABLE}` WHERE ano >= {start_year} ORDER BY ano, sigla_uf"  # noqa: S608
+    # JOIN bens with candidatos to get CPF and candidate name
+    query = (
+        f"SELECT b.ano, b.sigla_uf, b.tipo_item AS tipo_bem, "  # noqa: S608
+        f"  b.descricao_item AS descricao_bem, b.valor_item AS valor_bem, "
+        f"  c.cpf, c.nome AS nome_candidato, c.sigla_partido "
+        f"FROM `{BQ_BENS}` b "
+        f"LEFT JOIN `{BQ_CANDIDATOS}` c "
+        f"  ON b.sequencial_candidato = c.sequencial AND b.ano = c.ano "
+        f"WHERE b.ano >= {start_year} "
+        f"ORDER BY b.ano, b.sigla_uf"
+    )
 
-    logger.info("Running query: %s (start_year=%d)", BQ_TABLE, start_year)
+    logger.info("Running query: bens JOIN candidatos (start_year=%d)", start_year)
     query_job = client.query(query)
 
     rows_written = 0

@@ -57,7 +57,12 @@ class RenunciasPipeline(Pipeline):
         data_dir = Path(self.data_dir) / "renuncias"
         frames: list[pd.DataFrame] = []
 
+        # Only process RenúnciasFiscais files (have amounts); skip
+        # EmpresasHabilitadas and EmpresasImunesOuIsentas (no values).
         for csv_file in sorted(data_dir.glob("*.csv")):
+            fname = csv_file.name
+            if ("Ren" not in fname and "ren" not in fname) or "PorBen" in fname:
+                continue
             df = pd.read_csv(
                 csv_file,
                 dtype=str,
@@ -82,19 +87,30 @@ class RenunciasPipeline(Pipeline):
         company_rels: list[dict[str, Any]] = []
 
         for _, row in self._raw.iterrows():
-            cnpj_raw = str(row.get("CNPJ", row.get("cnpj", ""))).strip()
+            cnpj_raw = str(row.get("CNPJ", "")).strip().strip('"')
             digits = strip_document(cnpj_raw)
 
             if len(digits) != 14:
                 continue
 
             cnpj_formatted = format_cnpj(cnpj_raw)
-            name = normalize_name(str(row.get("NOME", row.get("nome", ""))))
-            tributo = str(row.get("TRIBUTO", row.get("tributo", ""))).strip()
-            tipo = str(row.get("TIPO BENEFICIO", row.get("tipo_beneficio", ""))).strip()
-            ano = str(row.get("ANO", row.get("ano", ""))).strip()
+            name = normalize_name(str(
+                row.get("Razão Social", row.get("Raz\xe3o Social", ""))
+            ))
+            tributo = str(row.get("Tributo", row.get("TRIBUTO", ""))).strip()
+            tipo = str(
+                row.get("Tipo Renúncia", row.get("Tipo Ren\xfancia", ""))
+                or row.get("Benefício Fiscal", row.get("Benef\xedcio Fiscal", ""))
+            ).strip()
+            ano = str(
+                row.get("Ano-calendário", row.get("Ano-calend\xe1rio", ""))
+                or row.get("ANO", "")
+            ).strip()
 
-            valor_raw = str(row.get("VALOR", row.get("valor", "0")))
+            valor_raw = str(
+                row.get("Valor Renúncia Fiscal (R$)",
+                         row.get("Valor Ren\xfancia Fiscal (R$)", "0"))
+            )
             amount = _parse_brl(valor_raw)
             if amount is None or amount <= 0:
                 continue

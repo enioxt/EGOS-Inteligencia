@@ -25,12 +25,13 @@ logger = logging.getLogger(__name__)
 # Portal da Transparencia Viagens CSVs use semicolon separators and
 # mixed-case Portuguese column headers. Map to canonical names.
 _COLUMN_ALIASES: dict[str, str] = {
+    # Actual Portal da Transparencia *_Viagem.csv headers (with accents)
     "CÓDIGO DO ÓRGÃO SUPERIOR": "cod_orgao_superior",
     "NOME DO ÓRGÃO SUPERIOR": "nome_orgao_superior",
-    "CÓDIGO ÓRGÃO": "cod_orgao",
-    "NOME ÓRGÃO": "nome_orgao",
-    "CPF SERVIDOR": "cpf",
-    "NOME SERVIDOR": "nome",
+    "CÓDIGO ÓRGÃO SOLICITANTE": "cod_orgao",
+    "NOME ÓRGÃO SOLICITANTE": "nome_orgao",
+    "CPF VIAJANTE": "cpf",
+    "NOME": "nome",
     "CARGO": "cargo",
     "FUNÇÃO": "funcao",
     "DESCRIÇÃO FUNÇÃO": "descricao_funcao",
@@ -40,16 +41,25 @@ _COLUMN_ALIASES: dict[str, str] = {
     "MOTIVO": "motivo",
     "VALOR DIÁRIAS": "valor_diarias",
     "VALOR PASSAGENS": "valor_passagens",
+    "VALOR DEVOLUÇÃO": "valor_devolucao",
     "VALOR OUTROS GASTOS": "valor_outros",
-    # Variants without accents / different casing
+    # Variants without accents
     "CODIGO DO ORGAO SUPERIOR": "cod_orgao_superior",
     "NOME DO ORGAO SUPERIOR": "nome_orgao_superior",
-    "CODIGO ORGAO": "cod_orgao",
-    "NOME ORGAO": "nome_orgao",
+    "CODIGO ORGAO SOLICITANTE": "cod_orgao",
+    "NOME ORGAO SOLICITANTE": "nome_orgao",
     "FUNCAO": "funcao",
     "DESCRICAO FUNCAO": "descricao_funcao",
     "PERIODO - DATA DE INICIO": "data_inicio",
     "PERIODO - DATA DE FIM": "data_fim",
+    "VALOR DEVOLUCAO": "valor_devolucao",
+    # Legacy aliases (download script pre-mapped names, kept for compatibility)
+    "CÓDIGO ÓRGÃO": "cod_orgao",
+    "NOME ÓRGÃO": "nome_orgao",
+    "CPF SERVIDOR": "cpf",
+    "NOME SERVIDOR": "nome",
+    "CODIGO ORGAO": "cod_orgao",
+    "NOME ORGAO": "nome_orgao",
 }
 
 
@@ -134,13 +144,13 @@ class ViagensPipeline(Pipeline):
         for _, row in self._raw.iterrows():
             cpf_raw = str(row.get("cpf", "")).strip()
             digits = strip_document(cpf_raw)
-            if len(digits) != 11:
-                continue
 
-            cpf_formatted = format_cpf(cpf_raw)
             nome = normalize_name(str(row.get("nome", "")))
             if not nome:
                 continue
+
+            # Use full CPF when available, otherwise keep masked format
+            cpf_formatted = format_cpf(cpf_raw) if len(digits) == 11 else cpf_raw
 
             agency = str(row.get("nome_orgao", "")).strip()
             destination = str(row.get("destinos", "")).strip()
@@ -168,11 +178,13 @@ class ViagensPipeline(Pipeline):
                 "source": "portal_transparencia_viagens",
             })
 
-            person_rels.append({
-                "source_key": cpf_formatted,
-                "target_key": travel_id,
-                "person_name": nome,
-            })
+            # Only link to Person nodes when we have a full CPF
+            if len(digits) == 11:
+                person_rels.append({
+                    "source_key": cpf_formatted,
+                    "target_key": travel_id,
+                    "person_name": nome,
+                })
 
             if self.limit and len(travels) >= self.limit:
                 break

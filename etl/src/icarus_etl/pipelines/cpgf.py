@@ -102,7 +102,7 @@ class CpgfPipeline(Pipeline):
         for f in csv_files:
             df = pd.read_csv(
                 f,
-                sep="\t",
+                sep=";",
                 dtype=str,
                 encoding="latin-1",
                 keep_default_na=False,
@@ -126,14 +126,16 @@ class CpgfPipeline(Pipeline):
         for _, row in self._raw.iterrows():
             cpf_raw = str(row.get("CPF PORTADOR", "")).strip()
             digits = strip_document(cpf_raw)
-            if len(digits) != 11:
-                skipped += 1
-                continue
 
-            cpf_formatted = format_cpf(cpf_raw)
             cardholder_name = normalize_name(
                 str(row.get("NOME PORTADOR", ""))
             )
+            if not cardholder_name:
+                skipped += 1
+                continue
+
+            # Use full CPF when available, otherwise keep masked format
+            cpf_formatted = format_cpf(cpf_raw) if len(digits) == 11 else cpf_raw
 
             amount = _parse_brl_value(str(row.get("VALOR TRANSACAO", "")))
             if amount == 0.0:
@@ -161,15 +163,17 @@ class CpgfPipeline(Pipeline):
                 "source": "cpgf",
             })
 
-            cardholders_map[cpf_formatted] = {
-                "cpf": cpf_formatted,
-                "name": cardholder_name,
-            }
+            # Only link to Person nodes when we have a full CPF
+            if len(digits) == 11:
+                cardholders_map[cpf_formatted] = {
+                    "cpf": cpf_formatted,
+                    "name": cardholder_name,
+                }
 
-            gastou_cartao.append({
-                "source_key": cpf_formatted,
-                "target_key": expense_id,
-            })
+                gastou_cartao.append({
+                    "source_key": cpf_formatted,
+                    "target_key": expense_id,
+                })
 
             if self.limit and len(expenses) >= self.limit:
                 break

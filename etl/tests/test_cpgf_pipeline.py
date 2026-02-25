@@ -60,11 +60,11 @@ class TestCpgfExtract:
 # ---------------------------------------------------------------------------
 class TestCpgfTransform:
     def test_produces_expenses(self) -> None:
-        """3 valid rows: Joao, Maria, Pedro. Skipped: bad CPF, empty CPF, zero amount."""
+        """5 rows with names and non-zero amounts (masked CPFs kept). Zero amount skipped."""
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
-        assert len(pipeline.expenses) == 3
+        assert len(pipeline.expenses) == 5
 
     def test_produces_cardholders(self) -> None:
         pipeline = _make_pipeline()
@@ -96,22 +96,24 @@ class TestCpgfTransform:
         assert "111.444.777-35" in cpfs
         assert "987.654.321-00" in cpfs
 
-    def test_skips_invalid_cpf(self) -> None:
-        pipeline = _make_pipeline()
-        _load_fixture_data(pipeline)
-        pipeline.transform()
-        cpf_digits = {
-            e["cardholder_cpf"].replace(".", "").replace("-", "")
-            for e in pipeline.expenses
-        }
-        assert "1234" not in cpf_digits
-
-    def test_skips_empty_cpf(self) -> None:
+    def test_invalid_cpf_kept_but_not_linked(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
         names = {e["cardholder_name"] for e in pipeline.expenses}
-        assert "SEM CPF" not in names
+        assert "NOME INVALIDO" in names
+        # Only 3 valid CPFs get person links
+        assert len(pipeline.cardholders) == 3
+        assert len(pipeline.gastou_cartao_rels) == 3
+
+    def test_empty_cpf_kept_as_expense(self) -> None:
+        pipeline = _make_pipeline()
+        _load_fixture_data(pipeline)
+        pipeline.transform()
+        names = {e["cardholder_name"] for e in pipeline.expenses}
+        assert "SEM CPF" in names
+        rel_cpfs = {r["source_key"] for r in pipeline.gastou_cartao_rels}
+        assert "" not in rel_cpfs
 
     def test_filters_zero_amount(self) -> None:
         """Ana Oliveira has amount 0,00 — should be filtered out."""

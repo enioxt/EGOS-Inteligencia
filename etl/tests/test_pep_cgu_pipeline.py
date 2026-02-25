@@ -56,8 +56,8 @@ class TestPepCguTransform:
         _load_fixture(pipeline)
         pipeline.transform()
 
-        # 3 valid CPFs: 12345678901, 98765432100, 11122233344
-        assert len(pipeline.pep_records) == 3
+        # All 5 rows have names, so all produce PEP records (masked CPFs kept)
+        assert len(pipeline.pep_records) == 5
 
     def test_formats_cpf(self) -> None:
         pipeline = _make_pipeline()
@@ -69,15 +69,17 @@ class TestPepCguTransform:
         assert "987.654.321-00" in cpfs
         assert "111.222.333-44" in cpfs
 
-    def test_skips_invalid_cpf(self) -> None:
+    def test_invalid_cpf_kept_but_not_linked(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture(pipeline)
         pipeline.transform()
 
+        # Invalid/empty CPF rows are kept as PEP records but NOT linked to Person
         names = {r["name"] for r in pipeline.pep_records}
-        # "invalid" and empty CPF rows should be filtered out
-        assert "BAD RECORD" not in names
-        assert "EMPTY CPF" not in names
+        assert "BAD RECORD" in names
+        assert "EMPTY CPF" in names
+        # Only 3 valid CPFs get person links
+        assert len(pipeline.person_links) == 3
 
     def test_normalizes_names(self) -> None:
         pipeline = _make_pipeline()

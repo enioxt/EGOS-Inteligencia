@@ -70,14 +70,25 @@ class WorldBankPipeline(Pipeline):
         sanctions: list[dict[str, Any]] = []
 
         for _, row in self._raw.iterrows():
-            firm_name_raw = str(row.get("Firm Name", "")).strip()
+            # Support both old column names (Firm Name) and new API format (SUPP_NAME)
+            firm_name_raw = str(
+                row.get("Firm Name") or row.get("SUPP_NAME") or ""
+            ).strip()
             if not firm_name_raw:
                 continue
 
-            country = str(row.get("Country", "")).strip()
-            from_date = str(row.get("From Date", "")).strip()
-            to_date = str(row.get("To Date", "")).strip()
-            grounds = str(row.get("Grounds", "")).strip()
+            country = str(
+                row.get("Country") or row.get("COUNTRY_NAME") or ""
+            ).strip()
+            from_date = str(
+                row.get("From Date") or row.get("DEBAR_FROM_DATE") or ""
+            ).strip()
+            to_date = str(
+                row.get("To Date") or row.get("DEBAR_TO_DATE") or ""
+            ).strip()
+            grounds = str(
+                row.get("Grounds") or row.get("DEBAR_REASON") or ""
+            ).strip()
 
             sanction_id = _make_debarment_id(firm_name_raw, country, from_date)
 

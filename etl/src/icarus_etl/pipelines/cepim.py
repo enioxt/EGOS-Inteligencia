@@ -68,7 +68,9 @@ class CepimPipeline(Pipeline):
             name = normalize_name(str(row.get("NOME ENTIDADE", "")))
             agreement_number = str(row.get("NÚMERO CONVÊNIO", "")).strip()
             agency = str(row.get("ÓRGÃO CONCEDENTE", "")).strip()
-            reason = str(row.get("MOTIVO IMPEDIMENTO", "")).strip()
+            reason = str(
+                row.get("MOTIVO IMPEDIMENTO", row.get("MOTIVO DO IMPEDIMENTO", ""))
+            ).strip()
 
             ngo_id = _generate_ngo_id(digits, agreement_number)
 

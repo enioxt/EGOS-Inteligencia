@@ -25,14 +25,20 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://portaldatransparencia.gov.br/download-de-dados"
 
-# Real government CSV columns -> pipeline expected columns
+# Real Viagem CSV columns -> pipeline expected columns.
+# These are the actual headers from Portal da Transparencia *_Viagem.csv files.
 COLUMN_MAP = {
+    "Identificador do processo de viagem": "id_processo",
+    "Número da Proposta (PCDP)": "num_proposta",
+    "Situação": "situacao",
+    "Viagem Urgente": "viagem_urgente",
+    "Justificativa Urgência Viagem": "justificativa_urgencia",
     "Código do órgão superior": "cod_orgao_superior",
     "Nome do órgão superior": "nome_orgao_superior",
-    "Código órgão": "cod_orgao",
-    "Nome órgão": "nome_orgao",
-    "CPF servidor": "cpf",
-    "Nome servidor": "nome",
+    "Código órgão solicitante": "cod_orgao",
+    "Nome órgão solicitante": "nome_orgao",
+    "CPF viajante": "cpf",
+    "Nome": "nome",
     "Cargo": "cargo",
     "Função": "funcao",
     "Descrição Função": "descricao_funcao",
@@ -42,13 +48,14 @@ COLUMN_MAP = {
     "Motivo": "motivo",
     "Valor diárias": "valor_diarias",
     "Valor passagens": "valor_passagens",
+    "Valor devolução": "valor_devolucao",
     "Valor outros gastos": "valor_outros",
 }
 
 
-def _find_csvs(directory: Path) -> list[Path]:
-    """Find all CSV files in a directory."""
-    return sorted(directory.glob("*.csv"))
+def _find_viagem_csvs(directory: Path) -> list[Path]:
+    """Find only *_Viagem.csv files in a directory (skip Pagamento/Trecho/Passagem)."""
+    return sorted(directory.glob("*_Viagem.csv"))
 
 
 def _remap_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -78,18 +85,16 @@ def _remap_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _download_month(
+def _download_year(
     year: int,
-    month: int,
     raw_dir: Path,
     *,
     skip_existing: bool,
     timeout: int,
 ) -> list[Path]:
-    """Download a single month's ZIP and return extracted CSV paths."""
-    date_str = f"{year}{month:02d}"
-    url = f"{BASE_URL}/viagens/{date_str}"
-    zip_name = f"viagens_{date_str}.zip"
+    """Download a single year's ZIP and return extracted CSV paths."""
+    url = f"{BASE_URL}/viagens/{year}"
+    zip_name = f"viagens_{year}.zip"
     zip_path = raw_dir / zip_name
 
     if skip_existing and zip_path.exists():
@@ -98,10 +103,15 @@ def _download_month(
         if not download_file(url, zip_path, timeout=timeout):
             return []
 
-    extract_dir = raw_dir / f"viagens_{date_str}_extracted"
+    extract_dir = raw_dir / f"viagens_{year}_extracted"
     extract_dir.mkdir(parents=True, exist_ok=True)
-    extracted = extract_zip(zip_path, extract_dir)
-    return [f for f in extracted if f.suffix.lower() == ".csv"]
+    extract_zip(zip_path, extract_dir)
+
+    # Only pick up *_Viagem.csv — skip Pagamento, Trecho, Passagem.
+    viagem_csvs = _find_viagem_csvs(extract_dir)
+    if not viagem_csvs:
+        logger.warning("No *_Viagem.csv found in %s", extract_dir)
+    return viagem_csvs
 
 
 def _process_csvs(csvs: list[Path], output_path: Path) -> bool:
@@ -121,7 +131,8 @@ def _process_csvs(csvs: list[Path], output_path: Path) -> bool:
             logger.warning("Failed to read %s: %s", csv_path.name, e)
             continue
 
-        logger.info("Viagens: %d rows from %s, columns: %s", len(df), csv_path.name, list(df.columns)[:5])
+        cols_preview = list(df.columns)[:5]
+        logger.info("Viagens: %d rows from %s, columns: %s", len(df), csv_path.name, cols_preview)
         df = _remap_columns(df)
         frames.append(df)
 
@@ -150,39 +161,26 @@ def main(
 ) -> None:
     """Download Government Travel (Viagens a Servico) data.
 
-    By default, downloads the last 12 months. Use --start-year and --end-year
-    to specify a custom range.
+    By default, downloads years 2020 to current year. Use --start-year and
+    --end-year to specify a custom range.
     """
     now = datetime.now()
 
-    if start_year is None and end_year is None:
-        # Default: last 12 months
-        months_to_download: list[tuple[int, int]] = []
-        for i in range(12):
-            month = now.month - i
-            year = now.year
-            if month <= 0:
-                month += 12
-                year -= 1
-            months_to_download.append((year, month))
-        months_to_download.reverse()
-    else:
-        sy = start_year or now.year
-        ey = end_year or now.year
-        months_to_download = [
-            (y, m) for y in range(sy, ey + 1) for m in range(1, 13)
-        ]
+    sy = start_year or 2020
+    ey = end_year or now.year
+    years_to_download = list(range(sy, ey + 1))
 
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     raw_dir = out / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("=== Viagens download: %d months ===", len(months_to_download))
+    logger.info("=== Viagens download: years %d-%d ===", sy, ey)
 
     all_csvs: list[Path] = []
-    for year, month in months_to_download:
-        csvs = _download_month(year, month, raw_dir, skip_existing=skip_existing, timeout=timeout)
+    for year in years_to_download:
+        logger.info("--- Year %d ---", year)
+        csvs = _download_year(year, raw_dir, skip_existing=skip_existing, timeout=timeout)
         all_csvs.extend(csvs)
 
     if not all_csvs:

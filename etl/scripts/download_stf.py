@@ -24,14 +24,23 @@ logger = logging.getLogger(__name__)
 BQ_TABLE = "basedosdados.br_stf_corte_aberta.decisoes"
 
 COLUMNS = [
+    "ano",
     "classe",
     "numero",
-    "ano",
     "relator",
-    "tipo_decisao",
+    "link",
+    "subgrupo_andamento",
+    "andamento",
+    "observacao_andamento_decisao",
+    "modalidade_julgamento",
+    "tipo_julgamento",
+    "meio_tramitacao",
+    "indicador_tramitacao",
+    "assunto_processo",
+    "ramo_direito",
+    "data_autuacao",
     "data_decisao",
-    "assunto",
-    "procedencia",
+    "data_baixa_processo",
 ]
 
 PAGE_SIZE = 100_000

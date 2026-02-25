@@ -19,25 +19,27 @@ from icarus_etl.transforms import (
 
 logger = logging.getLogger(__name__)
 
-# EU subject types we care about
+# EU subject types we care about (full word or single-letter code)
 EU_TYPE_PERSON = "person"
 EU_TYPE_ENTERPRISE = "enterprise"
 VALID_EU_TYPES = {EU_TYPE_PERSON, EU_TYPE_ENTERPRISE}
+# Map single-letter codes to canonical type names
+_EU_TYPE_MAP = {"p": EU_TYPE_PERSON, "e": EU_TYPE_ENTERPRISE}
 
 # Cypher for name-based matching to Person nodes
 MATCH_PERSON_QUERY = """
 UNWIND $rows AS row
-MATCH (p:Person)
-WHERE p.name = row.name
-MERGE (p)-[:SANCIONADA_INTERNACIONALMENTE]->(s:InternationalSanction {sanction_id: row.sanction_id})
+MATCH (p:Person) WHERE p.name = row.name
+MATCH (s:InternationalSanction {sanction_id: row.sanction_id})
+MERGE (p)-[:SANCIONADA_INTERNACIONALMENTE]->(s)
 """
 
 # Cypher for name-based matching to Company nodes
 MATCH_COMPANY_QUERY = """
 UNWIND $rows AS row
-MATCH (c:Company)
-WHERE c.razao_social = row.name
-MERGE (c)-[:SANCIONADA_INTERNACIONALMENTE]->(s:InternationalSanction {sanction_id: row.sanction_id})
+MATCH (c:Company) WHERE c.razao_social = row.name
+MATCH (s:InternationalSanction {sanction_id: row.sanction_id})
+MERGE (c)-[:SANCIONADA_INTERNACIONALMENTE]->(s)
 """
 
 
@@ -48,8 +50,13 @@ def _generate_sanction_id(name: str, program: str, regulation: str) -> str:
 
 
 def _clean_entity_type(raw: str) -> str:
-    """Normalize EU Entity_SubjectType field."""
-    return raw.strip().lower()
+    """Normalize EU Entity_SubjectType field.
+
+    Handles both full words ('person', 'enterprise') and
+    single-letter codes ('P', 'E') from the consolidated CSV.
+    """
+    cleaned = raw.strip().lower()
+    return _EU_TYPE_MAP.get(cleaned, cleaned)
 
 
 class EuSanctionsPipeline(Pipeline):
@@ -88,10 +95,10 @@ class EuSanctionsPipeline(Pipeline):
         self._raw = pd.read_csv(
             csv_path,
             dtype=str,
-            encoding="utf-8",
+            encoding="utf-8-sig",
             keep_default_na=False,
             on_bad_lines="skip",
-            sep=",",
+            sep=";",
         )
 
         if self.limit:
@@ -105,18 +112,43 @@ class EuSanctionsPipeline(Pipeline):
         company_rels: list[dict[str, Any]] = []
 
         for _, row in self._raw.iterrows():
-            name_raw = str(row.get("NameAlias_WholeName", "")).strip()
+            # Support both old column names and new EU consolidated format
+            name_raw = str(
+                row.get("NameAlias_WholeName")
+                or row.get("Naal_wholename")
+                or ""
+            ).strip()
             if not name_raw:
                 continue
 
-            entity_type = _clean_entity_type(str(row.get("Entity_SubjectType", "")))
+            entity_type = _clean_entity_type(str(
+                row.get("Entity_SubjectType")
+                or row.get("Subject_type")
+                or ""
+            ))
             if entity_type not in VALID_EU_TYPES:
                 continue
 
-            program = str(row.get("Regulation_Programme", "")).strip()
-            regulation = str(row.get("Entity_LogicalId", "")).strip()
-            listed_date = str(row.get("Regulation_PublicationDate", "")).strip()
-            remark = str(row.get("Entity_Remark", "")).strip()
+            program = str(
+                row.get("Regulation_Programme")
+                or row.get("Programme")
+                or ""
+            ).strip()
+            regulation = str(
+                row.get("Entity_LogicalId")
+                or row.get("Entity_logical_id")
+                or ""
+            ).strip()
+            listed_date = str(
+                row.get("Regulation_PublicationDate")
+                or row.get("Leba_publication_date")
+                or ""
+            ).strip()
+            remark = str(
+                row.get("Entity_Remark")
+                or row.get("Entity_remark")
+                or ""
+            ).strip()
 
             sanction_id = _generate_sanction_id(name_raw, program, regulation)
             name_normalized = normalize_name(name_raw)

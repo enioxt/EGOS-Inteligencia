@@ -39,8 +39,8 @@ class TestCeafTransform:
         _load_fixture_data(pipeline)
         pipeline.transform()
 
-        # 3 valid CPFs out of 5 rows (1 bad CPF, 1 empty CPF)
-        assert len(pipeline.expulsions) == 3
+        # All 5 rows have names, so all produce expulsions (masked CPFs kept)
+        assert len(pipeline.expulsions) == 5
 
     def test_produces_person_rels(self) -> None:
         pipeline = _make_pipeline()
@@ -69,21 +69,26 @@ class TestCeafTransform:
         assert "111.444.777-35" in cpfs
         assert "987.654.321-00" in cpfs
 
-    def test_skips_invalid_cpf(self) -> None:
+    def test_skips_invalid_cpf_from_person_rels(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
 
-        cpf_digits = {e["cpf"].replace(".", "").replace("-", "") for e in pipeline.expulsions}
-        assert "1234" not in cpf_digits
+        # Invalid CPF rows are kept as expulsions but NOT linked to Person nodes
+        rel_cpfs = {r["source_key"] for r in pipeline.person_rels}
+        assert len(pipeline.person_rels) == 3
+        assert all(len(c.replace(".", "").replace("-", "")) == 11 for c in rel_cpfs)
 
-    def test_skips_empty_cpf(self) -> None:
+    def test_empty_cpf_kept_as_expulsion(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture_data(pipeline)
         pipeline.transform()
 
+        # Empty CPF row is kept as expulsion but not linked to Person
         names = {e["name"] for e in pipeline.expulsions}
-        assert "SEM CPF" not in names
+        assert "SEM CPF" in names
+        rel_names = {r.get("person_name") for r in pipeline.person_rels}
+        assert "SEM CPF" not in rel_names
 
     def test_parses_date(self) -> None:
         pipeline = _make_pipeline()

@@ -26,14 +26,18 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://portaldatransparencia.gov.br/download-de-dados"
 
-# Expected columns in the government CSV
+# Expected columns in the government CSV.
+# Accept both "MOTIVO IMPEDIMENTO" and "MOTIVO DO IMPEDIMENTO" (current format).
 EXPECTED_COLUMNS = [
     "CNPJ ENTIDADE",
     "NOME ENTIDADE",
     "NÚMERO CONVÊNIO",
     "ÓRGÃO CONCEDENTE",
-    "MOTIVO IMPEDIMENTO",
 ]
+
+# The column name changed from "MOTIVO IMPEDIMENTO" to "MOTIVO DO IMPEDIMENTO".
+# We normalize to "MOTIVO IMPEDIMENTO" for pipeline compatibility.
+MOTIVO_ALIASES = ["MOTIVO DO IMPEDIMENTO", "MOTIVO IMPEDIMENTO"]
 
 
 def _find_csv_in_dir(directory: Path) -> Path | None:
@@ -95,6 +99,13 @@ def _process_csv(csv_path: Path, output_path: Path) -> bool:
     missing = set(EXPECTED_COLUMNS) - set(df.columns)
     if missing:
         logger.warning("CEPIM: missing expected columns: %s", missing)
+
+    # Normalize "MOTIVO DO IMPEDIMENTO" -> "MOTIVO IMPEDIMENTO" for pipeline compatibility
+    for alias in MOTIVO_ALIASES:
+        if alias in df.columns and alias != "MOTIVO IMPEDIMENTO":
+            df = df.rename(columns={alias: "MOTIVO IMPEDIMENTO"})
+            logger.info("CEPIM: renamed '%s' -> 'MOTIVO IMPEDIMENTO'", alias)
+            break
 
     df.to_csv(output_path, sep=";", index=False, encoding="latin-1")
     logger.info("Wrote %d rows to %s", len(df), output_path)

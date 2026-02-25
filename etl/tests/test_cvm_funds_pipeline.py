@@ -55,13 +55,13 @@ class TestCvmFundsExtract:
 
 
 class TestCvmFundsTransform:
-    def test_filters_to_active_funds(self) -> None:
+    def test_keeps_all_fund_statuses(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture(pipeline)
         pipeline.transform()
 
-        # Fixture has 5 rows: 4 active ("EM FUNCIONAMENTO NORMAL"), 1 cancelled
-        assert len(pipeline.funds) == 4
+        # All 5 rows kept — historical data valuable for connection analysis
+        assert len(pipeline.funds) == 5
 
     def test_formats_fund_cnpj(self) -> None:
         pipeline = _make_pipeline()
@@ -130,16 +130,16 @@ class TestCvmFundsTransform:
         _load_fixture(pipeline)
         pipeline.transform()
 
-        # 4 active funds, all have admin CNPJs
-        assert len(pipeline.admin_rels) == 4
+        # All 5 funds have admin CNPJs (some share admins, deduped by pair)
+        assert len(pipeline.admin_rels) >= 3
 
     def test_manager_rels_created(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture(pipeline)
         pipeline.transform()
 
-        # 4 active funds, all PJ managers
-        assert len(pipeline.manager_rels) == 4
+        # All 5 funds, all PJ managers (some share managers, deduped by pair)
+        assert len(pipeline.manager_rels) >= 3
 
     def test_admin_rel_fields(self) -> None:
         pipeline = _make_pipeline()
@@ -162,14 +162,14 @@ class TestCvmFundsTransform:
         assert "target_key" in rel
         assert "manager_name" in rel
 
-    def test_cancelled_fund_excluded(self) -> None:
+    def test_cancelled_fund_included(self) -> None:
         pipeline = _make_pipeline()
         _load_fixture(pipeline)
         pipeline.transform()
 
         cnpjs = {f["fund_cnpj"] for f in pipeline.funds}
-        # The cancelled fund (05.555.123/0001-77) should be excluded
-        assert "05.555.123/0001-77" not in cnpjs
+        # All funds kept, including cancelled — status stored on node
+        assert "05.555.123/0001-77" in cnpjs
 
     def test_limit_truncates(self) -> None:
         pipeline = _make_pipeline(limit=2)
@@ -211,8 +211,8 @@ class TestCvmFundsTransform:
         )
         pipeline.transform()
 
-        # Still only 4 active funds (bad row excluded)
-        assert len(pipeline.funds) == 4
+        # Still only 5 valid funds (bad CNPJ row excluded)
+        assert len(pipeline.funds) == 5
 
     def test_deduplicates_admin_rels(self) -> None:
         pipeline = _make_pipeline()
