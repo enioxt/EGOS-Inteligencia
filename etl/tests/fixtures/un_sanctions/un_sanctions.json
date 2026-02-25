@@ -1,0 +1,47 @@
+[
+  {
+    "reference_number": "QDi.001",
+    "name": "SAYF AL-ADL",
+    "entity_type": "individual",
+    "listed_date": "2001-01-25",
+    "un_list_type": "Al-Qaida",
+    "nationality": "Egypt",
+    "aliases": ["SAIF AL-ADEL", "MUHAMAD IBRAHIM MAKKAWI"]
+  },
+  {
+    "reference_number": "QDi.002",
+    "name": "AMIN AL-HAQ",
+    "entity_type": "individual",
+    "listed_date": "2001-01-25",
+    "un_list_type": "Al-Qaida",
+    "nationality": "Afghanistan",
+    "aliases": ["MUHAMMAD AMIN"]
+  },
+  {
+    "reference_number": "QDe.004",
+    "name": "MAMOUN DARKAZANLI IMPORT-EXPORT COMPANY",
+    "entity_type": "entity",
+    "listed_date": "2002-09-11",
+    "un_list_type": "Al-Qaida",
+    "nationality": "",
+    "aliases": []
+  },
+  {
+    "reference_number": "QDi.100",
+    "name": "SILVA, JOAO PEDRO",
+    "entity_type": "individual",
+    "listed_date": "2010-06-15",
+    "un_list_type": "Taliban",
+    "nationality": "Brazil",
+    "aliases": ["JOAO SILVA"]
+  },
+  {
+    "reference_number": "QDi.101",
+    "name": "",
+    "entity_type": "individual",
+    "listed_date": "2005-03-20",
+    "un_list_type": "Al-Qaida",
+    "nationality": "Unknown",
+    "aliases": []
+  }
+]

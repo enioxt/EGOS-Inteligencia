@@ -1,0 +1,6 @@
+classe,numero,ano,relator,tipo_decisao,data_decisao,assunto,procedencia
+ADI,6341,2020,MARCO AURÉLIO,Referendo de Medida Cautelar,2020-04-15,Competência dos entes federativos,DF
+ADPF,672,2020,ALEXANDRE DE MORAES,Decisão Monocrática,2020-04-08,Meio ambiente,DF
+RE,1017365,2021,EDSON FACHIN,Acórdão,2021-09-02,Terras indígenas,SC
+ADI,6341,2020,MARCO AURÉLIO,Decisão Monocrática,2020-03-24,Competência dos entes federativos,DF
+HC,164493,2019,,Acórdão,2019-11-07,Execução penal,SP

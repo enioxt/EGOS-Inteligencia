@@ -100,6 +100,15 @@ CALL {
 CALL {
   MATCH (b:BCBPenalty) RETURN count(b) AS bcb_penalty_count
 }
+CALL {
+  MATCH (lm:LaborMovement) RETURN count(lm) AS labor_movement_count
+}
+CALL {
+  MATCH (lc:LegalCase) RETURN count(lc) AS legal_case_count
+}
+CALL {
+  MATCH (c:CPI) RETURN count(c) AS cpi_count
+}
 RETURN total_nodes, total_relationships,
        person_count, company_count, health_count,
        finance_count, contract_count, sanction_count,
@@ -113,4 +122,5 @@ RETURN total_nodes, total_relationships,
        fund_count, dou_act_count, tax_waiver_count,
        municipal_finance_count,
        declared_asset_count, party_membership_count,
-       barred_ngo_count, bcb_penalty_count
+       barred_ngo_count, bcb_penalty_count,
+       labor_movement_count, legal_case_count, cpi_count

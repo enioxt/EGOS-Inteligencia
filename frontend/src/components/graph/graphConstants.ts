@@ -42,6 +42,9 @@ export const ICON_MAP: Record<string, string> = {
   partyMembership: "Users",
   barredNgo: "ShieldOff",
   bcbPenalty: "Banknote",
+  laborMovement: "Briefcase",
+  legalCase: "Scale",
+  cpi: "Search",
 };
 
 // Pre-rendered icon cache
@@ -94,6 +97,9 @@ function createIconSvg(type: string, color: string, size: number): string {
     partyMembership: `<circle cx="${s * 0.35}" cy="${s * 0.35}" r="${s * 0.18}" fill="${color}"/><circle cx="${s * 0.65}" cy="${s * 0.35}" r="${s * 0.18}" fill="${color}"/><ellipse cx="${s / 2}" cy="${s * 0.72}" rx="${s * 0.35}" ry="${s * 0.18}" fill="${color}"/>`,
     barredNgo: `<rect x="${s * 0.2}" y="${s * 0.2}" width="${s * 0.6}" height="${s * 0.6}" rx="2" fill="${color}"/><line x1="${s * 0.25}" y1="${s * 0.25}" x2="${s * 0.75}" y2="${s * 0.75}" stroke="#060a07" stroke-width="2"/>`,
     bcbPenalty: `<rect x="${s * 0.15}" y="${s * 0.25}" width="${s * 0.7}" height="${s * 0.5}" rx="2" fill="${color}"/><text x="${s / 2}" y="${s * 0.58}" text-anchor="middle" font-size="${s * 0.3}" fill="#060a07" font-weight="bold">B</text>`,
+    laborMovement: `<rect x="${s * 0.2}" y="${s * 0.25}" width="${s * 0.6}" height="${s * 0.45}" rx="2" fill="${color}"/><rect x="${s * 0.3}" y="${s * 0.15}" width="${s * 0.4}" height="${s * 0.15}" rx="1" fill="${color}"/>`,
+    legalCase: `<polygon points="${s / 2},${s * 0.2} ${s * 0.2},${s * 0.6} ${s * 0.8},${s * 0.6}" fill="${color}"/><rect x="${s * 0.35}" y="${s * 0.6}" width="${s * 0.3}" height="${s * 0.2}" fill="${color}"/>`,
+    cpi: `<circle cx="${s / 2}" cy="${s * 0.4}" r="${s * 0.25}" fill="none" stroke="${color}" stroke-width="2"/><line x1="${s * 0.65}" y1="${s * 0.58}" x2="${s * 0.8}" y2="${s * 0.78}" stroke="${color}" stroke-width="2.5"/>`,
   };
   const shape =
     shapes[type] ??

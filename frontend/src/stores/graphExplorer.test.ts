@@ -30,6 +30,9 @@ const INITIAL_ENTITY_TYPES = [
   "partyMembership",
   "barredNgo",
   "bcbPenalty",
+  "laborMovement",
+  "legalCase",
+  "cpi",
 ];
 
 const INITIAL_REL_TYPES = [
@@ -64,6 +67,12 @@ const INITIAL_REL_TYPES = [
   "FILIADO_A",
   "IMPEDIDA",
   "BCB_PENALIZADA",
+  "MOVIMENTOU",
+  "EMPREGADO_EM",
+  "RELATOR_DE",
+  "SANCIONADA_INTERNACIONALMENTE",
+  "UN_SANCTIONED",
+  "PARTICIPOU_CPI",
 ];
 
 describe("useGraphExplorerStore", () => {

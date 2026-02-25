@@ -1,0 +1,6 @@
+Entity_LogicalId,NameAlias_WholeName,Entity_SubjectType,Entity_Remark,Regulation_Programme,Regulation_PublicationDate
+EU.1.01,Sergei IVANOV,person,DOB: 1965-03-15,RUSSIA,2022-03-01
+EU.2.02,PETROCHEM TRADING LLC,enterprise,Registered in Moscow,RUSSIA,2022-04-08
+EU.3.03,Ali HASSAN,person,DOB: 1970-11-20,SYRIA,2011-05-09
+EU.4.04,,person,DOB unknown,IRAN,2023-01-15
+EU.5.05,GOLDEN EXPORT LTD,enterprise,Registered in Minsk,BELARUS,2021-06-21

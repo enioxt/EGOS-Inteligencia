@@ -61,6 +61,9 @@ const INITIAL_ENTITY_TYPES = new Set([
   "partyMembership",
   "barredNgo",
   "bcbPenalty",
+  "laborMovement",
+  "legalCase",
+  "cpi",
 ]);
 
 const INITIAL_REL_TYPES = new Set([
@@ -95,6 +98,12 @@ const INITIAL_REL_TYPES = new Set([
   "FILIADO_A",
   "IMPEDIDA",
   "BCB_PENALIZADA",
+  "MOVIMENTOU",
+  "EMPREGADO_EM",
+  "RELATOR_DE",
+  "SANCIONADA_INTERNACIONALMENTE",
+  "UN_SANCTIONED",
+  "PARTICIPOU_CPI",
 ]);
 
 function initialState() {

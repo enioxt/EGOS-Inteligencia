@@ -1,0 +1,6 @@
+codigo_cpi,nome_cpi,data_inicio,data_fim,objeto,nome_parlamentar,papel
+CPI001,CPI da Petrobras,2014-02-06,2015-12-01,Irregularidades na Petrobras,JOSE DA SILVA,Presidente
+CPI001,CPI da Petrobras,2014-02-06,2015-12-01,Irregularidades na Petrobras,MARIA SOUZA,Relator
+CPI002,CPI do BNDES,2015-06-10,2016-11-30,Operações do BNDES,JOSE DA SILVA,Membro
+CPI003,CPI das Fake News,2019-09-04,,Disseminação de notícias falsas,,
+,,,,,JOAO PEREIRA,Membro

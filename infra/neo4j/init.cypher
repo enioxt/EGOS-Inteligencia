@@ -107,6 +107,12 @@ CREATE CONSTRAINT municipal_finance_id_unique IF NOT EXISTS
 CREATE CONSTRAINT party_membership_id_unique IF NOT EXISTS
   FOR (pm:PartyMembership) REQUIRE pm.membership_id IS UNIQUE;
 
+CREATE CONSTRAINT labor_movement_id_unique IF NOT EXISTS
+  FOR (lm:LaborMovement) REQUIRE lm.movement_id IS UNIQUE;
+
+CREATE CONSTRAINT cpi_id_unique IF NOT EXISTS
+  FOR (c:CPI) REQUIRE c.cpi_id IS UNIQUE;
+
 // ── Indexes ─────────────────────────────────────────────
 CREATE INDEX person_name IF NOT EXISTS
   FOR (p:Person) ON (p.name);
@@ -343,6 +349,23 @@ CREATE INDEX party_membership_uf IF NOT EXISTS
 CREATE INDEX barred_ngo_cnpj IF NOT EXISTS
   FOR (b:BarredNGO) ON (b.cnpj);
 
+// ── LaborMovement Indexes ─────────────────────────────────
+CREATE INDEX labor_movement_date IF NOT EXISTS
+  FOR (lm:LaborMovement) ON (lm.movement_date);
+
+CREATE INDEX labor_movement_type IF NOT EXISTS
+  FOR (lm:LaborMovement) ON (lm.movement_type);
+
+CREATE INDEX labor_movement_uf IF NOT EXISTS
+  FOR (lm:LaborMovement) ON (lm.uf);
+
+// ── CPI Indexes ──────────────────────────────────────────
+CREATE INDEX cpi_name IF NOT EXISTS
+  FOR (c:CPI) ON (c.name);
+
+CREATE INDEX cpi_date IF NOT EXISTS
+  FOR (c:CPI) ON (c.date_start);
+
 // ── BCBPenalty Indexes ───────────────────────────────────
 CREATE INDEX bcb_penalty_type IF NOT EXISTS
   FOR (b:BCBPenalty) ON (b.penalty_type);
@@ -352,7 +375,7 @@ CREATE INDEX bcb_penalty_date IF NOT EXISTS
 
 // ── Fulltext Search Index ───────────────────────────────
 CREATE FULLTEXT INDEX entity_search IF NOT EXISTS
-  FOR (n:Person|Company|Health|Education|Contract|Amendment|Convenio|Embargo|PublicOffice|OffshoreEntity|OffshoreOfficer|GlobalPEP|CVMProceeding|Expense|PEPRecord|Expulsion|LeniencyAgreement|GovCardExpense|GovTravel|TaxWaiver|LegalCase|DeclaredAsset|InternationalSanction|Bid|Fund|DOUAct|MunicipalFinance|PartyMembership|BarredNGO|BCBPenalty)
+  FOR (n:Person|Company|Health|Education|Contract|Amendment|Convenio|Embargo|PublicOffice|OffshoreEntity|OffshoreOfficer|GlobalPEP|CVMProceeding|Expense|PEPRecord|Expulsion|LeniencyAgreement|GovCardExpense|GovTravel|TaxWaiver|LegalCase|DeclaredAsset|InternationalSanction|Bid|Fund|DOUAct|MunicipalFinance|PartyMembership|BarredNGO|BCBPenalty|LaborMovement|CPI)
   ON EACH [n.name, n.razao_social, n.cpf, n.cnpj, n.cnes_code, n.object, n.contracting_org, n.convenente, n.infraction, n.org, n.function, n.jurisdiction, n.penalty_type, n.description, n.institution_name];
 
 // ── User Constraints ────────────────────────────────────

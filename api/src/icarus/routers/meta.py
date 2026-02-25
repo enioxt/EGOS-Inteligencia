@@ -68,7 +68,10 @@ async def database_stats(
         "party_membership_count": record["party_membership_count"] if record else 0,
         "barred_ngo_count": record["barred_ngo_count"] if record else 0,
         "bcb_penalty_count": record["bcb_penalty_count"] if record else 0,
-        "data_sources": 35,
+        "labor_movement_count": record["labor_movement_count"] if record else 0,
+        "legal_case_count": record["legal_case_count"] if record else 0,
+        "cpi_count": record["cpi_count"] if record else 0,
+        "data_sources": 41,
     }
 
     _stats_cache = result
@@ -115,5 +118,19 @@ async def list_sources() -> dict[str, list[dict[str, str]]]:
             {"id": "tse_filiados", "name": "TSE Filiação Partidária", "frequency": "monthly"},
             {"id": "cepim", "name": "CEPIM (ONGs Impedidas)", "frequency": "monthly"},
             {"id": "bcb", "name": "BCB (Penalidades Bancárias)", "frequency": "monthly"},
+            {"id": "caged", "name": "CAGED (Movimentações Trabalhistas)", "frequency": "monthly"},
+            {"id": "stf", "name": "STF (Decisões Corte Aberta)", "frequency": "monthly"},
+            {"id": "eu_sanctions", "name": "EU (Sanções Europeias)", "frequency": "monthly"},
+            {
+                "id": "un_sanctions",
+                "name": "ONU (Sanções do Conselho de Segurança)",
+                "frequency": "monthly",
+            },
+            {
+                "id": "world_bank",
+                "name": "Banco Mundial (Firmas Impedidas)",
+                "frequency": "monthly",
+            },
+            {"id": "senado_cpis", "name": "Senado CPIs", "frequency": "yearly"},
         ]
     }

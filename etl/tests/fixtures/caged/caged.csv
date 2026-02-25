@@ -1,0 +1,6 @@
+cnpj_raiz,sigla_uf,id_municipio,cnae_2_secao,cnae_2_subclasse,cbo_2002,categoria,grau_instrucao,idade,horas_contratuais,raca_cor,sexo,tipo_empregador,tipo_estabelecimento,tipo_movimentacao,tipo_deficiencia,indicador_trabalho_intermitente,indicador_trabalho_parcial,salario_mensal,saldo_movimentacao,ano,mes
+12345678,SP,3550308,C,1011201,411005,101,9,35,44,2,1,0,1,1,0,0,0,2500.00,1,2023,6
+98765432,RJ,3304557,G,4711302,521110,101,7,28,40,1,2,0,1,2,0,0,0,1800.50,-1,2023,7
+12345678,SP,3550308,C,1011201,411005,101,9,42,44,2,1,0,1,1,0,0,0,3200.00,1,2023,8
+123,MG,3106200,F,4321500,715210,101,6,30,44,4,1,0,1,1,0,0,0,1500.00,1,2023,9
+55667788,BA,2927408,H,5611201,513205,101,5,22,36,3,2,0,1,2,0,0,0,,−1,2023,10
