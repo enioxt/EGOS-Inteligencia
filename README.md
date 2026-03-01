@@ -1,5 +1,7 @@
 # BR/ACC Open Graph — Dados Públicos do Brasil em Grafo
 
+<!-- RHO_BADGE --> **Rho Score:** 🟡 0.30 (WARNING) | Contributors: 4 | Commits (30d): 94 | Updated: 2026-03-01 <!-- /RHO_BADGE -->
+
 [![BRACC Header](docs/brand/bracc-header.jpg)](docs/brand/bracc-header.jpg)
 
 Idioma: **Português (Brasil)** | [English](#english)
