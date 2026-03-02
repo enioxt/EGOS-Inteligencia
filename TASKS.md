@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-03 (session 3) | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-03 (session 4) | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -650,7 +650,7 @@
 | **Nós no grafo** | 317.583 | 02/03/2026 |
 | **Relacionamentos** | 34.507 | 02/03/2026 |
 | **Issues GitHub abertas** | 27 | 02/03/2026 |
-| **Tasks concluídas** | 57/77 | 03/03/2026 |
+| **Tasks concluídas** | 60/85 | 03/03/2026 |
 | **Chatbot Tools** | 18 (3 grafo + 8 livres + 6 Portal + 1 DataJud) | 02/03/2026 |
 | **ETL Status** | Phase 1 file 6/10 (15%) — Contabo CPU | 02/03/2026 |
 | **Website** | inteligencia.egos.ia.br (SSL ✅) | 02/03/2026 |
@@ -664,6 +664,61 @@
 | **Evidence Chain** | Proveniência de dados em cada query ✅ | 02/03/2026 |
 | **Cost/Query** | ~$0.0006/query (~R$ 0,003) | 02/03/2026 |
 | **Custo Mensal Real** | ~$105/mês (~R$ 630) | 02/03/2026 |
+
+### TASK-078: Crash Prevention — Defensive Frontend ✅ (03/03/2026)
+- [x] Root cause: SourceRegistry crashed on placeholder sources.json (no sources array)
+- [x] 14 files fixed: ?? [] guards on entity_ids, sources, entities, categories
+- [x] Neo4j retry on startup: 30 attempts with 2-30s backoff (dependencies.py)
+- [x] API healthcheck in docker-compose (Python urllib, 60s start_period)
+- [x] Caddy depends on API+Frontend healthy before routing traffic
+- [x] Pre-commit hook v2: warns on unsafe .length/.map without ?? guard
+- [x] Memory saved: defensive coding rules for EGOS Inteligência
+> **Impact:** 94% of requests were 502 errors before fix. Now 100% healthy.
+> **Arquivos:** dependencies.py, docker-compose.yml, SourceRegistry.tsx, 13 more components
+
+### TASK-079: Novas Fontes — ComexStat (MDIC) ⬜ (P2)
+- [ ] ETL: API REST api-comexstat.mdic.gov.br — importação/exportação por CNPJ/NCM/município
+- [ ] Grafo: Empresa ↔ Município ↔ Produto (NCM) ↔ Fluxo comercial
+- [ ] Detecção: dumping, triangulação, crescimento anômalo de importações
+> **Fonte:** https://api-comexstat.mdic.gov.br/docs
+> **LGPD:** Dados agregados por empresa (CNPJ), 100% público
+
+### TASK-080: Novas Fontes — ANM (Mineração + CFEM) ⬜ (P2)
+- [ ] ETL: API/CSV da Agência Nacional de Mineração
+- [ ] Grafo: Empresa ↔ Título Minerário ↔ Município ↔ Royalties CFEM
+- [ ] Cruzar com sanções, contratos, DOU
+> **Fonte:** https://www.gov.br/anm/pt-br/acesso-a-informacao/dados-abertos
+> **LGPD:** Registro público (Lei 227/1967)
+
+### TASK-081: Novas Fontes — SALIC / Lei Rouanet ⬜ (P2)
+- [ ] ETL: API api.salic.cultura.gov.br — projetos culturais + captação + patrocinadores
+- [ ] Grafo: CNPJ/Proponente ↔ Projeto ↔ Captação ↔ Patrocinador
+- [ ] LGPD: masking extra para proponentes pessoa física
+> **Fonte:** https://api.salic.cultura.gov.br/docs
+
+### TASK-082: Novas Fontes — CADE (Concorrência) ⬜ (P2)
+- [ ] ETL: dados abertos CADE — processos + multas + TCCs
+- [ ] Grafo: Empresa ↔ Processo CADE ↔ Multa ↔ TCC
+- [ ] Cruzar com contratos públicos e sanções
+> **Fonte:** https://www.gov.br/cade/pt-br/centrais-de-conteudo/cade-em-numeros
+
+### TASK-083: Novas Fontes — INPI (Propriedade Industrial) ⬜ (P2)
+- [ ] ETL: dados abertos INPI — patentes, marcas, desenhos industriais
+- [ ] Grafo: Empresa ↔ Patente/Marca ↔ Setor
+> **Fonte:** https://www.gov.br/inpi/pt-br (dados abertos)
+> **LGPD:** Registro público (Lei 9.279/1996)
+
+### TASK-084: Novas Fontes — GLEIF (Identificador Global) ⬜ (P3)
+- [ ] ETL: API GLEIF — LEI (Legal Entity Identifier) + ownership chains
+- [ ] Entity resolution cross-border: conectar CNPJs a LEIs globais
+- [ ] Enriquecer offshores ICIJ com dados GLEIF
+> **Fonte:** https://www.gleif.org/en/lei-data/gleif-api
+
+### TASK-085: Novas Fontes — TCEs/TCMs (Tribunais de Contas) ⬜ (P3)
+- [ ] Mapear portais de dados abertos dos 33 TCEs + TCMs
+- [ ] ETL: licitações, contratos, folhas de pagamento estaduais/municipais
+- [ ] Grafo: Empresa ↔ Contrato Estadual/Municipal ↔ Servidor
+> **Impacto:** Expande cobertura além do federal para estados e municípios
 
 ---
 
