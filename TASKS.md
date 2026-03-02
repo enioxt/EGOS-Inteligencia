@@ -35,12 +35,14 @@
 
 ## P1 — Sprint Atual
 
-### TASK-004: Redis Cache-Aside (GitHub #19) ⏳
+### TASK-004: Redis Cache-Aside (GitHub #19) ✅ (02/03/2026)
 - [x] Redis rodando no docker-compose (bracc network)
-- [ ] Criar `api/src/bracc/services/cache.py`
-- [ ] Wrap endpoints: search (TTL 2min), entity (TTL 5min), stats (TTL 1min)
-- [ ] Endpoint `/api/v1/meta/cache-stats` para monitorar hit rate
-> **Inspiração:** Facebook TAO, LinkedIn RAM-first
+- [x] `api/src/bracc/services/cache.py` — async cache with graceful degradation
+- [x] Search endpoint cached (TTL 2min), entity (5min), stats (1min), connections (3min)
+- [x] `/api/v1/meta/cache-stats` — hit rate, misses, errors, TTL config
+- [x] `/api/v1/meta/cache` DELETE — flush all cache keys
+- [x] Deployed and verified: 50% hit rate on repeated queries
+> **Arquivos:** `api/src/bracc/services/cache.py`, `api/src/bracc/routers/search.py`, `api/src/bracc/routers/meta.py`
 
 ### TASK-005: GDS Algorithms (GitHub #20) ⬜
 - [ ] Instalar plugin GDS no Neo4j
