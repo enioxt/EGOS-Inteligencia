@@ -359,14 +359,17 @@
 > **Status:** Frontend JA TEM 8 paginas funcionais. Falta auth backend + feed comunitario.
 > **Arquivos:** `frontend/src/pages/Dashboard.tsx`, `Investigations.tsx`, `SharedInvestigation.tsx`, `Search.tsx`, `EntityAnalysis.tsx`, `GraphExplorer.tsx`, `Patterns.tsx`, `Baseline.tsx`
 
-### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⬜ (P2)
-- [ ] Adicionar keywords semanticas: "accountability", "civic tech", "open government"
-- [ ] Monitorar repos novos com GitHub Search API (cron semanal)
-- [ ] Avaliar projetos encontrados: stars, commits recentes, relevancia
+### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⏳ (P2)
+- [x] Adicionar keywords semanticas: "accountability", "civic tech", "open government"
+- [x] Busca automatizada via GitHub Search API (5 categorias, 02/03/2026)
+- [x] LMCache avaliado: NAO aplicavel (usamos API OpenRouter)
+- [x] Bruin avaliado: framework ETL declarativo — NAO aplicavel AGORA (sem Neo4j), util futuro para DuckDB analytics
+- [x] OSINT-BIBLE (299★), WebRecon (250★), OSINTel-Dashboard (39★) encontrados
+- [x] synapse-lite (Neo4j fraud detection) encontrado — pequeno mas relevante
+- [ ] Monitorar repos novos com cron semanal
 - [ ] Manter registro de projetos avaliados (evitar re-avaliar)
-- [ ] LMCache avaliado: KV cache para LLM self-hosted (vLLM/SGLang) — NAO aplicavel (usamos API OpenRouter)
-- [ ] Buscar projetos de caching aplicaveis a Neo4j/API (nao LLM inference)
-> **Projetos avaliados:** 9 ja encontrados + LMCache (descartado) + 3 RokoOfficial (HGR, OPENBOT, OPEN-ROKO)
+> **Projetos avaliados:** 9 anteriores + LMCache + 3 RokoOfficial + Bruin + 4 novos OSINT (total: 18)
+> **Bruin:** getbruin.com — declarative YAML+SQL+Python pipelines. Suporta Postgres/DuckDB/BigQuery. SEM Neo4j. Futuro: DuckDB analytics layer.
 
 ---
 
