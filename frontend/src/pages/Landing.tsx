@@ -9,6 +9,7 @@ import {
   InvestigationIcon,
   PatternIcon,
 } from "@/components/landing/FeatureIcons";
+import { ETLProgress } from "@/components/landing/ETLProgress";
 import { SourceRegistry } from "@/components/landing/SourceRegistry";
 import { UpdatesTimeline } from "@/components/landing/UpdatesTimeline";
 import { ChatInterface } from "@/components/chat/ChatInterface";
@@ -365,6 +366,8 @@ export function Landing() {
           </div>
         </div>
       </section>
+
+      <ETLProgress />
 
       <SourceRegistry />
 
