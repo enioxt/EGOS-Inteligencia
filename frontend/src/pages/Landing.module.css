@@ -190,19 +190,20 @@
   position: relative;
   justify-self: end;
   width: 100%;
-  max-width: 35rem;
-  margin-top: clamp(1.2rem, 5vh, 3.8rem);
+  max-width: 38rem;
+  margin-top: clamp(0.5rem, 2vh, 1.5rem);
+  align-self: stretch;
 }
 
 .heroRight::before {
   content: "";
   position: absolute;
-  inset: -1rem -1.3rem 1.6rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.95rem;
+  inset: -0.6rem -0.8rem -0.6rem -0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.1rem;
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 60%),
-    rgba(13, 15, 17, 0.68);
+    linear-gradient(160deg, rgba(0, 229, 195, 0.03) 0%, rgba(59, 130, 246, 0.02) 60%),
+    rgba(6, 10, 7, 0.5);
   pointer-events: none;
   z-index: -1;
 }

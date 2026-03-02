@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     pattern_inexig_min_recurrence: int = 3
     pattern_max_evidence_refs: int = 50
 
+    openrouter_api_key: str = ""
+    ai_model: str = "google/gemini-2.0-flash-001"
+
     model_config = {"env_prefix": "", "env_file": ".env"}
 
 

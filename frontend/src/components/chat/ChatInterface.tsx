@@ -44,9 +44,12 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, []);
 
   useEffect(() => {
@@ -58,11 +61,12 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
       setMessages([{
         id: "welcome",
         role: "assistant",
-        text: "Olá! Sou o assistente do **EGOS Inteligência**.\n\nPosso ajudar você a pesquisar empresas, contratos, sanções e conexões em dados públicos brasileiros.\n\nExperimente perguntar sobre uma empresa ou CNPJ.",
+        text: "Olá! Sou o agente de inteligência do **EGOS**.\n\nPosso pesquisar empresas, contratos, sanções e conexões em dados públicos brasileiros. Tenho acesso a **317 mil entidades** e **34 mil conexões** no grafo.\n\nDigite um CNPJ, nome de empresa, ou pergunte o que quiser.",
         suggestions: [
-          "Pesquisar empresa por CNPJ",
-          "Buscar sanções recentes",
-          "Ver estatísticas do grafo",
+          "Buscar por CNPJ",
+          "Ver estatísticas",
+          "Ver relatório Patense",
+          "Sanções recentes",
         ],
       }]);
     }
@@ -152,20 +156,21 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
 
   const containerStyle: React.CSSProperties = embedded
     ? {
-        width: "100%", maxWidth: 480, margin: "0 auto",
+        width: "100%", margin: "0 auto",
         display: "flex", flexDirection: "column",
-        height: "min(70vh, 600px)",
-        background: "var(--color-surface, #0f172a)",
-        borderRadius: 16, border: "1px solid var(--color-border, #1e293b)",
+        height: "min(78vh, 680px)", minHeight: 480,
+        background: "#0c1210",
+        borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)",
         overflow: "hidden",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
       }
     : {
         position: "fixed", bottom: 80, right: 16, zIndex: 100,
-        width: "min(400px, calc(100vw - 32px))", height: "min(70vh, 600px)",
+        width: "min(420px, calc(100vw - 32px))", height: "min(78vh, 680px)",
         display: "flex", flexDirection: "column",
-        background: "var(--color-surface, #0f172a)",
-        borderRadius: 16, border: "1px solid var(--color-border, #1e293b)",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+        background: "#0c1210",
+        borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
         overflow: "hidden",
       };
 
@@ -174,29 +179,48 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
       {/* Header */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "12px 16px", borderBottom: "1px solid var(--color-border, #1e293b)",
-        background: "var(--color-surface-elevated, #1e293b)",
+        padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: "#111a16",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Sparkles size={18} color="#3b82f6" />
-          <span style={{ fontWeight: 600, fontSize: 14, color: "var(--color-text, #e2e8f0)" }}>
-            EGOS Inteligência
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 8,
+            background: "linear-gradient(135deg, #00e5c3, #3b82f6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Sparkles size={15} color="white" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontWeight: 600, fontSize: 13, color: "#e8ede9", lineHeight: 1.2 }}>
+              EGOS Inteligência
+            </span>
+            <span style={{ fontSize: 10, color: "#5a6b60", fontFamily: "var(--font-mono, monospace)", letterSpacing: "0.05em" }}>
+              Agente de pesquisa pública
+            </span>
+          </div>
         </div>
-        {!embedded && (
-          <button
-            onClick={() => setIsOpen(false)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
-          >
-            <X size={18} color="var(--color-text-secondary, #94a3b8)" />
-          </button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: "#00e5c3",
+            boxShadow: "0 0 8px rgba(0,229,195,0.5)",
+          }} />
+          {!embedded && (
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
+            >
+              <X size={18} color="#5a6b60" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Messages */}
-      <div style={{
-        flex: 1, overflowY: "auto", padding: 16,
-        display: "flex", flexDirection: "column", gap: 12,
+      <div ref={messagesContainerRef} style={{
+        flex: 1, overflowY: "auto", padding: "16px 18px",
+        display: "flex", flexDirection: "column", gap: 14,
+        scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent",
       }}>
         {messages.map((msg) => (
           <div key={msg.id} style={{
@@ -206,21 +230,31 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
             {msg.loading ? (
               <div style={{
                 padding: "10px 14px", borderRadius: 12,
-                background: "var(--color-surface-elevated, #1e293b)",
-                color: "var(--color-text-secondary, #94a3b8)",
+                background: "#111a16",
+                color: "#94a39a",
                 fontSize: 13,
               }}>
-                <span style={{ animation: "pulse 1.5s infinite" }}>Pesquisando...</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: "#00e5c3",
+                    animation: "pulse 1.5s infinite",
+                  }} />
+                  Pesquisando no grafo...
+                </span>
               </div>
             ) : (
               <>
                 <div
                   style={{
-                    padding: "10px 14px", borderRadius: 12, fontSize: 13, lineHeight: 1.5,
+                    padding: "12px 16px", borderRadius: 12, fontSize: 13, lineHeight: 1.6,
                     background: msg.role === "user"
-                      ? "linear-gradient(135deg, #3b82f6, #2563eb)"
-                      : "var(--color-surface-elevated, #1e293b)",
-                    color: msg.role === "user" ? "white" : "var(--color-text, #e2e8f0)",
+                      ? "linear-gradient(135deg, rgba(0,229,195,0.2), rgba(59,130,246,0.15))"
+                      : "#111a16",
+                    color: msg.role === "user" ? "#e8ede9" : "#e8ede9",
+                    border: msg.role === "user"
+                      ? "1px solid rgba(0,229,195,0.15)"
+                      : "1px solid rgba(255,255,255,0.04)",
                   }}
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }}
                 />
@@ -235,20 +269,22 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
                         style={{
                           display: "flex", alignItems: "center", gap: 8,
                           padding: "8px 12px", borderRadius: 8,
-                          background: "var(--color-surface, #0f172a)",
-                          border: `1px solid ${ENTITY_TYPE_COLORS[entity.type] ?? "#334155"}`,
+                          background: "#0c1210",
+                          border: `1px solid ${ENTITY_TYPE_COLORS[entity.type] ?? "rgba(255,255,255,0.08)"}40`,
                           cursor: "pointer", textAlign: "left", width: "100%",
+                          transition: "border-color 150ms ease-out",
                         }}
                       >
                         <span style={{
                           fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-                          color: ENTITY_TYPE_COLORS[entity.type] ?? "#94a3b8",
-                          minWidth: 60,
+                          color: ENTITY_TYPE_COLORS[entity.type] ?? "#5a6b60",
+                          minWidth: 60, fontFamily: "var(--font-mono, monospace)",
+                          letterSpacing: "0.05em",
                         }}>
                           {ENTITY_TYPE_LABELS[entity.type] ?? entity.type}
                         </span>
                         <span style={{
-                          fontSize: 12, color: "var(--color-text, #e2e8f0)",
+                          fontSize: 12, color: "#e8ede9",
                           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                         }}>
                           {entity.name}
@@ -266,12 +302,16 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
                         key={s}
                         onClick={() => handleSend(s)}
                         style={{
-                          padding: "4px 10px", borderRadius: 12, fontSize: 11,
-                          background: "transparent",
-                          border: "1px solid var(--color-border, #334155)",
-                          color: "var(--color-text-secondary, #94a3b8)",
+                          padding: "5px 12px", borderRadius: 12, fontSize: 11,
+                          background: "rgba(0,229,195,0.06)",
+                          border: "1px solid rgba(0,229,195,0.15)",
+                          color: "#94a39a",
                           cursor: "pointer", whiteSpace: "nowrap",
+                          transition: "all 150ms ease-out",
+                          fontFamily: "var(--font-sans, sans-serif)",
                         }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,229,195,0.12)"; e.currentTarget.style.color = "#e8ede9"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,229,195,0.06)"; e.currentTarget.style.color = "#94a39a"; }}
                       >
                         {s}
                       </button>
@@ -287,34 +327,39 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
 
       {/* Input */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "12px 16px", borderTop: "1px solid var(--color-border, #1e293b)",
-        background: "var(--color-surface-elevated, #1e293b)",
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "#111a16",
       }}>
         <input
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="CNPJ ou nome da empresa..."
+          placeholder="CNPJ, nome da empresa ou pergunta..."
           disabled={isLoading}
           style={{
-            flex: 1, padding: "10px 14px", borderRadius: 10, fontSize: 14,
-            background: "var(--color-surface, #0f172a)",
-            border: "1px solid var(--color-border, #334155)",
-            color: "var(--color-text, #e2e8f0)",
+            flex: 1, padding: "11px 16px", borderRadius: 10, fontSize: 14,
+            background: "#0c1210",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "#e8ede9",
             outline: "none",
+            fontFamily: "var(--font-sans, sans-serif)",
+            transition: "border-color 150ms ease-out",
           }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,229,195,0.3)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
         />
         <button
           onClick={() => handleSend()}
           disabled={isLoading || !input.trim()}
           style={{
-            width: 40, height: 40, borderRadius: 10,
-            background: input.trim() ? "linear-gradient(135deg, #3b82f6, #2563eb)" : "var(--color-surface, #0f172a)",
+            width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+            background: input.trim() ? "linear-gradient(135deg, #00e5c3, #3b82f6)" : "#162018",
             border: "none", cursor: input.trim() ? "pointer" : "default",
             display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: input.trim() ? 1 : 0.5,
+            opacity: input.trim() ? 1 : 0.4,
+            transition: "all 150ms ease-out",
           }}
         >
           <Send size={18} color="white" />
