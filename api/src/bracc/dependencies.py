@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
@@ -10,12 +12,13 @@ from bracc.models.user import UserResponse
 from bracc.services import auth_service
 from bracc.services.intelligence_provider import IntelligenceProvider, get_default_provider
 
+_logger = logging.getLogger(__name__)
 _driver: AsyncDriver | None = None
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
-async def init_driver() -> AsyncDriver:
+async def init_driver(max_retries: int = 30, base_delay: float = 2.0) -> AsyncDriver:
     global _driver
     _driver = AsyncGraphDatabase.driver(
         settings.neo4j_uri,
@@ -23,7 +26,21 @@ async def init_driver() -> AsyncDriver:
         max_connection_pool_size=50,
         connection_acquisition_timeout=10,
     )
-    await _driver.verify_connectivity()
+    for attempt in range(1, max_retries + 1):
+        try:
+            await _driver.verify_connectivity()
+            _logger.info("Neo4j connected on attempt %d", attempt)
+            return _driver
+        except Exception as exc:
+            delay = min(base_delay * attempt, 30.0)
+            _logger.warning(
+                "Neo4j not ready (attempt %d/%d): %s — retrying in %.1fs",
+                attempt, max_retries, exc, delay,
+            )
+            if attempt == max_retries:
+                _logger.error("Neo4j unreachable after %d attempts, giving up", max_retries)
+                raise
+            await asyncio.sleep(delay)
     return _driver
 
 

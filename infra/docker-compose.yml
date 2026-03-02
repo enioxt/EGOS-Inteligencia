@@ -65,6 +65,12 @@ services:
       REDIS_URL: redis://redis:6379/0
     networks:
       - bracc
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     depends_on:
       neo4j:
         condition: service_healthy
@@ -103,7 +109,7 @@ services:
       - bracc
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
       frontend:
         condition: service_healthy
 
