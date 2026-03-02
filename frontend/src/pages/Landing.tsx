@@ -196,7 +196,7 @@ function PartnershipCTA() {
           Quanto mais bases conectadas, mais poderoso o cruzamento.
         </p>
         <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap" as const }}>
-          <a href="https://github.com/enioxt/br-acc" target="_blank" rel="noopener noreferrer" style={{
+          <a href="https://github.com/enioxt/EGOS-Inteligencia" target="_blank" rel="noopener noreferrer" style={{
             display: "inline-flex", alignItems: "center", padding: "0.75rem 1.8rem",
             background: "rgba(59,130,246,0.9)", color: "white", borderRadius: "0.6rem",
             textDecoration: "none", fontWeight: 600, fontSize: "0.9rem",
@@ -388,7 +388,7 @@ export function Landing() {
             <Link to={IS_PUBLIC_MODE ? "/app/search" : "/login"} className={styles.footerLink}>
               {t("landing.footer.platform")}
             </Link>
-            <a href="https://github.com/enioxt/br-acc" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>
+            <a href="https://github.com/enioxt/EGOS-Inteligencia" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>
               GitHub
             </a>
             <span className={styles.footerLink}>

@@ -21,10 +21,31 @@ export function PublicShell() {
         <Link to="/" className={styles.logo}>
           {t("app.title")}
         </Link>
+
+        <nav className={styles.nav}>
+          <Link to="/app/search" className={styles.navLink}>
+            {i18n.language === "pt-BR" ? "Pesquisar" : "Search"}
+          </Link>
+          <Link to="/app/reports" className={styles.navLink}>
+            {i18n.language === "pt-BR" ? "Relatórios" : "Reports"}
+          </Link>
+          <Link to="/app/analytics" className={styles.navLink}>
+            {i18n.language === "pt-BR" ? "Estatísticas" : "Analytics"}
+          </Link>
+          <a
+            href="https://github.com/enioxt/EGOS-Inteligencia"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.navLink}
+          >
+            GitHub
+          </a>
+        </nav>
+
         <div className={styles.actions}>
           {IS_PUBLIC_MODE ? (
-            <Link to="/app/search" className={styles.registerLink}>
-              Open Explorer
+            <Link to="/app" className={styles.registerLink}>
+              {i18n.language === "pt-BR" ? "Abrir Plataforma" : "Open Platform"}
             </Link>
           ) : !token && (
             <>

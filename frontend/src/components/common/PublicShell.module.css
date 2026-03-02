@@ -32,6 +32,25 @@
   text-decoration: none;
 }
 
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.navLink {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -93,8 +112,12 @@
   flex: 1;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .header {
     padding: var(--space-sm) var(--space-md);
+  }
+
+  .nav {
+    display: none;
   }
 }
