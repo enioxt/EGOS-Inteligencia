@@ -189,10 +189,37 @@ async def tool_search_ceap(parlamentar: str = "", uf: str = "", ano: int = 2024)
                                 ],
                             })
         else:
-            # No specific parlamentar - search by UF
-            query = f"CEAP despesas parlamentares {uf} {ano}"
-            web_results = await tool_web_search(query, max_results=3)
-            return {"uf": uf, "ano": ano, "web_references": web_results, "fonte": "Dados Abertos da Câmara"}
+            # No specific parlamentar - list top spenders from UF
+            if uf:
+                try:
+                    dep_url = f"https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf={uf.upper()}&ordem=ASC&ordenarPor=nome&itens=15"
+                    async with httpx.AsyncClient(timeout=15.0) as client:
+                        resp = await client.get(dep_url, headers={"Accept": "application/json"})
+                        if resp.status_code == 200:
+                            deps = resp.json().get("dados", [])
+                            for dep in deps[:8]:
+                                dep_id = dep.get("id")
+                                dep_name = dep.get("nome", "")
+                                dep_party = dep.get("siglaPartido", "")
+                                exp_url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{dep_id}/despesas?ano={ano}&itens=10&ordem=DESC&ordenarPor=dataDocumento"
+                                exp_resp = await client.get(exp_url, headers={"Accept": "application/json"})
+                                if exp_resp.status_code == 200:
+                                    expenses = exp_resp.json().get("dados", [])
+                                    total = sum(float(e.get("valorDocumento", 0)) for e in expenses)
+                                    if total > 0:
+                                        results.append({
+                                            "deputado": dep_name,
+                                            "partido": dep_party,
+                                            "uf": uf.upper(),
+                                            "total_amostra": round(total, 2),
+                                            "num_despesas": len(expenses),
+                                        })
+                except Exception as e:
+                    logger.warning("CEAP UF search failed: %s", e)
+            if not results:
+                query = f"CEAP despesas parlamentares {uf} {ano}"
+                web_results = await tool_web_search(query, max_results=3)
+                return {"uf": uf, "ano": ano, "web_references": web_results, "fonte": "Dados Abertos da Câmara"}
 
     except Exception as e:
         logger.warning("CEAP search failed: %s", e)
