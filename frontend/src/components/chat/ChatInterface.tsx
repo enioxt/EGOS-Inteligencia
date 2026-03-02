@@ -251,7 +251,7 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
                     background: "#00e5c3",
                     animation: "pulse 1.5s infinite",
                   }} />
-                  Pesquisando no grafo...
+                  Investigando dados públicos...
                 </span>
               </div>
             ) : (
