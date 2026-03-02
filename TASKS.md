@@ -366,8 +366,8 @@
 - [ ] Incentivo: Badge "Pesquisador Cidadao" para quem publica
 - [ ] Cross-link: Quando pesquisas diferentes encontram mesmas entidades, destacar
 - [ ] Feedback loop: Conexoes de usuarios -> melhorar ETL
-- [ ] Historico de pesquisas (privado por padrao, publico se optar)
-> **Status:** Frontend JA TEM 8 paginas funcionais. Falta auth backend + feed comunitario.
+- [x] Historico de pesquisas: Journey system (localStorage, export JSON/MD, share) ✅ (02/03/2026)
+> **Status:** Frontend JA TEM 8 paginas funcionais + Journey. Falta auth backend + feed comunitario.
 > **Arquivos:** `frontend/src/pages/Dashboard.tsx`, `Investigations.tsx`, `SharedInvestigation.tsx`, `Search.tsx`, `EntityAnalysis.tsx`, `GraphExplorer.tsx`, `Patterns.tsx`, `Baseline.tsx`
 
 ### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⏳ (P2)
