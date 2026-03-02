@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-02 (session 2) | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-03 (session 3) | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -590,8 +590,8 @@
 - [x] `robots.txt`: permitir AI crawlers (GPTBot, ChatGPT-User, Anthropic, Google-Extended)
 - [x] `sitemap.xml`: landing + 4 relatórios
 - [x] Landing page: custo corrigido $36 → $105/mês
-- [ ] Header/navbar com links para App, Relatórios, FAQ, GitHub
-- [ ] Copy melhorada: proposta de valor mais clara, CTA mais forte
+- [x] Header/navbar com links para Pesquisar, Relatórios, Estatísticas, GitHub ✅ (03/03/2026)
+- [x] Copy melhorada: CTA "Abrir Plataforma" (era "Open Explorer"), GitHub URL atualizada ✅ (03/03/2026)
 - [ ] OG image para compartilhamento em redes sociais
 > **Arquivos:** `index.html`, `robots.txt`, `sitemap.xml`, `Landing.tsx`
 
@@ -605,6 +605,29 @@
 - [ ] Memória entre mensagens (histórico de sessão)
 - [ ] Mais testes de hallucination e edge cases
 > **Arquivo:** `chat.py` (SYSTEM_PROMPT), `ChatInterface.tsx`
+
+### TASK-075: Docker DNS Fix — Permanent ✅ (03/03/2026)
+- [x] Root cause: systemd-resolved `nameserver 127.0.0.53` não funciona dentro de containers Docker
+- [x] Fix: `/etc/docker/daemon.json` com DNS `8.8.8.8`, `8.8.4.4`, `1.1.1.1` + retry opts
+- [x] `systemctl restart docker` — todos containers voltaram healthy
+- [x] Verificado: `docker run --rm alpine cat /etc/resolv.conf` mostra DNS corretos
+- [x] `docker compose build api --no-cache` agora funciona sem falhas intermitentes
+> **Arquivo:** `/etc/docker/daemon.json` no Contabo 217.216.95.126
+
+### TASK-076: GitHub Actions — Reduce Noise ✅ (03/03/2026)
+- [x] CI workflow: mudou de `push: main` para `pull_request + weekly Monday + manual`
+- [x] Security workflow: mudou de `push: main` para `pull_request + weekly Wednesday + manual`
+- [x] Release Drafter: mudou de `push: main` para `manual only`
+- [x] Resultado: sem mais notificações de falha em cada commit
+> **Arquivos:** `.github/workflows/ci.yml`, `security.yml`, `release-drafter.yml`
+
+### TASK-077: Website Header/Navbar ✅ (03/03/2026)
+- [x] PublicShell: adicionado nav com links Pesquisar, Relatórios, Estatísticas, GitHub
+- [x] CTA: "Abrir Plataforma" (era "Open Explorer")
+- [x] GitHub URLs atualizadas de br-acc para EGOS-Inteligencia
+- [x] Responsivo: nav escondido em mobile (<768px)
+- [x] Frontend rebuilt e deployed no Contabo
+> **Arquivos:** `PublicShell.tsx`, `PublicShell.module.css`, `Landing.tsx`
 
 ### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⏳ (P2)
 - [x] Adicionar keywords semanticas: "accountability", "civic tech", "open government"
@@ -627,7 +650,7 @@
 | **Nós no grafo** | 317.583 | 02/03/2026 |
 | **Relacionamentos** | 34.507 | 02/03/2026 |
 | **Issues GitHub abertas** | 27 | 02/03/2026 |
-| **Tasks concluídas** | 55/74 | 02/03/2026 |
+| **Tasks concluídas** | 57/77 | 03/03/2026 |
 | **Chatbot Tools** | 18 (3 grafo + 8 livres + 6 Portal + 1 DataJud) | 02/03/2026 |
 | **ETL Status** | Phase 1 file 6/10 (15%) — Contabo CPU | 02/03/2026 |
 | **Website** | inteligencia.egos.ia.br (SSL ✅) | 02/03/2026 |
