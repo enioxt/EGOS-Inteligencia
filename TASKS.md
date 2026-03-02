@@ -311,17 +311,23 @@
 - [x] Cada fonte com link para portal oficial do governo
 > **Arquivos:** `frontend/src/components/landing/SourceRegistry.tsx`, `frontend/public/updates/sources.json`
 
-### TASK-042: /app — Plataforma de Pesquisa Colaborativa ⬜ (P1 — Design)
-- [ ] Auth: Login com Google/GitHub para criar conta
-- [ ] /app/search: Busca no grafo (ja existe)
-- [ ] /app/investigations: Caderno de pesquisa do usuario (salvar queries, anotar conexoes)
-- [ ] /app/public: Feed de pesquisas publicadas pela comunidade
-- [ ] Incentivo: Badge "Pesquisador Cidadao" para quem publica pesquisas
-- [ ] Cross-link: Quando pesquisas de usuarios diferentes encontram mesmas entidades, sistema destaca
-- [ ] Feedback loop: Conexoes descobertas por usuarios que o sistema nao tinha -> aprender, melhorar ETL
-- [ ] Somente dados publicos, verificaveis. Sem afirmacoes — apenas padroes e sinais
-- [ ] Historico de pesquisas do usuario (privado por padrao, publico se optar)
-> **Visao:** Cada pesquisa de usuario gera valor para a comunidade. O sistema aprende com conexoes que usuarios descobrem manualmente. Isso melhora o grafo, fecha gaps, e cria inteligencia coletiva.
+### TASK-042: /app — Plataforma de Pesquisa Colaborativa ⏳ (P1)
+- [x] /app/search: Busca no grafo (JA EXISTE, public mode)
+- [x] /app/analysis/:entityId: Analise de entidade (JA EXISTE)
+- [x] /app/graph/:entityId: Explorador de grafo (JA EXISTE)
+- [x] /app/patterns: Deteccao de padroes (JA EXISTE)
+- [x] /app/baseline/:entityId: Baseline de entidade (JA EXISTE)
+- [x] /app/investigations: Caderno de pesquisa (JA EXISTE, auth-gated)
+- [x] /app/shared/:token: Compartilhamento publico de investigacoes (JA EXISTE)
+- [x] Dashboard com pesquisas recentes + busca rapida (JA EXISTE)
+- [ ] Auth: Login com Google/GitHub (precisa backend auth)
+- [ ] /app/public: Feed comunitario de pesquisas publicadas
+- [ ] Incentivo: Badge "Pesquisador Cidadao" para quem publica
+- [ ] Cross-link: Quando pesquisas diferentes encontram mesmas entidades, destacar
+- [ ] Feedback loop: Conexoes de usuarios -> melhorar ETL
+- [ ] Historico de pesquisas (privado por padrao, publico se optar)
+> **Status:** Frontend JA TEM 8 paginas funcionais. Falta auth backend + feed comunitario.
+> **Arquivos:** `frontend/src/pages/Dashboard.tsx`, `Investigations.tsx`, `SharedInvestigation.tsx`, `Search.tsx`, `EntityAnalysis.tsx`, `GraphExplorer.tsx`, `Patterns.tsx`, `Baseline.tsx`
 
 ### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⬜ (P2)
 - [ ] Adicionar keywords semanticas: "accountability", "civic tech", "open government"
