@@ -370,25 +370,19 @@
 > **Status:** Frontend JA TEM 8 paginas funcionais + Journey. Falta auth backend + feed comunitario.
 > **Arquivos:** `frontend/src/pages/Dashboard.tsx`, `Investigations.tsx`, `SharedInvestigation.tsx`, `Search.tsx`, `EntityAnalysis.tsx`, `GraphExplorer.tsx`, `Patterns.tsx`, `Baseline.tsx`
 
-### TASK-048: Chatbot Investigativo — 11 Tools + Transparência ✅ (02/03/2026)
-- [x] web_search: DuckDuckGo HTML (notícias, denúncias, investigações)
-- [x] search_emendas: emendas parlamentares por município (TransfereGov API)
-- [x] search_transferencias: transferências federais/convênios (TransfereGov API)
-- [x] search_ceap: gastos CEAP de deputados (Câmara API — por nome ou UF)
-- [x] search_pep_city: PEPs por cidade (deputados + web search políticos locais)
-- [x] search_gazettes: diários oficiais municipais (Querido Diário — 510+ cidades)
-- [x] cnpj_info: razão social, sócios, capital social, CNAE por CNPJ
-- [x] search_votacoes: votações nominais (como cada deputado votou) — inspirado De Olho em Você
-- [x] System prompt investigativo: cross-reference, puxar o fio, caminho do dinheiro
+### TASK-048: Chatbot Investigativo — 18 Tools ✅ (02/03/2026)
+- [x] 3 graph tools: search_entities, get_graph_stats, get_entity_connections
+- [x] web_search (DuckDuckGo), search_emendas, search_transferencias (TransfereGov)
+- [x] search_ceap, search_pep_city, search_votacoes (Câmara dos Deputados)
+- [x] search_gazettes, cnpj_info (Querido Diário — 510+ cidades)
+- [x] search_servidores, search_licitacoes, search_cpgf, search_viagens, search_contratos, search_sancoes (Portal da Transparência — chave API)
+- [x] search_processos (DataJud/CNJ — todos os tribunais do Brasil)
+- [x] System prompt: puxar o fio, cross-reference, caminho do dinheiro
 - [x] Suggestions: recuperações judiciais, supersalários, fornecedores, investigações
-- [x] Max rounds 4→6, max tokens 800→1200
-- [x] 11 tools total (3 grafo + 8 transparência/web)
-- [ ] Portal da Transparência API key (issue #25)
-- [ ] DataJud processos judiciais (issue #26)
-- [ ] ReceitaWS/BrasilAPI CNPJ premium (issue #27)
-- [ ] SerpAPI/Brave Search premium (issue #28)
+- [x] 18 tools total (3 grafo + 8 livres + 6 Portal Transparência + 1 DataJud)
+- [ ] Brave Search API ($5/mês) para substituir DuckDuckGo (issue #28)
 > **Arquivos:** `api/src/bracc/services/transparency_tools.py`, `api/src/bracc/routers/chat.py`
-> **APIs:** DuckDuckGo, TransfereGov, Câmara dos Deputados, Querido Diário (todas gratuitas, sem API key)
+> **APIs:** DuckDuckGo, TransfereGov, Câmara, Querido Diário (grátis) + Portal Transparência, DataJud (com chave)
 
 ### TASK-049: Avaliação Unikraft + ESAA ✅ (02/03/2026)
 - [x] Unikraft avaliado: NÃO aplicável (unikernels para microserviços stateless, nosso stack é Docker + Neo4j + Python)
@@ -401,8 +395,7 @@
 - [x] Self-hosted analytics: `/api/v1/analytics/pageview` + `/api/v1/analytics/summary`
 - [x] Redis-backed: page views por dia, unique visitors (IP hash), hourly, 7-day history
 - [x] Frontend tracking: App.tsx useLocation → POST pageview em cada navegação
-- [x] Microsoft Clarity placeholder no index.html (precisa project ID)
-- [ ] Criar projeto no clarity.microsoft.com e ativar (session recordings, heatmaps)
+- [x] Microsoft Clarity ativado (project ID: vpkwrlf847) — session recordings, heatmaps
 - [ ] Sentry para error tracking (ou self-hosted alternative)
 > **Arquivos:** `api/src/bracc/routers/analytics.py`, `frontend/src/App.tsx`, `frontend/index.html`
 
@@ -422,6 +415,51 @@
 - [x] Critérios de "importante": nova fonte de dados, feature UX, marco, incidente, contribuição externa
 - [x] Template de post diário definido
 - [x] Canais: Telegram, Discord, Website timeline
+
+### TASK-053: Portal da Transparência + DataJud APIs ✅ (02/03/2026)
+- [x] Portal da Transparência: chave `f6341a...` integrada (6 endpoints)
+- [x] Servidores federais: nome, salário, cargo, órgão (requer CPF ou código SIAPE)
+- [x] Contratos: fornecedor, valor, vigência, aditivos
+- [x] Sanções: CEIS (inidôneas) + CNEP (punidas) — funciona sem filtros
+- [x] CPGF, viagens, licitações (requerem filtros mínimos)
+- [x] DataJud (CNJ): chave `cDZH...` integrada — todos os 27+ tribunais
+- [x] Recuperação Judicial: 1.180 processos TJMG confirmados
+- [x] Elasticsearch queries: match_phrase para classes processuais
+> **Arquivos:** `api/src/bracc/services/transparency_tools.py`
+> **Verificado:** CEIS, contratos, DataJud TJMG (Recuperação Judicial) — todos funcionando
+
+### TASK-054: Avaliação OpenPlanter ✅ (02/03/2026)
+- [x] OpenPlanter (ShinMegamiBoson): agente investigativo recursivo com TUI
+- [x] 19 tools: file I/O, shell, web search (Exa), subtask delegation
+- [x] Entity resolution cross-dataset, evidence-chain construction
+- [x] Suporta GPT-5.2, Claude Opus 4.6, Qwen, Ollama local
+- [x] Inspiração: sub-agent delegation, recursive investigations
+- [x] Nosso diferencial: Neo4j 317K+ nós, 18 APIs, frontend web, open-source
+> **Veredicto:** Ótima inspiração para multi-step investigations futuras. Não substitui.
+
+### TASK-055: Auditoria de Features Intelink ✅ (02/03/2026)
+- [x] Intelink tem 179 pages/routes em 17 seções
+- [x] **Já adotamos:** Chat, Graph, Entity, Search, Investigation, Dashboard, Journey, Landing, Patterns, Baseline (10/17)
+- [x] **Relevante adotar:** Analytics dashboard (visual), Reports generation, Alertas, Activity feed
+- [x] **NÃO relevante (policial):** Delegacias, operações, membros, equipe, permissões, qualidade
+- [x] **Conclusão:** Core investigativo está completo. Faltam features de UX/engagement.
+
+### TASK-056: Mapa de Portais de Transparência ✅ (02/03/2026)
+- [x] Pesquisa: PNTP (10.335 portais), Transparência Internacional (300+ cidades), Radar Transparente
+- [x] 122 municípios SEM portal, 109 com 100%, média prefeituras 67%
+- [x] Gaps: 95% sem API, 70% dados em PDF, 40% sem licitações
+- [x] Padrão referência: Portal da Transparência federal (⭐⭐⭐⭐⭐)
+- [x] Proposta: API REST mínima obrigatória, JSON, atualização diária
+- [x] Próximas APIs: Dados Abertos SP, MG, ComprasNet, SIAFI, Senado
+> **Documento:** `docs/reports/transparency-portal-map.md`
+
+### TASK-057: Análise de Custos de APIs ✅ (02/03/2026)
+- [x] ReceitaWS (R$99/mês): NÃO vale — nosso ETL 60GB tem mesmos dados, ilimitado, grátis
+- [x] SerpAPI ($75/mês): CARO — substituído por Brave Search
+- [x] Brave Search ($5/mês): MELHOR custo-benefício — #1 benchmark, 669ms, 2k grátis/mês
+- [x] Exa ($49/mês): Já temos via MCP Cascade — usar para dev, não produção
+- [x] Recomendação: Brave para chatbot produção, Exa para pesquisa interna
+> **Economia:** R$1.188/ano evitando ReceitaWS, $840/ano evitando SerpAPI
 
 ### TASK-043: Gem Hunter v2 — Melhorar Busca de Projetos ⏳ (P2)
 - [x] Adicionar keywords semanticas: "accountability", "civic tech", "open government"
@@ -444,12 +482,14 @@
 | **Nós no grafo** | 317.583 | 02/03/2026 |
 | **Relacionamentos** | 34.507 | 02/03/2026 |
 | **Issues GitHub abertas** | 27 | 02/03/2026 |
-| **Tasks concluídas** | 33/52 | 02/03/2026 |
-| **Chatbot Tools** | 11 (3 grafo + 8 transparência) | 02/03/2026 |
-| **ETL Status** | Phase 1 em andamento (10%) | 02/03/2026 |
+| **Tasks concluídas** | 38/57 | 02/03/2026 |
+| **Chatbot Tools** | 18 (3 grafo + 8 livres + 6 Portal + 1 DataJud) | 02/03/2026 |
+| **ETL Status** | Phase 1 em andamento (12.5%) | 02/03/2026 |
 | **Website** | inteligencia.egos.ia.br (SSL ✅) | 02/03/2026 |
-| **Analytics** | Self-hosted + Clarity (pending) | 02/03/2026 |
-| **Projetos Gem Hunter** | 20+ avaliados | 02/03/2026 |
+| **Analytics** | Self-hosted + Clarity (vpkwrlf847) ✅ | 02/03/2026 |
+| **Projetos Gem Hunter** | 21+ avaliados (incl. OpenPlanter) | 02/03/2026 |
+| **APIs com chave** | Portal Transparência + DataJud | 02/03/2026 |
+| **Portais pesquisados** | 10.335 (PNTP) | 02/03/2026 |
 
 ---
 
