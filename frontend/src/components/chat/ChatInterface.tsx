@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 import { MessageCircle, Send, Sparkles, X } from "lucide-react";
+import { addJourneyEntry } from "@/lib/journey";
 import { sendChatMessage, type ChatEntityCard, type ChatResponse } from "@/api/client";
 
 interface ChatMessage {
@@ -37,7 +37,6 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 };
 
 export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(embedded);
@@ -92,6 +91,7 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
     setMessages((prev) => [...prev, userMsg, loadingMsg]);
     setInput("");
     setIsLoading(true);
+      addJourneyEntry({ type: "chat", title: msg.slice(0, 80), query: msg, url: window.location.pathname, description: "Chat EGOS" });
 
     try {
       const response: ChatResponse = await sendChatMessage(msg);
@@ -119,8 +119,16 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
   }, [input, isLoading]);
 
   const handleEntityClick = useCallback((entity: ChatEntityCard) => {
-    navigate(`/app/analysis/${entity.id}`);
-  }, [navigate]);
+    addJourneyEntry({
+      type: "entity",
+      title: entity.name,
+      description: entity.type,
+      entityId: entity.id,
+      entityType: entity.type,
+      url: `/app/analysis/${entity.id}`,
+    });
+    window.open(`/app/analysis/${entity.id}`, "_blank", "noopener,noreferrer");
+  }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -130,9 +138,12 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
   }, [handleSend]);
 
   const renderMarkdown = (text: string) => {
-    return text
+    let html = text
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\n/g, "<br/>");
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#00e5c3;text-decoration:underline">$1</a>');
+    // Auto-link bare URLs (skip already linked)
+    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#00e5c3;text-decoration:underline">$2</a>');
+    return html.replace(/\n/g, "<br/>");
   };
 
   // Floating button mode

@@ -9,6 +9,7 @@ import {
   InvestigationIcon,
   PatternIcon,
 } from "@/components/landing/FeatureIcons";
+import { JourneyPanel } from "@/components/journey/JourneyPanel";
 import { ReportsShowcase } from "@/components/landing/ReportsShowcase";
 import { ETLProgress } from "@/components/landing/ETLProgress";
 import { SourceRegistry } from "@/components/landing/SourceRegistry";
@@ -375,6 +376,8 @@ export function Landing() {
       <SourceRegistry />
 
       <UpdatesTimeline />
+
+      <JourneyPanel />
       <LiveDatabaseStatus stats={stats} />
 
       <PartnershipCTA />
