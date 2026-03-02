@@ -1,1 +1,1306 @@
-{"_note": "Auto-generated from source_registry_br_v1.csv. See SourceRegistry component."}
+{
+  "total": 108,
+  "implemented": 45,
+  "loaded": 36,
+  "healthy": 36,
+  "sources": [
+    {
+      "id": "cnpj",
+      "name": "Receita Federal CNPJ",
+      "category": "identity",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.rfb.gov.br/CNPJ/",
+      "access_mode": "file"
+    },
+    {
+      "id": "tse",
+      "name": "TSE elections and donations",
+      "category": "electoral",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.tse.jus.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "transparencia",
+      "name": "Portal da Transparencia contracts",
+      "category": "contracts",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados",
+      "access_mode": "file"
+    },
+    {
+      "id": "sanctions",
+      "name": "CEIS CNEP sanctions",
+      "category": "sanctions",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/sancoes/consulta",
+      "access_mode": "file"
+    },
+    {
+      "id": "pep_cgu",
+      "name": "CGU PEP list",
+      "category": "integrity",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/pep",
+      "access_mode": "file"
+    },
+    {
+      "id": "bndes",
+      "name": "BNDES financings",
+      "category": "finance",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.bndes.gov.br/wps/portal/site/home/transparencia/dados",
+      "access_mode": "file"
+    },
+    {
+      "id": "pgfn",
+      "name": "PGFN divida ativa",
+      "category": "fiscal",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.regularize.pgfn.gov.br/dados-abertos",
+      "access_mode": "file"
+    },
+    {
+      "id": "ibama",
+      "name": "IBAMA embargos",
+      "category": "environment",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://servicos.ibama.gov.br/ctf/publico/areasembargadas/",
+      "access_mode": "file"
+    },
+    {
+      "id": "comprasnet",
+      "name": "ComprasNet contracts",
+      "category": "contracts",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/comprasnet-contratos",
+      "access_mode": "file"
+    },
+    {
+      "id": "tcu",
+      "name": "TCU sanctions",
+      "category": "audit",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://contas.tcu.gov.br/ords/f?p=INIDONEAS:INIDONEAS",
+      "access_mode": "file"
+    },
+    {
+      "id": "transferegov",
+      "name": "TransfereGov emendas e convenios",
+      "category": "transfers",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.transferegov.sistema.gov.br/portal/download-de-dados",
+      "access_mode": "file"
+    },
+    {
+      "id": "rais",
+      "name": "RAIS aggregated labor",
+      "category": "labor",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://basedosdados.org/dataset/br-me-rais",
+      "access_mode": "bigquery"
+    },
+    {
+      "id": "inep",
+      "name": "INEP school census",
+      "category": "education",
+      "tier": "P2",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-escolar",
+      "access_mode": "file"
+    },
+    {
+      "id": "dou",
+      "name": "Diario Oficial da Uniao",
+      "category": "gazette",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.in.gov.br/leiturajornal",
+      "access_mode": "bigquery"
+    },
+    {
+      "id": "datasus",
+      "name": "DATASUS CNES",
+      "category": "health",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://opendatasus.saude.gov.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "icij",
+      "name": "ICIJ offshore leaks",
+      "category": "offshore",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://offshoreleaks.icij.org/pages/database",
+      "access_mode": "file"
+    },
+    {
+      "id": "opensanctions",
+      "name": "OpenSanctions global PEP",
+      "category": "sanctions",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.opensanctions.org/datasets/peps/",
+      "access_mode": "file"
+    },
+    {
+      "id": "cvm",
+      "name": "CVM proceedings",
+      "category": "market",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dados.cvm.gov.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "cvm_funds",
+      "name": "CVM fund registry",
+      "category": "market",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dados.cvm.gov.br/dados/FI/",
+      "access_mode": "file"
+    },
+    {
+      "id": "camara",
+      "name": "Camara CEAP expenses",
+      "category": "legislative",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.camara.leg.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "camara_inquiries",
+      "name": "Camara inquiries and requirements",
+      "category": "legislative",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://dadosabertos.camara.leg.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "senado",
+      "name": "Senado CEAPS expenses",
+      "category": "legislative",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www12.senado.leg.br/dados-abertos",
+      "access_mode": "api"
+    },
+    {
+      "id": "ceaf",
+      "name": "CEAF expelled servants",
+      "category": "integrity",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/ceaf",
+      "access_mode": "file"
+    },
+    {
+      "id": "cepim",
+      "name": "CEPIM barred NGOs",
+      "category": "integrity",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/cepim",
+      "access_mode": "file"
+    },
+    {
+      "id": "cpgf",
+      "name": "CPGF gov card expenses",
+      "category": "spending",
+      "tier": "P2",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/cpgf",
+      "access_mode": "file"
+    },
+    {
+      "id": "leniency",
+      "name": "Acordos de leniencia",
+      "category": "integrity",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/acordos-leniencia",
+      "access_mode": "file"
+    },
+    {
+      "id": "ofac",
+      "name": "OFAC sanctions",
+      "category": "sanctions",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://home.treasury.gov/policy-issues/financial-sanctions/sdn-list-data-files",
+      "access_mode": "file"
+    },
+    {
+      "id": "holdings",
+      "name": "Brasil IO holdings",
+      "category": "ownership",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://brasil.io/dataset/socios-brasil/holding/",
+      "access_mode": "file"
+    },
+    {
+      "id": "viagens",
+      "name": "Viagens a servico",
+      "category": "spending",
+      "tier": "P2",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/viagens",
+      "access_mode": "file"
+    },
+    {
+      "id": "siop",
+      "name": "SIOP emendas",
+      "category": "budget",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://www.siop.planejamento.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "pncp",
+      "name": "PNCP bids and contracts",
+      "category": "contracts",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://pncp.gov.br/api/consulta/v1/",
+      "access_mode": "api"
+    },
+    {
+      "id": "renuncias",
+      "name": "Renuncias fiscais",
+      "category": "fiscal",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/dados-abertos",
+      "access_mode": "file"
+    },
+    {
+      "id": "siconfi",
+      "name": "SICONFI municipal finance",
+      "category": "fiscal",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+      "access_mode": "api"
+    },
+    {
+      "id": "tse_bens",
+      "name": "TSE candidate assets",
+      "category": "electoral",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.tse.jus.br/dataset/bens-candidato",
+      "access_mode": "file"
+    },
+    {
+      "id": "tse_filiados",
+      "name": "TSE party memberships",
+      "category": "electoral",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.tse.jus.br/dataset/filiados-partidos",
+      "access_mode": "file"
+    },
+    {
+      "id": "bcb",
+      "name": "BCB penalties",
+      "category": "finance",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://dadosabertos.bcb.gov.br/dataset/penalidades",
+      "access_mode": "file"
+    },
+    {
+      "id": "stf",
+      "name": "STF court data",
+      "category": "judiciary",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://basedosdados.org/dataset/br-stf-corte-aberta",
+      "access_mode": "bigquery"
+    },
+    {
+      "id": "caged",
+      "name": "CAGED labor movements",
+      "category": "labor",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://ftp.mtps.gov.br/pdet/microdados/NOVO%20CAGED/",
+      "access_mode": "file"
+    },
+    {
+      "id": "eu_sanctions",
+      "name": "EU sanctions",
+      "category": "sanctions",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions",
+      "access_mode": "file"
+    },
+    {
+      "id": "un_sanctions",
+      "name": "UN sanctions",
+      "category": "sanctions",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://scsanctions.un.org/resources/xml/en/consolidated.xml",
+      "access_mode": "file"
+    },
+    {
+      "id": "world_bank",
+      "name": "World Bank debarment",
+      "category": "sanctions",
+      "tier": "P1",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://www.worldbank.org/en/projects-operations/procurement/debarred-firms",
+      "access_mode": "file"
+    },
+    {
+      "id": "senado_cpis",
+      "name": "Senado CPIs",
+      "category": "legislative",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://www12.senado.leg.br/dados-abertos",
+      "access_mode": "api"
+    },
+    {
+      "id": "mides",
+      "name": "MiDES municipal procurement",
+      "category": "municipal",
+      "tier": "P0",
+      "loaded": true,
+      "healthy": true,
+      "implemented": true,
+      "url": "https://basedosdados.org/dataset/world-wb-mides",
+      "access_mode": "bigquery"
+    },
+    {
+      "id": "querido_diario",
+      "name": "Querido Diario gazettes",
+      "category": "municipal",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://queridodiario.ok.org.br/api",
+      "access_mode": "api"
+    },
+    {
+      "id": "datajud",
+      "name": "CNJ DataJud",
+      "category": "judiciary",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": true,
+      "url": "https://api-publica.datajud.cnj.jus.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "bolsa_familia_bpc",
+      "name": "Bolsa Familia and BPC",
+      "category": "social",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://portaldatransparencia.gov.br/download-de-dados/bolsa-familia-pagamentos",
+      "access_mode": "file"
+    },
+    {
+      "id": "estban",
+      "name": "BCB ESTBAN balances",
+      "category": "finance",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.bcb.gov.br/dataset/estban",
+      "access_mode": "file"
+    },
+    {
+      "id": "if_data",
+      "name": "BCB IF data indicators",
+      "category": "finance",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.bcb.gov.br/dataset/if-data",
+      "access_mode": "file"
+    },
+    {
+      "id": "bcb_liquidacao",
+      "name": "BCB bank liquidation acts",
+      "category": "finance",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.bcb.gov.br/dataset/intervencao-e-liquidacao",
+      "access_mode": "file"
+    },
+    {
+      "id": "stj_dados_abertos",
+      "name": "STJ open data",
+      "category": "judiciary",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.stj.jus.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "cnciai_improbidade",
+      "name": "CNIAI improbidade",
+      "category": "judiciary",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.cnj.jus.br/sistemas/cnciai/",
+      "access_mode": "api"
+    },
+    {
+      "id": "carf_tax_appeals",
+      "name": "CARF tax appeals",
+      "category": "judiciary",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://carf.economia.gov.br/dados-abertos",
+      "access_mode": "file"
+    },
+    {
+      "id": "anp_royalties",
+      "name": "ANP royalties and fuel",
+      "category": "regulatory",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/anp",
+      "access_mode": "api"
+    },
+    {
+      "id": "aneel_concessions",
+      "name": "ANEEL concessions",
+      "category": "regulatory",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.aneel.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "anm_mining_rights",
+      "name": "ANM mining rights",
+      "category": "regulatory",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/anm",
+      "access_mode": "api"
+    },
+    {
+      "id": "antt_transport_concessions",
+      "name": "ANTT concessions",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/antt",
+      "access_mode": "api"
+    },
+    {
+      "id": "ans_health_plans",
+      "name": "ANS operators",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/ans",
+      "access_mode": "api"
+    },
+    {
+      "id": "anvisa_registrations",
+      "name": "ANVISA products",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/anvisa",
+      "access_mode": "api"
+    },
+    {
+      "id": "anac_aviation_concessions",
+      "name": "ANAC concessions",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/anac",
+      "access_mode": "api"
+    },
+    {
+      "id": "antaq_port_contracts",
+      "name": "ANTAQ contracts",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/antaq",
+      "access_mode": "api"
+    },
+    {
+      "id": "ana_water_grants",
+      "name": "ANA water grants",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/ana",
+      "access_mode": "api"
+    },
+    {
+      "id": "anatel_telecom_licenses",
+      "name": "ANATEL licenses",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/anatel",
+      "access_mode": "api"
+    },
+    {
+      "id": "susep_insurance_market",
+      "name": "SUSEP insurance market",
+      "category": "regulatory",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/susep",
+      "access_mode": "file"
+    },
+    {
+      "id": "cvm_full_ownership_chain",
+      "name": "CVM ownership chains",
+      "category": "market",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.cvm.gov.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "receita_dirbi",
+      "name": "Receita DIRBI",
+      "category": "tax",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.gov.br/dados/conjuntos-dados/declaracao-dirbi",
+      "access_mode": "file"
+    },
+    {
+      "id": "mapbiomas_alertas",
+      "name": "MapBiomas Alerta",
+      "category": "environment",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://alerta.mapbiomas.org/api",
+      "access_mode": "api"
+    },
+    {
+      "id": "sicar_rural_registry",
+      "name": "SiCAR rural registry",
+      "category": "environment",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.car.gov.br/publico/municipios/downloads",
+      "access_mode": "file"
+    },
+    {
+      "id": "icmbio_cnuc",
+      "name": "ICMBio CNUC units",
+      "category": "environment",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.icmbio.gov.br/portal/faunabrasileira/cadastro-nacional-de-unidades-de-conservacao",
+      "access_mode": "file"
+    },
+    {
+      "id": "tesouro_emendas",
+      "name": "Tesouro emendas",
+      "category": "budget",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tesourotransparente.gov.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "siga_brasil",
+      "name": "SIGA Brasil",
+      "category": "budget",
+      "tier": "P0",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www12.senado.leg.br/orcamento/sigabrasil",
+      "access_mode": "file"
+    },
+    {
+      "id": "camara_votes_bills",
+      "name": "Camara votes and bills",
+      "category": "legislative",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dadosabertos.camara.leg.br/api/v2",
+      "access_mode": "api"
+    },
+    {
+      "id": "senado_votes_bills",
+      "name": "Senado votes and bills",
+      "category": "legislative",
+      "tier": "P1",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://legis.senado.leg.br/dadosabertos",
+      "access_mode": "api"
+    },
+    {
+      "id": "interpol_red_notices",
+      "name": "Interpol red notices",
+      "category": "international",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.interpol.int/How-we-work/Notices/Red-Notices",
+      "access_mode": "api"
+    },
+    {
+      "id": "tce_sp",
+      "name": "TCE Sao Paulo",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://transparencia.tce.sp.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "tce_pe",
+      "name": "TCE Pernambuco",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://sistemas.tce.pe.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "tce_rj",
+      "name": "TCE Rio de Janeiro",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://dados.tce.rj.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "tce_rs",
+      "name": "TCE Rio Grande do Sul",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://portal.tce.rs.gov.br/",
+      "access_mode": "file"
+    },
+    {
+      "id": "tce_mg",
+      "name": "TCE Minas Gerais",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.mg.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ba",
+      "name": "TCE Bahia",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.ba.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ce",
+      "name": "TCE Ceara",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.ce.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_go",
+      "name": "TCE Goias",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://portal.tce.go.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_pr",
+      "name": "TCE Parana",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www1.tce.pr.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_sc",
+      "name": "TCE Santa Catarina",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tcesc.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_es",
+      "name": "TCE Espirito Santo",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tcees.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_mt",
+      "name": "TCE Mato Grosso",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.mt.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ms",
+      "name": "TCE Mato Grosso do Sul",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.ms.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_am",
+      "name": "TCE Amazonas",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.am.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_pa",
+      "name": "TCE Para",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tcepa.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ro",
+      "name": "TCE Rondonia",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.ro.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_rr",
+      "name": "TCE Roraima",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tcerr.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ap",
+      "name": "TCE Amapa",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.ap.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_to",
+      "name": "TCE Tocantins",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tceto.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_ma",
+      "name": "TCE Maranhao",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tcema.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_pi",
+      "name": "TCE Piaui",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.pi.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_rn",
+      "name": "TCE Rio Grande do Norte",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.rn.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_pb",
+      "name": "TCE Paraiba",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://tce.pb.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_al",
+      "name": "TCE Alagoas",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tceal.tc.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "tce_se",
+      "name": "TCE Sergipe",
+      "category": "state",
+      "tier": "P3",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.tce.se.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_sp",
+      "name": "Sao Paulo transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.sp.gov.br/",
+      "access_mode": "api"
+    },
+    {
+      "id": "state_portal_mg",
+      "name": "Minas Gerais transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.mg.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_ba",
+      "name": "Bahia transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.ba.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_ce",
+      "name": "Ceara transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.ce.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_go",
+      "name": "Goias transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.go.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_pr",
+      "name": "Parana transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.pr.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_sc",
+      "name": "Santa Catarina transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.sc.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_rs",
+      "name": "Rio Grande do Sul transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.rs.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_pe",
+      "name": "Pernambuco transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.pe.gov.br/",
+      "access_mode": "web"
+    },
+    {
+      "id": "state_portal_rj",
+      "name": "Rio de Janeiro transparency portal",
+      "category": "state",
+      "tier": "P2",
+      "loaded": false,
+      "healthy": false,
+      "implemented": false,
+      "url": "https://www.transparencia.rj.gov.br/",
+      "access_mode": "web"
+    }
+  ],
+  "categories": {
+    "identity": {
+      "total": 1,
+      "loaded": 1
+    },
+    "electoral": {
+      "total": 3,
+      "loaded": 3
+    },
+    "contracts": {
+      "total": 3,
+      "loaded": 1
+    },
+    "sanctions": {
+      "total": 6,
+      "loaded": 6
+    },
+    "integrity": {
+      "total": 4,
+      "loaded": 4
+    },
+    "finance": {
+      "total": 5,
+      "loaded": 2
+    },
+    "fiscal": {
+      "total": 3,
+      "loaded": 2
+    },
+    "environment": {
+      "total": 4,
+      "loaded": 1
+    },
+    "audit": {
+      "total": 1,
+      "loaded": 1
+    },
+    "transfers": {
+      "total": 1,
+      "loaded": 1
+    },
+    "labor": {
+      "total": 2,
+      "loaded": 1
+    },
+    "education": {
+      "total": 1,
+      "loaded": 1
+    },
+    "gazette": {
+      "total": 1,
+      "loaded": 1
+    },
+    "health": {
+      "total": 1,
+      "loaded": 1
+    },
+    "offshore": {
+      "total": 1,
+      "loaded": 1
+    },
+    "market": {
+      "total": 3,
+      "loaded": 2
+    },
+    "legislative": {
+      "total": 6,
+      "loaded": 2
+    },
+    "spending": {
+      "total": 2,
+      "loaded": 2
+    },
+    "ownership": {
+      "total": 1,
+      "loaded": 1
+    },
+    "budget": {
+      "total": 3,
+      "loaded": 0
+    },
+    "judiciary": {
+      "total": 5,
+      "loaded": 1
+    },
+    "municipal": {
+      "total": 2,
+      "loaded": 1
+    },
+    "social": {
+      "total": 1,
+      "loaded": 0
+    },
+    "regulatory": {
+      "total": 11,
+      "loaded": 0
+    },
+    "tax": {
+      "total": 1,
+      "loaded": 0
+    },
+    "international": {
+      "total": 1,
+      "loaded": 0
+    },
+    "state": {
+      "total": 35,
+      "loaded": 0
+    }
+  }
+}
