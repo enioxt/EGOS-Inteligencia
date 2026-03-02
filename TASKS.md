@@ -161,9 +161,10 @@
 - [ ] Meio Ambiente (INPE, CAR, INCRA) — #15
 - [ ] SIAFI + Tesouro Transparente — #16
 
-### TASK-023: Docs para Leigos (GitHub #3, #4) ⬜
+### TASK-023: Docs para Leigos (GitHub #3, #4) ⏳
 - [ ] Traduzir data-sources.md para PT-BR
-- [ ] Criar FAQ para leigos
+- [x] Criar FAQ para leigos em PT-BR (02/03/2026)
+> **Arquivos:** `docs/FAQ_PT-BR.md`
 
 ### TASK-024: Rename BR/ACC → EGOS Inteligência ✅ (02/03/2026)
 - [x] i18n.ts — todas as referências
