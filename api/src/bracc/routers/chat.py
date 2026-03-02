@@ -531,24 +531,50 @@ async def _fallback_search(user_msg: str, session: AsyncSession) -> tuple[str, l
 
 
 def _generate_suggestions(reply: str, entities: list[EntityCard], user_msg: str) -> list[str]:
-    """Generate contextual follow-up suggestions."""
+    """Generate contextual investigative follow-up suggestions."""
     suggestions: list[str] = []
+    msg_lower = user_msg.lower()
+    reply_lower = reply.lower()
 
+    # City-related suggestions
+    _BR_CITIES = ["uberlandia", "sao paulo", "rio de janeiro", "belo horizonte", "brasilia",
+                  "curitiba", "salvador", "fortaleza", "recife", "porto alegre", "goiania",
+                  "manaus", "campinas", "patos de minas", "uberaba", "juiz de fora"]
+    detected_city = None
+    for city in _BR_CITIES:
+        if city in msg_lower or city in reply_lower:
+            detected_city = city.title()
+            break
+
+    if detected_city:
+        suggestions.append(f"Emendas para {detected_city}")
+        suggestions.append(f"Deputados de {detected_city}")
+        suggestions.append(f"Transferencias federais {detected_city}")
+
+    # Entity-based suggestions
     if entities:
         first = entities[0]
         if first.type == "company":
-            suggestions.append(f"Sanções contra {first.name[:25]}")
-            suggestions.append(f"Conexões de {first.name[:25]}")
+            suggestions.append(f"Conexoes de {first.name[:25]}")
+            suggestions.append(f"Sancoes contra {first.name[:25]}")
+        elif first.type == "person":
+            suggestions.append(f"Gastos CEAP de {first.name[:25]}")
         elif first.type == "sanction":
-            suggestions.append("Buscar empresa sancionada")
-        if len(entities) > 3:
-            suggestions.append("Refinar busca")
+            suggestions.append("Buscar empresa sancionada no grafo")
 
+    # CEAP/transparency suggestions
+    if "ceap" in reply_lower or "deputad" in reply_lower:
+        suggestions.append("Fornecedores desse deputado")
+        suggestions.append("Gastos com passagens aereas")
+
+    # If no context-specific suggestions, use investigative defaults
     if not suggestions:
-        suggestions = ["Buscar por CNPJ", "Ver estatísticas do grafo", "Sanções recentes"]
-
-    if "estatístic" not in reply.lower():
-        suggestions.append("Ver estatísticas")
+        suggestions = [
+            "Digite o nome da sua cidade",
+            "Gastos CEAP deputados SP",
+            "Emendas parlamentares 2024",
+            "Buscar empresa por CNPJ",
+        ]
 
     return suggestions[:4]
 
