@@ -5,6 +5,7 @@ import { searchEntities, type SearchResult } from "@/api/client";
 import { Spinner } from "@/components/common/Spinner";
 import { SearchBar, type SearchParams } from "@/components/search/SearchBar";
 import { SearchResults } from "@/components/search/SearchResults";
+import { addJourneyEntry } from "@/lib/journey";
 
 import styles from "./Search.module.css";
 
@@ -20,6 +21,7 @@ export function Search() {
     setError(null);
     try {
       const response = await searchEntities(params.query, params.type);
+      addJourneyEntry({ type: "search", title: params.query.slice(0, 80), query: params.query, url: "/app/search", description: response.results.length + " resultados" });
       setResults(response.results);
       setHasSearched(true);
     } catch {

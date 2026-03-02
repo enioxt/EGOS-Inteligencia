@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { addJourneyEntry } from "@/lib/journey";
 
 import {
   getEntityByElementId,
@@ -126,6 +127,7 @@ export function EntityAnalysis() {
     getEntityByElementId(id)
       .then((ent) => {
         setEntity(ent);
+        addJourneyEntry({ type: "entity", title: String(ent.properties?.razao_social || ent.properties?.nome || ent.id || ""), entityId: ent.id, entityType: ent.type || "unknown", url: window.location.pathname });
       })
       .catch(() => {
         // Error handled by component (shows notFound)

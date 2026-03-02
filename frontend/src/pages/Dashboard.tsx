@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router";
 import { type Investigation, listInvestigations, searchEntities, type SearchResult } from "@/api/client";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToastStore } from "@/stores/toast";
+import { addJourneyEntry } from "@/lib/journey";
+import { JourneyPanel } from "@/components/journey/JourneyPanel";
 
 import styles from "./Dashboard.module.css";
 
@@ -32,6 +34,7 @@ export function Dashboard() {
     if (!q) return;
     setSearching(true);
     try {
+      addJourneyEntry({ type: "search", title: q.slice(0, 80), query: q, url: "/app/dashboard", description: "Dashboard search" });
       const res = await searchEntities(q, undefined, 1, 5);
       setSearchResults(res.results);
     } catch {
@@ -106,6 +109,7 @@ export function Dashboard() {
           </div>
         )}
       </section>
-    </div>
+      <JourneyPanel />
+      </div>
   );
 }
