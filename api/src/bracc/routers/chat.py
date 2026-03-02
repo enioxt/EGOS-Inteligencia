@@ -25,6 +25,13 @@ from bracc.config import settings
 from bracc.dependencies import get_session
 from bracc.middleware.rate_limit import limiter
 from bracc.services.neo4j_service import execute_query, sanitize_props
+from bracc.services.transparency_tools import (
+    tool_web_search,
+    tool_search_emendas,
+    tool_search_transferencias,
+    tool_search_ceap,
+    tool_search_pep_city,
+)
 from bracc.services.public_guard import (
     has_person_labels,
     sanitize_public_properties,
@@ -245,27 +252,118 @@ TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Pesquisa na web por noticias, investigacoes, denuncias, materias de jornais sobre empresas, politicos, cidades. Use para encontrar informacoes atuais que nao estao no grafo.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Termo de busca (ex: 'investigacao prefeito Uberlandia', 'denuncia empresa X CNPJ')"},
+                    "max_results": {"type": "integer", "description": "Maximo de resultados (1-10)", "default": 5},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_emendas",
+            "description": "Busca emendas parlamentares direcionadas a um municipio. Mostra quanto dinheiro federal foi destinado via emendas.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "municipio": {"type": "string", "description": "Nome do municipio (ex: Uberlandia, Sao Paulo, Patos de Minas)"},
+                    "uf": {"type": "string", "description": "Sigla do estado (ex: MG, SP, RJ)"},
+                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
+                },
+                "required": ["municipio"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_transferencias",
+            "description": "Busca transferencias federais (convenios, repasses) para um municipio. Mostra o fluxo de dinheiro federal para a cidade.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "municipio": {"type": "string", "description": "Nome do municipio"},
+                    "uf": {"type": "string", "description": "Sigla do estado"},
+                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
+                },
+                "required": ["municipio"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_ceap",
+            "description": "Busca gastos CEAP (Cota para Exercicio da Atividade Parlamentar) de deputados. Mostra despesas com passagens, combustivel, alimentacao, etc.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "parlamentar": {"type": "string", "description": "Nome do parlamentar (ex: 'Joao Silva')"},
+                    "uf": {"type": "string", "description": "Sigla do estado para filtrar deputados"},
+                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
+                },
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_pep_city",
+            "description": "Busca pessoas politicamente expostas (PEPs) de uma cidade: deputados, prefeito, vereadores, investigados. Retorna deputados federais do estado e noticias sobre politicos locais.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cidade": {"type": "string", "description": "Nome da cidade (ex: Uberlandia, Patos de Minas)"},
+                    "uf": {"type": "string", "description": "Sigla do estado (ex: MG, SP)"},
+                },
+                "required": ["cidade"],
+            },
+        },
+    },
 ]
 
-SYSTEM_PROMPT = """Você é o agente de inteligência do EGOS Inteligência (inteligencia.egos.ia.br).
+SYSTEM_PROMPT = """Você é o agente investigativo do EGOS Inteligência (inteligencia.egos.ia.br).
 
 ## Quem você é
-- Assistente de pesquisa em dados públicos brasileiros
+- Agente de investigação em dados públicos brasileiros
 - Acesso ao grafo Neo4j com 317 mil+ entidades e 34 mil+ conexões
-- Bases: CEIS, CNEP, OpenSanctions, PEP, CEAF, CPGF, TSE, BNDES, IBAMA, DATASUS, TransfereGov, RAIS, INEP
+- Acesso a busca web (notícias, denúncias, investigações)
+- Acesso ao Portal da Transparência (emendas, transferências, convênios)
+- Acesso ao CEAP (gastos de deputados federais — Dados Abertos da Câmara)
+- Busca de Pessoas Politicamente Expostas (PEPs) por cidade
+- Bases internas: CEIS, CNEP, OpenSanctions, PEP, CEAF, CPGF, TSE, BNDES, IBAMA, DATASUS, TransfereGov, RAIS, INEP
 - Projeto 100% open-source, sem investidores, autofinanciado
+
+## Como investigar
+- Quando o usuário digitar um NOME DE CIDADE: use search_pep_city para mostrar deputados e políticos locais, depois search_emendas para emendas e search_transferencias para convênios
+- Quando mencionar um POLÍTICO: use search_ceap para gastos + search_entities para verificar no grafo + web_search para notícias
+- Quando mencionar EMPRESA ou CNPJ: use search_entities no grafo + web_search para denúncias
+- Quando pedir sobre DINHEIRO PÚBLICO: combine search_emendas + search_transferencias + search_ceap
+- SEMPRE cruze informações: se encontrar um CNPJ de fornecedor no CEAP, busque no grafo com search_entities
+- Use web_search para encontrar notícias de jornal, investigações, denúncias do Ministério Público
+- Sugira ao usuário buscar os CNPJs dos fornecedores de políticos para descobrir conexões
 
 ## Regras
 - Responda SEMPRE em português brasileiro
-- Máximo 600 caracteres por resposta (seja conciso e direto)
-- Use **negrito** para destacar nomes e números importantes
+- Máximo 800 caracteres por resposta (seja conciso mas informativo)
+- Use **negrito** para destacar nomes, valores e CNPJs importantes
 - NUNCA exponha CPF, dados pessoais sensíveis
 - Padrões encontrados são SINAIS, nunca prova jurídica
-- Sempre cite a fonte dos dados (CEIS, CNEP, TSE, etc.)
+- Sempre cite a fonte dos dados (CEIS, CNEP, TSE, Câmara, TransfereGov, etc.)
 - Se não encontrar resultados, sugira variações de busca
-- Use as ferramentas proativamente — não peça permissão, busque
-- Quando o usuário mencionar uma empresa ou CNPJ, use search_entities automaticamente
-- Sugira próximos passos úteis ao final
+- Use MÚLTIPLAS ferramentas proativamente — não peça permissão, INVESTIGUE
+- Sugira próximos passos de investigação ao final
+- Mostre o CAMINHO DO DINHEIRO: federal → emenda → convênio → empresa → sócios
 
 ## Bases que AINDA NÃO temos (seja honesto)
 - CNPJ/QSA completo (ETL em andamento — 53M empresas sendo carregadas)
@@ -275,7 +373,7 @@ SYSTEM_PROMPT = """Você é o agente de inteligência do EGOS Inteligência (int
 - CVM (mercado financeiro)
 
 ## Disclaimer (inclua quando relevante)
-Pesquisa pessoal com dados públicos. Padrões são sinais, não prova jurídica."""
+Pesquisa cidadã com dados públicos. Padrões são sinais para aprofundar, não prova jurídica."""
 
 
 async def _call_openrouter(
@@ -302,11 +400,11 @@ async def _call_openrouter(
         "messages": messages,
         "tools": TOOLS,
         "tool_choice": "auto",
-        "max_tokens": 800,
+        "max_tokens": 1200,
         "temperature": 0.3,
     }
 
-    max_rounds = 4
+    max_rounds = 6
     async with httpx.AsyncClient(timeout=30.0) as client:
         for _ in range(max_rounds):
             try:
@@ -352,6 +450,34 @@ async def _call_openrouter(
                     result = await _tool_stats(session)
                 elif fn_name == "get_entity_connections":
                     result = await _tool_connections(session, fn_args.get("entity_id", ""))
+                elif fn_name == "web_search":
+                    result = await tool_web_search(
+                        fn_args.get("query", ""),
+                        min(fn_args.get("max_results", 5), 10),
+                    )
+                elif fn_name == "search_emendas":
+                    result = await tool_search_emendas(
+                        fn_args.get("municipio", ""),
+                        fn_args.get("uf", ""),
+                        fn_args.get("ano", 2024),
+                    )
+                elif fn_name == "search_transferencias":
+                    result = await tool_search_transferencias(
+                        fn_args.get("municipio", ""),
+                        fn_args.get("uf", ""),
+                        fn_args.get("ano", 2024),
+                    )
+                elif fn_name == "search_ceap":
+                    result = await tool_search_ceap(
+                        fn_args.get("parlamentar", ""),
+                        fn_args.get("uf", ""),
+                        fn_args.get("ano", 2024),
+                    )
+                elif fn_name == "search_pep_city":
+                    result = await tool_search_pep_city(
+                        fn_args.get("cidade", ""),
+                        fn_args.get("uf", ""),
+                    )
                 else:
                     result = {"error": f"Tool {fn_name} not found"}
 
