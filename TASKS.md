@@ -273,13 +273,14 @@
 - [ ] Conta @anoineim precisa verificacao por telefone
 > **Arquivos:** `.windsurf/workflows/postar.md`, bot x-client.ts
 
-### TASK-037: Bot Self-Healing ⏳
+### TASK-037: Bot Self-Healing ✅ (02/03/2026)
 - [x] Cron healthcheck cada 5 min (/opt/egos-bot/healthcheck.sh)
 - [x] Auto-restart de bots crashados via PM2
 - [x] Logging em /var/log/egos-bot-health.log
-- [ ] Alertas via Telegram quando bot restartar
-- [ ] Dashboard de uptime no website
-- [ ] HGR-style 3-level memory (inspirado RokoOfficial/HGR)
+- [x] Alertas via Telegram quando bot restartar (envia para @ethikin)
+- [x] Healthcheck v2: pm2 describe + awk para status correto
+- [ ] Dashboard de uptime no website (P3)
+- [ ] HGR-style 3-level memory (P3, inspirado RokoOfficial/HGR)
 
 ### TASK-038: Kubernetes / Autoscaler / Self-Healing ⬜ (P2 — Planejamento)
 - [ ] Avaliar migrar de Docker Compose para k3s (lightweight Kubernetes para VPS)
@@ -376,7 +377,7 @@
 | **Nós no grafo** | 317.583 | 02/03/2026 |
 | **Relacionamentos** | 34.507 | 02/03/2026 |
 | **Issues GitHub abertas** | 23 | 02/03/2026 |
-| **Tasks concluídas** | 25/46 | 02/03/2026 |
+| **Tasks concluídas** | 26/46 | 02/03/2026 |
 | **ETL Status** | Phase 1 em andamento | 02/03/2026 |
 | **Website** | inteligencia.egos.ia.br (SSL ✅) | 02/03/2026 |
 | **Projetos Gem Hunter** | 9 encontrados | 02/03/2026 |
