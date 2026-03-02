@@ -62,12 +62,14 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
       setMessages([{
         id: "welcome",
         role: "assistant",
-        text: "Olá! Sou o agente de inteligência do **EGOS**.\n\nPosso pesquisar empresas, contratos, sanções e conexões em dados públicos brasileiros. Tenho acesso a **317 mil entidades** e **34 mil conexões** no grafo.\n\nDigite um CNPJ, nome de empresa, ou pergunte o que quiser.",
+        text: "Olá! Sou o agente investigativo do **EGOS Inteligência**.\n\n🔍 Tenho acesso a **317 mil entidades** e **34 mil conexões** em dados públicos brasileiros — empresas, políticos, contratos, sanções, licitações e muito mais.\n\n📊 **18 ferramentas** de busca integradas: Portal da Transparência, DataJud, Querido Diário, CEAP, e mais.\n\n📋 **4 relatórios** de investigação já publicados.\n\nDigite um CNPJ, nome de empresa, cidade, ou escolha uma sugestão abaixo:",
         suggestions: [
-          "Buscar por CNPJ",
-          "Ver estatísticas",
-          "Ver relatório Patense",
-          "Sanções recentes",
+          "Investigar empresa por CNPJ",
+          "Ver relatórios de investigação",
+          "Deputados que mais gastaram em 2024",
+          "Emendas parlamentares para minha cidade",
+          "Empresas sancionadas com contratos ativos",
+          "Buscar licitações suspeitas",
         ],
       }]);
     }

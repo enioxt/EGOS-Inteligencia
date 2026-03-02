@@ -216,7 +216,7 @@ function PartnershipCTA() {
           marginTop: "1.5rem", fontSize: "0.78rem",
           color: "rgba(148,163,154,0.7)", fontFamily: "var(--font-mono)",
         }}>
-          100% open-source · Infraestrutura: $36/mês autofinanciado · Sem investidores, sem publicidade
+          100% open-source · Infraestrutura: $105/mês autofinanciado · Sem investidores, sem publicidade
         </p>
       </div>
     </section>
