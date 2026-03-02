@@ -1,0 +1,52 @@
+{
+  "date": "2026-03-02",
+  "title": "Lancamento: Cache Redis, 108 Fontes de Dados, Bots AI com 14 Tools OSINT",
+  "summary": "Cache Redis para buscas rapidas, 108 fontes de dados publicos integradas, bots Discord e Telegram com 14 ferramentas OSINT, governanca para PRs de IA, FAQ em PT-BR.",
+  "sections": [
+    {
+      "title": "Cache Redis",
+      "icon": "zap",
+      "content": "Buscas agora usam cache Redis com TTL de 2 minutos. Consultas repetidas sao servidas instantaneamente sem consultar o Neo4j. Endpoint /api/v1/meta/cache-stats para monitorar hit rate."
+    },
+    {
+      "title": "108 Fontes de Dados Publicos",
+      "icon": "database",
+      "content": "Integramos 108 fontes de dados governamentais: 45 implementadas, 36 carregadas no grafo (CNPJ, TSE, CEIS, BNDES, ComprasNet, IBAMA, ICIJ e mais). 317 mil entidades, 34 mil conexoes."
+    },
+    {
+      "title": "Bots AI: Discord e Telegram",
+      "icon": "bot",
+      "content": "Bots inteligentes com 14 ferramentas OSINT para consultar dados publicos via chat. Discord: EGOS Intelligence#2881. Telegram: @EGOSin_bot. Alimentados por Gemini 2.0 Flash via OpenRouter."
+    },
+    {
+      "title": "ETL CNPJ: 53.6M Empresas",
+      "icon": "loader",
+      "content": "Carregamento de 53.6 milhoes de empresas do cadastro CNPJ da Receita Federal em andamento. Fase 1 de 4 em execucao."
+    },
+    {
+      "title": "Governanca para Contribuicoes de IA",
+      "icon": "shield",
+      "content": "Sistema de governanca com CODEOWNERS, branch protection, e Claude PR Governor para avaliar PRs automaticamente. Politica especifica para contribuidores AI."
+    },
+    {
+      "title": "Relatorio: Patense e Patos de Minas",
+      "icon": "file-text",
+      "content": "Primeiro relatorio de pesquisa publicado: cruzamento de dados entre empresas de Patos de Minas, contratos publicos e emprestimos BNDES. Disponivel em /reports/patense.html"
+    }
+  ],
+  "links": {
+    "report": "/reports/patense.html",
+    "github": "https://github.com/enioxt/EGOS-Inteligencia",
+    "telegram_bot": "https://t.me/EGOSin_bot",
+    "faq": "https://github.com/enioxt/EGOS-Inteligencia/blob/main/docs/FAQ_PT-BR.md"
+  },
+  "metrics": {
+    "nodes": 317583,
+    "relationships": 34507,
+    "sources_total": 108,
+    "sources_loaded": 36,
+    "tasks_complete": "16/34",
+    "cache_hit_rate": "50%"
+  },
+  "tags": ["feature", "infrastructure", "data", "ai", "governance"]
+}
