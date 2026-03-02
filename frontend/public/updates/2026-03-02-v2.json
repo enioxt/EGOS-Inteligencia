@@ -1,0 +1,59 @@
+{
+  "date": "2026-03-02",
+  "title": "3 Relatórios de Investigação + 18 Tools + Brave Search + Analytics",
+  "summary": "Chatbot expandido para 18 ferramentas, Brave Search integrado, dashboard de analytics, 3 relatórios de investigação publicados, auditoria completa do Intelink.",
+  "sections": [
+    {
+      "title": "18 Ferramentas Investigativas",
+      "icon": "search",
+      "content": "Chatbot agora com 18 tools: Portal da Transparência (servidores, contratos, sanções, CPGF, viagens, licitações), DataJud (processos judiciais de todos os tribunais), Brave Search (busca web primária), além das ferramentas existentes.",
+      "metrics": {
+        "tools": 18,
+        "apis": 8,
+        "tribunais": 27
+      }
+    },
+    {
+      "title": "3 Relatórios de Investigação",
+      "icon": "file-text",
+      "content": "Publicados 3 relatórios demonstrando capacidades: SUPERAR LTDA (empresa sancionada), Transparência Municipal de Manaus, e Recuperações Judiciais em SP. Cada relatório inclui passo a passo para leigos.",
+      "reports": [
+        {
+          "title": "SUPERAR LTDA — Empresa Sancionada",
+          "file": "report-01-superar-ltda.md"
+        },
+        {
+          "title": "Transparência Municipal — Manaus (AM)",
+          "file": "report-02-manaus-transparencia.md"
+        },
+        {
+          "title": "Recuperação Judicial — São Paulo",
+          "file": "report-03-recuperacao-judicial-sp.md"
+        }
+      ]
+    },
+    {
+      "title": "Dashboard de Analytics",
+      "icon": "bar-chart",
+      "content": "Nova página /app/analytics com visualização em tempo real: page views, visitantes únicos, distribuição por hora, páginas mais visitadas. Microsoft Clarity ativado para session recordings."
+    },
+    {
+      "title": "Brave Search API",
+      "icon": "globe",
+      "content": "Busca web agora usa Brave Search API (#1 benchmark, 669ms), com DuckDuckGo como fallback. Economia de $840/ano vs SerpAPI."
+    },
+    {
+      "title": "Segurança: GitGuardian Fix",
+      "icon": "shield",
+      "content": "Todas as chaves de API movidas de código fonte para variáveis de ambiente. Alerta do GitGuardian resolvido."
+    }
+  ],
+  "metrics": {
+    "nodes": 317583,
+    "relationships": 34507,
+    "tools": 18,
+    "tasks_completed": "43/62",
+    "etl_progress": "15%",
+    "monthly_cost": "R$ 120"
+  }
+}

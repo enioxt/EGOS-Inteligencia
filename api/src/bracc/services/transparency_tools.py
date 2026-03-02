@@ -795,6 +795,14 @@ async def tool_search_sancoes(cnpj: str = "", nome: str = "") -> dict[str, Any]:
     except Exception as e:
         logger.warning("Portal sancoes failed: %s", e)
 
+    # Filter by CNPJ/name if provided (API sometimes ignores filters)
+    if cnpj:
+        clean_cnpj = cnpj.replace(".", "").replace("/", "").replace("-", "")
+        results = [s for s in results if clean_cnpj in str(s.get("cnpj_cpf", "")).replace(".", "").replace("/", "").replace("-", "")]
+    if nome and not cnpj:
+        nome_upper = nome.upper()
+        results = [s for s in results if nome_upper in str(s.get("nome", "")).upper()]
+
     return {
         "query": cnpj or nome,
         "sancoes": results,
