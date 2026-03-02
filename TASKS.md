@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-03 (session 6) | **Stars:** ~70 ⭐ | **Patterns:** 10 | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-03 (session 6) | **Stars:** 74 ⭐ | **Forks:** 8 | **Patterns:** 10 | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -674,6 +674,15 @@
 - [x] Deploy to Contabo — all assets returning HTTP 200
 > **Source:** `/home/enio/Downloads/egos_discord_icon_1771941656007.png`
 > **Arquivos:** `index.html`, `favicon.ico`, `site.webmanifest`, `og-image.png`
+
+### TASK-089: Mobile Responsive CSS ✅ (03/03/2026)
+- [x] PR #24 by @Kai-Rowan-the-AI: pure CSS mobile responsive improvements (+235/-0)
+- [x] GraphExplorer: stacks vertically on mobile, hides resize handle
+- [x] Dashboard: mobile breakpoints for search, results, investigation cards
+- [x] CommandPalette: mobile sizing, hides keyboard shortcuts
+- [x] global.css: font size reduction on mobile (768px/480px breakpoints)
+- [x] Code review: approved + merged
+> **Arquivos:** 7 CSS modules (GraphExplorer, Dashboard, Search, EntityAnalysis, CommandPalette, ControlsSidebar, global.css)
 
 ### TASK-088: First Community PR — Benford's Law + HHI Patterns ✅ (03/03/2026)
 - [x] PR #30 by @mrncstt: 2 new intelligence patterns (+134/-2 lines)
