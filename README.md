@@ -13,6 +13,8 @@ Idioma: **Português (Brasil)** | [English](#english)
 
 Site: [inteligencia.egos.ia.br](https://inteligencia.egos.ia.br) | Ecossistema: [EGOS](https://egos.ia.br) | Comunidade: [@ethikin](https://t.me/ethikin)
 
+📚 **Índice de documentação:** [docs/README.md](docs/README.md)
+
 ---
 
 ## Origem e Diferenças
