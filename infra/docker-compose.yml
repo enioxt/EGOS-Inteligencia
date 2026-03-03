@@ -58,9 +58,9 @@ services:
       AI_MODEL: ${AI_MODEL:-google/gemini-2.0-flash-001}
       CORS_ORIGINS: https://${DOMAIN},http://localhost:3000
       ETL_LOG_PATH: /app/cnpj-etl.log
-      PORTAL_TRANSPARENCIA_API_KEY: f6341a2372b17d0fe0657c616aa68fb1
-      DATAJUD_API_KEY: cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==
-      BRAVE_API_KEY: BSAgpSNW7ARVDlktTyMSxhPSTYsOfRB
+      PORTAL_TRANSPARENCIA_API_KEY: ${PORTAL_TRANSPARENCIA_API_KEY}
+      DATAJUD_API_KEY: ${DATAJUD_API_KEY}
+      BRAVE_API_KEY: ${BRAVE_API_KEY}
       BRACC_SOURCE_REGISTRY_PATH: /app/docs/source_registry_br_v1.csv
       REDIS_URL: redis://redis:6379/0
     networks:
