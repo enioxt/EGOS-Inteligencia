@@ -888,4 +888,108 @@
 
 ---
 
+## Audit Tasks (Dossiê Técnico 2026-03-03)
+
+> Geradas pela auditoria completa do código-fonte. Ref: `docs/TECHNICAL_DOSSIE_2026-03.md`
+
+### TASK-105: Rotacionar 3 API Keys Expostas 🔴 (P0 — URGENTE)
+- [ ] Rotacionar key Portal da Transparência
+- [ ] Rotacionar key DataJud
+- [ ] Rotacionar key Brave Search
+- [ ] Atualizar `.env` na VPS (`/opt/bracc/infra/.env`)
+- [ ] Considerar BFG Repo Cleaner para limpar git history
+> **Risco:** Keys visíveis em `git log -p` para qualquer pessoa com clone do repo
+> **Esforço:** 30min | **Impacto:** Segurança crítica
+
+### TASK-106: Whitelist Cypher Injection em `_tool_cypher` 🔴 (P0)
+- [ ] Substituir blacklist (`CREATE, DELETE, MERGE...`) por whitelist
+- [ ] Permitir APENAS: `MATCH`, `RETURN`, `WITH`, `UNWIND`, `ORDER`, `LIMIT`, `WHERE`, `OPTIONAL`, `AS`, `DISTINCT`, `COUNT`, `SUM`, `AVG`, `COLLECT`
+- [ ] Bloquear: `CALL`, `LOAD CSV`, `FOREACH`, `CREATE`, `DELETE`, `MERGE`, `SET`, `REMOVE`, `DROP`, `DETACH`
+- [ ] Adicionar teste de regressão
+> **Evidência:** `api/src/bracc/routers/chat.py:264-281`
+> **Esforço:** 1h | **Impacto:** Fecha maior vetor de ataque
+
+### TASK-107: Migrar Conversas para Redis 🟠 (P0)
+- [ ] Substituir `_conversations` dict por Redis HSET
+- [ ] Key: `conversation:{client_id}`, TTL 30min
+- [ ] Migrar `_usage_counts` e `_usage_day` para Redis INCR com TTL
+- [ ] Testar graceful degradation (Redis down = in-memory fallback)
+> **Evidência:** `api/src/bracc/routers/chat.py:66-73`
+> **Esforço:** 2h | **Impacto:** Conversas sobrevivem restart/deploy
+
+### TASK-108: Dividir chat.py em Módulos 🟠 (P1)
+- [ ] Extrair `chat_tools.py` — 26 tool definitions (TOOLS array)
+- [ ] Extrair `chat_models.py` — Pydantic models (ChatMessage, EntityCard, etc.)
+- [ ] Extrair `chat_prompt.py` — SYSTEM_PROMPT
+- [ ] Extrair `chat_openrouter.py` — `_call_openrouter()` + tool execution loop
+- [ ] Manter `chat.py` como router fino (endpoint + conversation mgmt)
+> **Evidência:** `api/src/bracc/routers/chat.py` (1290 linhas, monólito)
+> **Esforço:** 4h | **Impacto:** Manutenibilidade
+
+### TASK-109: Testes Backend — Integration Tests 🟠 (P1)
+- [ ] Test search endpoint (fulltext, CNPJ, empty query)
+- [ ] Test chat endpoint (tool calling, tier fallback, rate limit)
+- [ ] Test CPF masking middleware (mask, PEP exception)
+- [ ] Test public_guard (CPF blocked, Person hidden, props stripped)
+- [ ] Test patterns endpoint (at least 3 of 10 detectors)
+- [ ] Setup pytest + httpx AsyncClient fixtures
+> **Evidência:** Zero testes em `api/tests/`
+> **Esforço:** 8h | **Impacto:** Qualidade e confiança
+
+### TASK-110: Neo4j Backup Script (Cron) 🟠 (P1)
+- [ ] Script: stop neo4j → neo4j-admin dump → start neo4j (ou volume snapshot)
+- [ ] Cron job diário às 3AM (mínimo downtime)
+- [ ] Reter últimos 7 dumps (rotação)
+- [ ] Alertar se dump falhar (email ou Telegram)
+> **Evidência:** Neo4j Community não suporta hot backup
+> **Esforço:** 2h | **Impacto:** 9M+ entidades sem backup
+
+### TASK-111: Circuit Breaker para APIs Externas 🟠 (P1)
+- [ ] Implementar retry com backoff exponencial (max 2 retries)
+- [ ] Circuit breaker: após 3 falhas consecutivas, skip API por 5min
+- [ ] Fallback graceful: retornar `{"status": "unavailable", "source": "..."}` em vez de error
+- [ ] Aplicar às 21 tools em `services/transparency_tools.py`
+> **Evidência:** `routers/chat.py:841` — `httpx.AsyncClient(timeout=45.0)` sem retry
+> **Esforço:** 4h | **Impacto:** Confiabilidade
+
+### TASK-112: Input Sanitization (Prompt Injection) ⬜ (P2)
+- [ ] Regex filter para padrões conhecidos: "ignore instructions", "system prompt", injection patterns
+- [ ] Log suspicious inputs (sem bloquear — soft warning)
+- [ ] Rate limit agressivo para IPs com inputs suspeitos
+> **Esforço:** 4h | **Impacto:** Segurança (defesa em profundidade)
+
+### TASK-113: BFG Repo Cleaner — Git History ⬜ (P2)
+- [ ] Executar BFG para remover API keys do history completo
+- [ ] Force push (coordenar com contribuidores)
+- [ ] Verificar que keys não aparecem mais em `git log -p`
+> **Depende de:** TASK-105 (rotacionar primeiro)
+> **Esforço:** 1h
+
+### TASK-114: DSAR Workflow Automatizado ⬜ (P2)
+- [ ] GitHub issue template para Data Subject Access Request
+- [ ] Endpoint `/api/v1/dsar` para submissão programática
+- [ ] Workflow: register → verify scope → produce decision log
+- [ ] Prazo LGPD: 15 dias úteis para resposta
+> **Evidência:** LGPD Art. 18 — hoje é via issue manual
+> **Esforço:** 8h
+
+### TASK-115: CORS Explícito + JWT Startup Validation ⬜ (P2)
+- [ ] Substituir `allow_headers=["*"]` por lista explícita em `main.py`
+- [ ] Adicionar startup check: se `jwt_secret == "change-me-in-production"` → raise error
+> **Esforço:** 30min
+
+### TASK-116: Componentizar Landing.tsx ⬜ (P2)
+- [ ] Extrair HeroSearch component
+- [ ] Extrair FeaturesSection, HowItWorks, SourcesSection, Footer
+- [ ] Cada componente com seu próprio CSS module
+> **Esforço:** 3h
+
+### TASK-117: Registro de Tratamento LGPD (Art. 37) ⬜ (P2)
+- [ ] Documentar base legal por tipo de dado (público, pessoal, PEP)
+- [ ] Mapear finalidade, período de retenção, medidas de segurança
+- [ ] Publicar em `docs/legal/REGISTRO_TRATAMENTO.md`
+> **Esforço:** 4h | **Obrigatório** pela LGPD para tratamento em larga escala
+
+---
+
 *"Siga o dinheiro público. Dados abertos, código aberto."*
