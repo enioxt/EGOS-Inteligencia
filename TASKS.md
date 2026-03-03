@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-03 (session 20) | **Stars:** 74 ⭐ | **Forks:** 8 | **Patterns:** 10 | **Nodes:** 9.1M | **Tests:** 1,208+ | **Tasks:** 93/130 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-03 (session 21) | **Stars:** 74 ⭐ | **Forks:** 8 | **Patterns:** 10 | **Nodes:** 141M+ | **Tests:** 1,208+ | **Tasks:** 94/130 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -701,10 +701,15 @@
 > **Issues:** #32 (P1), #33 (P2)
 > **Arquivos:** `api/src/bracc/services/transparency_tools.py`
 
-### TASK-097: System Map — API/Routes/Pages Inventory ⬜ (GitHub #34)
-- [ ] Documentar 30+ endpoints em 10 routers
-- [ ] Frontend: 14 páginas inventory
-- [ ] Docker: 5 containers topology
+### TASK-097: System Map — API/Routes/Pages Inventory ✅ (03/03/2026)
+- [x] Documentar 55+ endpoints em 13 routers
+- [x] Frontend: 14 páginas inventory
+- [x] Docker: 5 containers topology
+- [x] 26 AI chat tools documented
+- [x] 10 pattern detectors documented
+- [x] Middleware & services documented
+- [x] External bots (Discord + Telegram) documented
+> **Arquivos:** `docs/SYSTEM_MAP.md`
 
 ### TASK-118: Transparency Report + Pattern Engine ✅ (03/03/2026)
 - [x] Comprehensive transparency/methodology HTML report (10 sections)
