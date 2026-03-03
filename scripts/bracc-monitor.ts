@@ -124,11 +124,12 @@ async function fetchForks(octokit: Octokit): Promise<ForkEntry[]> {
       let categories: string[] = ["other"];
 
       try {
-        const defaultBranch = fork.default_branch ?? "main";
+        const forkBranch = fork.default_branch ?? "main";
+        const upstreamBase = "main"; // upstream default branch
         const { data: compare } = await octokit.repos.compareCommitsWithBasehead({
           owner: UPSTREAM_OWNER,
           repo: UPSTREAM_REPO,
-          basehead: `${fork.owner.login}:${defaultBranch}`,
+          basehead: `${upstreamBase}...${fork.owner.login}:${forkBranch}`,
         });
         if (compare.files) {
           files_changed = compare.files.map((f) => f.filename).filter(Boolean);
