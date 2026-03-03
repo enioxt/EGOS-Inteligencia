@@ -1,12 +1,12 @@
 
 
-import os
 import logging
-from datetime import datetime, timezone
+import os
+from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter
 import httpx
+from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/monitor", tags=["monitor"])
@@ -42,7 +42,7 @@ async def recent_sanctions() -> dict[str, Any]:
     except Exception as e:
         logger.warning("Sanctions monitor failed: %s", e)
 
-    return {"sanctions": results, "total": len(results), "checked_at": datetime.now(timezone.utc).isoformat()}
+    return {"sanctions": results, "total": len(results), "checked_at": datetime.now(UTC).isoformat()}
 
 
 @router.get("/report/{municipio}")
@@ -50,7 +50,7 @@ async def municipality_report(municipio: str) -> dict[str, Any]:
     """Auto-generate investigation report for a municipality."""
     report: dict[str, Any] = {
         "municipio": municipio,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "sections": {},
     }
 
@@ -74,7 +74,7 @@ async def municipality_report(municipio: str) -> dict[str, Any]:
             # 2. Gazette (Querido Diário)
             try:
                 resp = await client.get(
-                    f"https://queridodiario.ok.org.br/api/gazettes",
+                    "https://queridodiario.ok.org.br/api/gazettes",
                     params={"querystring": municipio, "size": "5", "sort_by": "descending_date"},
                 )
                 if resp.status_code == 200:

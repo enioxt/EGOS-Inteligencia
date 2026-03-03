@@ -10,27 +10,27 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from bracc.config import settings
 from bracc.dependencies import close_driver, init_driver
-from bracc.services.cache import cache
 from bracc.middleware.cpf_masking import CPFMaskingMiddleware
 from bracc.middleware.rate_limit import limiter
 from bracc.middleware.security_headers import SecurityHeadersMiddleware
 from bracc.routers import (
-    gazette_monitor,
     activity,
     analytics,
     auth,
     baseline,
-    conversations,
-    monitor,
     chat,
+    conversations,
     entity,
+    gazette_monitor,
     graph,
     investigation,
     meta,
+    monitor,
     patterns,
     public,
     search,
 )
+from bracc.services.cache import cache
 from bracc.services.neo4j_service import ensure_schema
 
 _logger = logging.getLogger(__name__)

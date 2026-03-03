@@ -482,7 +482,7 @@ async def tool_search_votacoes(parlamentar: str = "", proposicao: str = "", ano:
                         dep_name = dep.get("nome", "")
                         # Get recent votes
                         # First get recent votações
-                        vot_url = f"https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=5"
+                        vot_url = "https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=5"
                         vot_resp = await client.get(vot_url, headers={"Accept": "application/json"})
                         if vot_resp.status_code == 200:
                             votacoes = vot_resp.json().get("dados", [])
@@ -504,7 +504,7 @@ async def tool_search_votacoes(parlamentar: str = "", proposicao: str = "", ano:
                                         })
             else:
                 # List recent votações
-                vot_url = f"https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=10"
+                vot_url = "https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=10"
                 resp = await client.get(vot_url, headers={"Accept": "application/json"})
                 if resp.status_code == 200:
                     votacoes = resp.json().get("dados", [])

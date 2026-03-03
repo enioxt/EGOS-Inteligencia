@@ -1,5 +1,4 @@
 """Activity Feed — Mycelium-inspired event trail for EGOS Inteligência."""
-import json
 import time
 from collections import deque
 from datetime import datetime

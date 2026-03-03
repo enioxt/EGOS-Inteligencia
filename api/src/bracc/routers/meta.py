@@ -122,7 +122,6 @@ async def etl_progress() -> dict[str, Any]:
     """Parse ETL log to show current progress."""
     import os
     import re
-    from datetime import datetime
 
     log_path = os.environ.get("ETL_LOG_PATH", "/opt/bracc/cnpj-etl.log")
     result: dict[str, Any] = {
@@ -154,7 +153,7 @@ async def etl_progress() -> dict[str, Any]:
         result["running"] = age_seconds < 10800  # updated in last 3h (each CSV file takes ~2h)
         result["log_age_seconds"] = int(age_seconds)
 
-        with open(log_path, "r") as f:
+        with open(log_path) as f:
             lines = f.readlines()
 
         # Parse phases and files

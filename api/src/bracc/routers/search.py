@@ -8,8 +8,8 @@ from starlette.requests import Request
 from bracc.dependencies import get_session
 from bracc.middleware.rate_limit import limiter
 from bracc.models.entity import SourceAttribution
-from bracc.services.cache import cache
 from bracc.models.search import SearchResponse, SearchResult
+from bracc.services.cache import cache
 from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.services.public_guard import (
     has_person_labels,

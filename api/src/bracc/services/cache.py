@@ -7,7 +7,6 @@ Gracefully degrades — all operations are no-ops if Redis is unavailable.
 import hashlib
 import json
 import logging
-import time
 from typing import Any
 
 import redis.asyncio as redis

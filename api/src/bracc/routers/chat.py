@@ -18,42 +18,41 @@ from typing import Annotated, Any
 import httpx
 from fastapi import APIRouter, Depends
 from neo4j import AsyncSession
-from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from bracc.config import settings
 from bracc.dependencies import get_session
 from bracc.middleware.rate_limit import limiter
-from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.routers.activity import log_activity
-from bracc.services.transparency_tools import (
-    tool_web_search,
-    tool_search_emendas,
-    tool_search_transferencias,
-    tool_search_ceap,
-    tool_search_pep_city,
-    tool_search_gazettes,
-    tool_cnpj_info,
-    tool_search_votacoes,
-    tool_search_servidores,
-    tool_search_licitacoes,
-    tool_search_cpgf,
-    tool_search_viagens,
-    tool_search_contratos,
-    tool_search_sancoes,
-    tool_search_processos,
-    tool_bnmp_mandados,
-    tool_procurados_lookup,
-    tool_lista_suja,
-    tool_pncp_licitacoes,
-    tool_oab_advogado,
-    tool_opencnpj,
-)
 from bracc.services.cache import cache
+from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.services.public_guard import (
     has_person_labels,
     sanitize_public_properties,
     should_hide_person_entities,
+)
+from bracc.services.transparency_tools import (
+    tool_bnmp_mandados,
+    tool_cnpj_info,
+    tool_lista_suja,
+    tool_oab_advogado,
+    tool_opencnpj,
+    tool_pncp_licitacoes,
+    tool_procurados_lookup,
+    tool_search_ceap,
+    tool_search_contratos,
+    tool_search_cpgf,
+    tool_search_emendas,
+    tool_search_gazettes,
+    tool_search_licitacoes,
+    tool_search_pep_city,
+    tool_search_processos,
+    tool_search_sancoes,
+    tool_search_servidores,
+    tool_search_transferencias,
+    tool_search_viagens,
+    tool_search_votacoes,
+    tool_web_search,
 )
 
 logger = logging.getLogger(__name__)
@@ -154,8 +153,7 @@ def _trim_conversation(history: list[dict[str, str]]) -> None:
 
 
 # --- Models (extracted to chat_models.py) ---
-from bracc.routers.chat_models import ChatMessage, EntityCard, EvidenceItem, ChatResponse
-
+from bracc.routers.chat_models import ChatMessage, ChatResponse, EntityCard, EvidenceItem
 
 # --- Neo4j tool functions ---
 
@@ -354,8 +352,8 @@ async def _tool_connections(session: AsyncSession, entity_id: str) -> list[dict[
 
 
 # --- Tool definitions + System prompt (extracted to separate modules) ---
-from bracc.routers.chat_tools import TOOLS
 from bracc.routers.chat_prompt import SYSTEM_PROMPT
+from bracc.routers.chat_tools import TOOLS
 
 
 async def _call_openrouter(
@@ -592,7 +590,7 @@ async def _call_openrouter(
                     "cypher_query": ("Neo4j Graph — Cypher Query", "neo4j://localhost:7687"),
                     "data_summary": ("Sistema EGOS Inteligência", "inteligencia.egos.ia.br"),
                 }.get(fn_name, ("Desconhecido", ""))
-                
+
                 result_count = 0
                 if isinstance(result, list):
                     result_count = len(result)
@@ -605,7 +603,7 @@ async def _call_openrouter(
                         elif isinstance(v, list):
                             result_count = len(v)
                             break
-                
+
                 from datetime import datetime
                 evidence_chain.append({
                     "tool": fn_name,
@@ -732,12 +730,12 @@ async def chat(
     """AI-powered conversational search for EGOS Inteligência."""
 
     client_id = _get_client_id(request)
-    
+
     # Conversation persistence: use Redis if conversation_id provided
     conv_id = body.conversation_id.strip() if body.conversation_id else ""
     client_header = (request.headers.get("x-client-id") or "").strip()
     effective_client = client_header if client_header else client_id
-    
+
     if conv_id:
         from bracc.routers.conversations import get_conversation_messages
         history = await get_conversation_messages(conv_id, effective_client)
