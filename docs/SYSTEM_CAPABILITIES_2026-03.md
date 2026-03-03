@@ -304,4 +304,70 @@ Live-tested scan returned **102 alerts** across 10 cities in 7 days. Pattern typ
 
 ---
 
+## 11. Brutal Competitive Comparison
+
+### vs. Best-in-Class Tools (Honest Assessment)
+
+| Dimension | **EGOS Inteligência** | **Palantir Gotham** | **Maltego** | **OCCRP Aleph** | **OpenSanctions** |
+|-----------|----------------------|--------------------|-----------|-----------------|--------------------|
+| **Nodes** | 9.1M | Billions | N/A (user-built) | 270M+ | 2.1M entities |
+| **Sources** | 36 loaded / 108 registered | 1000+ | 100+ transforms | 600+ datasets | 297 sources |
+| **Graph Traversal** | Basic (1-hop, no GDS) | Advanced (multi-hop, ML) | Advanced (transforms) | Advanced (cross-ref) | Advanced (matching) |
+| **Pattern Detection** | ❌ Disabled | ✅ ML-powered | ✅ Manual + transforms | ✅ Rule-based | ✅ Dedup + matching |
+| **Entity Resolution** | ❌ None | ✅ Probabilistic | ✅ Manual | ✅ followthemoney | ✅ OpenSanctions |
+| **Real-time Alerts** | ❌ On-demand only | ✅ Continuous | ❌ | ✅ | ✅ |
+| **Multi-user** | ❌ Single-tenant | ✅ Enterprise | ✅ Teams | ✅ | ✅ API |
+| **Price** | **$25/month** | **$10M+/year** | **$5K+/year** | **Free (restricted)** | **Free (API)** |
+| **Open Source** | ✅ AGPL | ❌ Proprietary | ❌ Proprietary | ✅ MIT | ✅ MIT |
+| **Brazil Focus** | ✅ 100% BR data | ❌ Generic | ❌ Generic | ⚠️ Some BR | ⚠️ Some BR |
+| **Accessibility** | ✅ Chat in Portuguese | ❌ Analyst-only | ⚠️ Technical | ⚠️ Technical | ⚠️ API-only |
+
+### Where We WIN (honestly)
+
+1. **Only open-source OSINT platform 100% focused on Brazil** — no competitor offers this
+2. **Natural language chat** in Portuguese calling 26 tools — Palantir/Maltego require trained analysts
+3. **Cost:** $25/month vs $10M+/year (Palantir) or $5K/year (Maltego)
+4. **8.8M Brazilian companies** loaded — more BR data than OCCRP Aleph
+5. **Free for citizens** — no paywall, no registration required for chat
+6. **14 government APIs integrated** in one interface — nobody else does this
+
+### Where We LOSE (brutally honest)
+
+1. **Entity resolution = ZERO** — We have 9.1M nodes but only 34K relationships. Most companies are **isolated dots with no connections**. This is our #1 problem. Without entity resolution, our "graph" is really just a search engine with extra steps.
+2. **Pattern detection disabled** — The engine exists but is turned off. We cannot actually detect fraud, corruption, or anomalies automatically. We just show raw data.
+3. **No ML/AI analysis** — Palantir uses machine learning for anomaly detection. We use an LLM to format search results. There's no intelligence in "Inteligência" yet.
+4. **Relationship building not automated** — We loaded 8.8M companies but didn't build SOCIO_DE relationships from QSA data. The ETL created nodes but skipped the most important part: connecting them.
+5. **No entity resolution / deduplication** — The same person can appear as "JOÃO DA SILVA" in CEIS and "João da Silva" in PEP and we'd never know they're the same person.
+6. **Single-tenant, single-server** — One VPS, one user at a time for investigations. No collaboration features.
+7. **No historical tracking** — We can't show "this company was sanctioned in 2020, then won a contract in 2021" because we don't track temporal relationships.
+8. **Chat is a wrapper** — The AI chat calls APIs and formats results. It doesn't reason, doesn't chain investigations, doesn't discover novel connections. It's a glorified search aggregator.
+9. **Documentation says more than exists** — README mentions "79 fontes", "53.6M empresas", "141M nós" as targets, but the reality is 36 sources loaded and 9.1M nodes with almost no relationships.
+10. **No tests** — Zero integration tests, zero unit tests. We can't guarantee anything works after a code change.
+
+### Real Value Assessment
+
+| What We Claim | Reality | Gap |
+|---------------|---------|-----|
+| "Grafo de vínculos" | 9.1M nodes, 34K edges = **0.004% connectivity** | 🔴 Critical — not a graph, it's a database |
+| "26 ferramentas OSINT" | 26 API wrappers that format JSON | 🟡 True but oversold — these are API calls, not intelligence |
+| "Detectar padrões de corrupção" | Pattern engine disabled, no ML | 🔴 False — we show data, we don't detect anything |
+| "Cruzamento inteligente" | LLM calls tools sequentially | 🟡 It works, but "inteligente" is generous |
+| "108 fontes de dados" | 36 loaded, 63 discovered but not ingested | 🟡 Aspirational, not current |
+| "Open source OSINT for Brazil" | ✅ This is true and unique | 🟢 Real differentiator |
+| "$25/month for everything" | ✅ This is true | 🟢 Real differentiator |
+| "Chat em português 24/7" | ✅ Works, tested, ~R$0.006/query | 🟢 Real differentiator |
+
+### Priority Actions to Close Gaps
+
+1. **🔴 P0: Build relationships from QSA data** — Transform isolated company nodes into a connected graph. Without this, the project's core value proposition is hollow.
+2. **🔴 P0: Entity resolution** — Implement fuzzy matching across datasets (name normalization + CPF/CNPJ linking)
+3. **🟠 P1: Enable pattern detection** — Validate and turn on the 10 risk detectors
+4. **🟠 P1: Integration tests** — At least 20 tests covering critical paths
+5. **🟡 P2: Temporal relationships** — Add date-aware edges to track when connections were active
+6. **🟡 P2: Continuous gazette monitoring** — Cron-based scan with Telegram alerts
+
+---
+
 *"Siga o dinheiro público. 9.1 milhões de entidades. 26 ferramentas. 14 APIs. R$ 0,006 por consulta."*
+
+*"Mas sejamos honestos: sem relações entre entidades, é um banco de dados com chatbot. O grafo é a promessa — que ainda precisa ser cumprida."*
