@@ -33,6 +33,28 @@
 - Download batch com retries/timeouts no script geral de datasets.
 - Vários scripts ETL já tratam `429`/retentativas com backoff.
 
+
+## Inventário validado no código (Go/Python/Node/LLMs)
+
+### Linguagens/stack em uso
+- **Python** no core de API e ETL (FastAPI, pipelines e integrações de dados).
+- **Node.js** já está no ecossistema para bots e frontend (coerente com o posicionamento do projeto).
+- **Go** não aparece como stack produtiva atual no repositório.
+
+### LLMs e roteamento
+- Configuração expõe `openrouter_api_key` e `ai_model`, indicando uso de roteamento de modelo via OpenRouter no backend.
+- O risco de custo de LLM é real para MVP e precisa de orçamento/guardrails operacionais.
+
+### Limites observáveis hoje
+- Entrada da API pública: `rate_limit_anon=60/minute` e `rate_limit_auth=300/minute` (padrão).
+- Rate limit por usuário autenticado (JWT) com fallback para IP.
+- DataJud downloader com `RATE_LIMIT_SEC=1` e espera explícita entre requisições.
+- Script de download geral usa retry e timeout em `aria2c`, mas sem orçamento unificado por provedor.
+
+### Gap atual (o que ainda falta formalizar)
+- Não há matriz versionada de orçamento por fonte (`qps_max`, `req/dia`, janela de pausa).
+- Não há documento único com orçamento de custo de LLM por ferramenta/ambiente.
+
 ## Onde está o risco real (e por que trocar linguagem não resolve sozinho)
 
 1. **Overload em APIs governamentais**
