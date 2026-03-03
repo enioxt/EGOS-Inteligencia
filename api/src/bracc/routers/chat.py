@@ -49,6 +49,7 @@ from bracc.services.transparency_tools import (
     tool_oab_advogado,
     tool_opencnpj,
 )
+from bracc.services.cache import cache
 from bracc.services.public_guard import (
     has_person_labels,
     sanitize_public_properties,
@@ -62,13 +63,13 @@ router = APIRouter(prefix="/api/v1", tags=["chat"])
 _CNPJ_RE = re.compile(r"\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}")
 _LUCENE_SPECIAL = re.compile(r'([+\-&|!(){}\[\]^"~*?:\\/])')
 
-# --- In-memory conversation store (keyed by IP, max 20 messages, 30min TTL) ---
+# --- In-memory conversation store (fallback when Redis unavailable) ---
 _conversations: dict[str, list[dict[str, str]]] = defaultdict(list)
 _conversation_ts: dict[str, float] = {}
 _MAX_HISTORY = 20
 _TTL_SECONDS = 1800
 
-# --- Rate limit + model fallback (per IP, resets daily) ---
+# --- Rate limit (in-memory fallback, Redis preferred) ---
 _usage_counts: dict[str, int] = defaultdict(int)
 _usage_day: dict[str, str] = {}
 
@@ -87,18 +88,36 @@ def _get_client_id(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _get_usage(client_id: str) -> int:
-    """Get daily usage count, reset if new day."""
+async def _get_usage(client_id: str) -> int:
+    """Get daily usage count from Redis (fallback: in-memory)."""
     today = time.strftime("%Y-%m-%d")
+    redis = cache._client
+    if redis and cache._available:
+        try:
+            key = f"egos:usage:{today}:{client_id}"
+            val = await redis.get(key)
+            return int(val) if val else 0
+        except Exception:
+            pass
     if _usage_day.get(client_id) != today:
         _usage_counts[client_id] = 0
         _usage_day[client_id] = today
     return _usage_counts[client_id]
 
 
-def _increment_usage(client_id: str) -> int:
-    """Increment and return new usage count."""
+async def _increment_usage(client_id: str) -> int:
+    """Increment daily usage in Redis (fallback: in-memory). Returns new count."""
     today = time.strftime("%Y-%m-%d")
+    redis = cache._client
+    if redis and cache._available:
+        try:
+            key = f"egos:usage:{today}:{client_id}"
+            new_val = await redis.incr(key)
+            if new_val == 1:
+                await redis.expire(key, 86400)
+            return int(new_val)
+        except Exception:
+            pass
     if _usage_day.get(client_id) != today:
         _usage_counts[client_id] = 0
         _usage_day[client_id] = today
@@ -106,11 +125,11 @@ def _increment_usage(client_id: str) -> int:
     return _usage_counts[client_id]
 
 
-def _select_model(client_id: str, byok_key: str = "") -> tuple[str, str, str]:
+async def _select_model(client_id: str, byok_key: str = "") -> tuple[str, str, str]:
     """Select model based on usage tier or BYOK. Returns (model, api_key, tier_label)."""
     if byok_key:
         return MODEL_PREMIUM, byok_key, "byok"
-    usage = _get_usage(client_id)
+    usage = await _get_usage(client_id)
     if usage < _TIER_PREMIUM_LIMIT:
         remaining = _TIER_PREMIUM_LIMIT - usage
         return MODEL_PREMIUM, settings.openrouter_api_key, f"premium ({remaining} restantes)"
@@ -1213,7 +1232,7 @@ async def chat(
     byok_key = (request.headers.get("x-openrouter-key") or "").strip()
 
     # Select model based on usage tier or BYOK
-    selected_model, selected_key, tier_label = _select_model(client_id, byok_key)
+    selected_model, selected_key, tier_label = await _select_model(client_id, byok_key)
 
     # Rate limit check — if limit reached, prepend warning
     tier_notice = ""
@@ -1267,7 +1286,7 @@ async def chat(
         evidence, cost = [], 0.0
 
     # Increment usage AFTER successful call
-    new_count = _increment_usage(client_id)
+    new_count = await _increment_usage(client_id)
 
     # Append tier notice to reply
     if tier_notice:
