@@ -191,7 +191,7 @@ async function fetchOpenPRs(octokit: Octokit): Promise<PREntry[]> {
     for (const pr of list) {
       let files: string[] = [];
       try {
-        const { data: filesData } = await octokit.pulls.listFiles({
+        const filesData = await octokit.paginate(octokit.pulls.listFiles, {
           owner: UPSTREAM_OWNER,
           repo: UPSTREAM_REPO,
           pull_number: pr.number,
