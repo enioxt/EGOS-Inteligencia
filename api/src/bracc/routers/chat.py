@@ -753,6 +753,12 @@ async def chat(
     if tier_label == "limite_atingido":
         tier_notice = "\n\n⚠️ **Limite diário atingido** (30 consultas). O agente continua funcionando com modelo gratuito, mas a qualidade pode ser menor.\n\n💡 **Traga sua própria chave!** Crie uma conta grátis em [openrouter.ai](https://openrouter.ai), insira créditos (~$5 dura meses) e cole sua chave nas configurações. Assim você usa os melhores modelos sem restrição."
 
+    # Prompt injection soft check (logs but does not block)
+    from bracc.middleware.input_sanitizer import check_injection
+    injection_pattern = check_injection(body.message)
+    if injection_pattern:
+        log_activity("prompt_injection_detected", {"pattern": injection_pattern[:80], "client": client_id})
+
     # Build messages for LLM
     messages: list[dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}]
 

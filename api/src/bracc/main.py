@@ -39,6 +39,10 @@ _logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.jwt_secret_key == "change-me-in-production" or len(settings.jwt_secret_key) < 32:
+        if settings.app_env == "production":
+            raise RuntimeError(
+                "JWT_SECRET_KEY is weak or default — set a secure value (>= 32 chars)"
+            )
         _logger.critical(
             "JWT secret is weak or default"
             " — set JWT_SECRET_KEY env var (>= 32 chars)"
@@ -67,8 +71,14 @@ app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins.split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "Origin",
+        "X-Requested-With",
+    ],
 )
 app.add_middleware(SecurityHeadersMiddleware, app_env=settings.app_env)
 app.add_middleware(CPFMaskingMiddleware)
