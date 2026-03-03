@@ -13,12 +13,6 @@ Idioma: **Português (Brasil)** | [English](#english)
 
 Site: [inteligencia.egos.ia.br](https://inteligencia.egos.ia.br) | Ecossistema: [EGOS](https://egos.ia.br) | Comunidade: [@ethikin](https://t.me/ethikin)
 
-📚 **Índice de documentação:** [docs/README.md](docs/README.md)
-
-📈 **Análise de escala de stack (Python/Go/Node):** [docs/analysis/STACK_SCALING_DECISION_2026-03.md](docs/analysis/STACK_SCALING_DECISION_2026-03.md)
-
-🛡️ **Plano de não repúdio (Mycelium Audit Trail):** [docs/analysis/MYCELIUM_AUDIT_TRAIL_2026-03.md](docs/analysis/MYCELIUM_AUDIT_TRAIL_2026-03.md)
-
 ---
 
 ## Origem e Diferenças

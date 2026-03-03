@@ -833,6 +833,59 @@
 - [ ] Grafo: Empresa ↔ Contrato Estadual/Municipal ↔ Servidor
 > **Impacto:** Expande cobertura além do federal para estados e municípios
 
+### TASK-099: Review PR #38 — Em-dash to Hyphen Normalization ✅ (03/03/2026)
+- [x] **Autor:** @mrncstt (comunidade)
+- [x] **Escopo:** 6 arquivos, 6 linhas — substitui `—` por `-` em 6 componentes frontend
+- [x] **Decisão:** Merged (admin) — mudança cosmética, gesto de acolhimento ao contribuidor
+- [x] Também corrigiu typo "Societaria" → "Societária" no ReportsShowcase
+> **PR:** https://github.com/enioxt/EGOS-Inteligencia/pull/38
+
+### TASK-100: Review PR #39 — Índice Central de Documentação ⏳ (P1 — Split)
+- [x] **Autor:** @enioxt (Codex-generated)
+- [x] **Análise:** 354 adições — docs + código ETL misturados
+- [ ] **AÇÃO:** Merge apenas docs (README.md, STACK_SCALING_DECISION, MYCELIUM_AUDIT_TRAIL)
+- [ ] **AÇÃO:** Separar código ETL (base.py, provenance.py, test_provenance.py) → TASK-104
+- [x] **Stack Decision:** Documento CRÍTICO — manter Python, não migrar para Go (ver análise abaixo)
+> **PR:** https://github.com/enioxt/EGOS-Inteligencia/pull/39
+
+### TASK-104: Review ETL Provenance Code (split de PR #39) ⬜ (P2 — Análise Técnica)
+- [ ] `etl/src/bracc_etl/provenance.py` — SHA-256 hash de linhas brutas, source fingerprint
+- [ ] `etl/src/bracc_etl/base.py` — método `build_audit_fields()` no Pipeline base
+- [ ] `etl/tests/test_provenance.py` — testes de estabilidade de hash
+- [ ] **Valor:** Não-repúdio dos dados (de onde veio, quando, hash da linha original)
+- [ ] **Risco:** Precisa validar que não quebra ETL em produção (10.5G memória, 9M+ nós)
+- [ ] **Decisão:** Testar em ambiente isolado antes de merge
+> **Origem:** PR #39 (código separado dos docs)
+
+### TASK-101: Review PR #40 — Mycelium Migration Plan + GitNexus Eval ⬜ (P2 — Adiado)
+- [ ] **Autor:** @enioxt (Codex-generated)
+- [ ] **Docs:** MYCELIUM_LEGACY_MIGRATION_PLAN.md (migração incremental de dados legados)
+- [ ] **Docs:** GITNEXUS_EGOS_AVALIACAO_PRELIMINAR.md (avaliação de projeto externo)
+- [ ] **Script PERIGOSO:** legacy_tagging_backfill.cypher — marca TODOS nós sem audit_hash como "legacy"
+- [ ] **AÇÃO:** Merge docs quando conveniente. Script Cypher NÃO rodar sem dry-run em staging
+- [ ] **Decisão adiada:** Avaliar após TASK-104 (provenance code)
+> **PR:** https://github.com/enioxt/EGOS-Inteligencia/pull/40
+
+### TASK-102: Review PR #31 — BR-ACC Upstream Monitor ⏳ (P1 — Split Pedido)
+- [x] **Autor:** @Douglas-Strey (comunidade)
+- [x] **Análise:** 1.624 adições — script útil mas escopo grande demais
+- [x] **Comentário postado:** Pedido split em (A) script+workflow, (B) docs SSOT
+- [ ] **Aguardando:** Resposta do Douglas com PRs separadas
+- [ ] **Valor:** Monitor de upstream é útil para acompanhar forks e contribuições
+- [ ] **Risco:** Modifica TASKS.md/ROADMAP/README (nossos SSOT docs)
+> **PR:** https://github.com/enioxt/EGOS-Inteligencia/pull/31
+
+### TASK-103: Intelink Copy — Linguagem Neutra (só no que migrarmos) ⬜ (P1)
+- [ ] Substituir apenas nos componentes/features que formos usar no EGOS
+- [ ] "investigação/investigações" → "pesquisa/pesquisas"
+- [ ] "operação/operações" → "caso/casos" ou "análise/análises"
+- [ ] "acusado/acusados" → "envolvido/envolvidos" ou "mencionado"
+- [ ] "suspeito/suspeitos" → "pessoa de interesse" ou "mencionado"
+- [ ] "Inteligência Policial" → "Inteligência em Dados Públicos"
+- [ ] NÃO renomear pasta Intelink inteira — só o que for migrado
+- [ ] Manter ambos sites funcionando (intelink.ia.br + inteligencia.egos.ia.br)
+> **Contexto Discord:** @ericklucioh perguntou "oq seria investigacoes e relatorios?" — @enioxt respondeu "Resquícios do Intelink, vou mudar o nome"
+
 ---
 
 *"Siga o dinheiro público. Dados abertos, código aberto."*
