@@ -10,8 +10,10 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from bracc.config import settings
 from bracc.dependencies import close_driver, init_driver
+from bracc.logging_config import configure_logging
 from bracc.middleware.cpf_masking import CPFMaskingMiddleware
 from bracc.middleware.rate_limit import limiter
+from bracc.middleware.request_id import RequestIDMiddleware
 from bracc.middleware.security_headers import SecurityHeadersMiddleware
 from bracc.routers import (
     activity,
@@ -38,6 +40,7 @@ _logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    configure_logging(app_env=settings.app_env, log_level=settings.log_level)
     if settings.jwt_secret_key == "change-me-in-production" or len(settings.jwt_secret_key) < 32:
         if settings.app_env == "production":
             raise RuntimeError(
@@ -81,6 +84,7 @@ app.add_middleware(
     ],
 )
 app.add_middleware(SecurityHeadersMiddleware, app_env=settings.app_env)
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(CPFMaskingMiddleware)
 
 app.include_router(meta.router)

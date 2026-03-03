@@ -1013,6 +1013,14 @@
 - [x] Workflow de direitos do titular (Art. 18)
 > **Arquivos:** `docs/legal/REGISTRO_TRATAMENTO.md`
 
+### TASK-118: Observabilidade — Request Tracing + JSON Logs + Security Posture ✅ (03/03/2026)
+- [x] `RequestIDMiddleware` — X-Request-ID header em toda resposta (gera ou ecoa do cliente)
+- [x] `GET /api/v1/meta/security` — endpoint de postura de segurança (sem segredos)
+- [x] `logging_config.py` — JSON structured logs em produção, human-readable em dev
+- [x] 3 novos testes para middleware (gerar, ecoar, unicidade)
+- [x] 235 API unit tests passando (219 + 13 sanitizer + 3 request-id)
+> **Arquivos:** `middleware/request_id.py`, `logging_config.py`, `routers/meta.py`, `main.py`
+
 ---
 
 *"Siga o dinheiro público. Dados abertos, código aberto."*

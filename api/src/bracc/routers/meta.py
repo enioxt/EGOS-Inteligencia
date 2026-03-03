@@ -4,6 +4,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from neo4j import AsyncSession
 
+from bracc.config import settings
 from bracc.dependencies import get_session
 from bracc.services.cache import cache
 from bracc.services.neo4j_service import execute_query_single
@@ -115,6 +116,29 @@ async def cache_stats() -> dict[str, Any]:
 async def flush_cache() -> dict[str, Any]:
     count = await cache.flush()
     return {"flushed_keys": count}
+
+
+@router.get("/security")
+async def security_posture() -> dict[str, Any]:
+    """Report API security posture — no secrets, just feature flags."""
+    return {
+        "cors_explicit_headers": True,
+        "cors_origins_count": len(settings.cors_origins.split(",")),
+        "jwt_algorithm": settings.jwt_algorithm,
+        "jwt_secret_strong": len(settings.jwt_secret_key) >= 32
+        and settings.jwt_secret_key != "change-me-in-production",
+        "rate_limit_anon": settings.rate_limit_anon,
+        "rate_limit_auth": settings.rate_limit_auth,
+        "public_mode": settings.public_mode,
+        "public_allow_person": settings.public_allow_person,
+        "patterns_enabled": settings.patterns_enabled,
+        "prompt_injection_detection": True,
+        "cpf_masking": True,
+        "security_headers": True,
+        "request_id_tracing": True,
+        "hsts": settings.app_env == "production",
+        "csp": True,
+    }
 
 
 @router.get("/etl-progress")
