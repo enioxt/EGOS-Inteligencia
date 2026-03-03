@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 
 from neo4j import Driver
 
+from bracc_etl.provenance import build_audit_fields
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,6 +71,23 @@ class Pipeline(ABC):
                 error=str(exc)[:1000],
             )
             raise
+
+
+    def build_audit_fields(
+        self,
+        *,
+        raw_row: dict[str, object],
+        source_url: str,
+        method: str,
+        collected_at: str | None = None,
+    ) -> dict[str, str]:
+        """Create standardized provenance metadata for ETL outputs."""
+        return build_audit_fields(
+            raw_row=raw_row,
+            source_url=source_url,
+            method=method,
+            collected_at=collected_at,
+        )
 
     def _upsert_ingestion_run(
         self,
