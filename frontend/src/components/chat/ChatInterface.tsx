@@ -513,6 +513,42 @@ export function ChatInterface({ embedded = false }: { embedded?: boolean }) {
                   </div>
                 )}
 
+                {/* Evidence chain */}
+                {msg.evidence_chain && msg.evidence_chain.length > 0 && (
+                  <div style={{
+                    marginTop: 8, padding: "8px 12px", borderRadius: 8,
+                    background: "rgba(59,130,246,0.06)",
+                    border: "1px solid rgba(59,130,246,0.1)",
+                  }}>
+                    <div style={{
+                      fontSize: 10, fontWeight: 600, color: "#3b82f6",
+                      textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4,
+                    }}>
+                      Fontes consultadas
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {msg.evidence_chain.map((ev, i) => (
+                        <span key={i} style={{
+                          fontSize: 10, padding: "2px 8px", borderRadius: 4,
+                          background: "rgba(59,130,246,0.1)",
+                          color: "#94a39a",
+                          fontFamily: "var(--font-mono, monospace)",
+                        }}>
+                          {ev.source} ({ev.result_count})
+                        </span>
+                      ))}
+                    </div>
+                    {msg.cost_usd != null && msg.cost_usd > 0 && (
+                      <div style={{
+                        marginTop: 4, fontSize: 9, color: "#5a6b60",
+                        fontFamily: "var(--font-mono, monospace)",
+                      }}>
+                        Custo: ${msg.cost_usd.toFixed(4)}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Suggestion chips */}
                 {msg.suggestions && msg.suggestions.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
