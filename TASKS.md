@@ -892,14 +892,13 @@
 
 > Geradas pela auditoria completa do código-fonte. Ref: `docs/TECHNICAL_DOSSIE_2026-03.md`
 
-### TASK-105: Rotacionar 3 API Keys Expostas 🔴 (P0 — URGENTE)
-- [ ] Rotacionar key Portal da Transparência
-- [ ] Rotacionar key DataJud
-- [ ] Rotacionar key Brave Search
-- [ ] Atualizar `.env` na VPS (`/opt/bracc/infra/.env`)
-- [ ] Considerar BFG Repo Cleaner para limpar git history
-> **Risco:** Keys visíveis em `git log -p` para qualquer pessoa com clone do repo
-> **Esforço:** 30min | **Impacto:** Segurança crítica
+### TASK-105: Rotacionar API Keys Expostas ✅ (03/03/2026)
+- [x] Rotacionar key Portal da Transparência (nova key aplicada na VPS)
+- [x] DataJud — API pública, sem necessidade de rotação (https://datajud-wiki.cnj.jus.br/api-publica/acesso)
+- [x] Brave Search — rotacionada pelo usuário (aguardando nova key para atualizar VPS)
+- [x] Atualizar `.env` na VPS (`/opt/bracc/infra/.env`)
+- [ ] Considerar BFG Repo Cleaner para limpar git history (P2)
+> **Arquivos:** `/opt/bracc/infra/.env`
 
 ### TASK-106: Whitelist Cypher Injection em `_tool_cypher` ✅ (03/03/2026)
 - [x] Substituir blacklist (`CREATE, DELETE, MERGE...`) por whitelist
