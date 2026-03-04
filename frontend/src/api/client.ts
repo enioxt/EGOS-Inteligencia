@@ -49,6 +49,14 @@ export interface SourceAttribution {
   extracted_at?: string | null;
 }
 
+export interface OSINTFilters {
+  isPep: boolean;
+  hasSanctions: boolean;
+  hasContracts: boolean;
+  city?: string;
+  state?: string;
+}
+
 export interface SearchResult {
   id: string;
   name: string;
@@ -102,11 +110,18 @@ export function searchEntities(
   type?: string,
   page = 1,
   size = 20,
+  filters?: OSINTFilters,
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({ q: query, page: String(page), size: String(size) });
   if (type && type !== "all") {
     params.set("type", type);
   }
+  if (filters?.isPep) params.set("is_pep", "true");
+  if (filters?.hasSanctions) params.set("has_sanctions", "true");
+  if (filters?.hasContracts) params.set("has_contracts", "true");
+  if (filters?.city) params.set("city", filters.city);
+  if (filters?.state) params.set("state", filters.state);
+
   return apiFetch<SearchResponse>(`/api/v1/search?${params}`);
 }
 

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { searchEntities, type SearchResult } from "@/api/client";
+import { searchEntities, type SearchResult, type OSINTFilters } from "@/api/client";
 import { Spinner } from "@/components/common/Spinner";
 import { SearchBar, type SearchParams } from "@/components/search/SearchBar";
-import { SearchResults } from "@/components/search/SearchResults";
+import { GroupedSearchResults } from "@/components/search/GroupedSearchResults";
+import { AdvancedSearchFilters } from "@/components/search/AdvancedSearchFilters";
 import { addJourneyEntry } from "@/lib/journey";
 
 import styles from "./Search.module.css";
@@ -15,12 +16,17 @@ export function Search() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<OSINTFilters>({
+    isPep: false,
+    hasSanctions: false,
+    hasContracts: false,
+  });
 
   const handleSearch = async (params: SearchParams) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await searchEntities(params.query, params.type);
+      const response = await searchEntities(params.query, params.type, 1, 20, filters);
       addJourneyEntry({ type: "search", title: params.query.slice(0, 80), query: params.query, url: "/app/search", description: response.results.length + " resultados" });
       setResults(response.results);
       setHasSearched(true);
@@ -34,14 +40,19 @@ export function Search() {
 
   return (
     <div className={styles.page}>
-      <SearchBar onSearch={handleSearch} isLoading={isLoading} />
-      {error && <p className={styles.error}>{error}</p>}
-      {isLoading && (
-        <div className={styles.loading}>
-          <Spinner />
-        </div>
-      )}
-      {hasSearched && !isLoading && !error && <SearchResults results={results} />}
+      <div style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
+        <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem", color: "var(--text-primary)" }}>Central de Pesquisa Inteligente</h1>
+        <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+        <AdvancedSearchFilters filters={filters} onFilterChange={setFilters} />
+
+        {error && <p className={styles.error}>{error}</p>}
+        {isLoading && (
+          <div className={styles.loading}>
+            <Spinner />
+          </div>
+        )}
+        {hasSearched && !isLoading && !error && <GroupedSearchResults results={results} />}
+      </div>
     </div>
   );
 }
