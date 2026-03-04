@@ -70,7 +70,27 @@ for f in $STAGED_FILES; do
   fi
 done
 
-[ $ERRORS -eq 0 ] && echo -e "${GREEN}   ✅ No secrets or large files${NC}"
+# 1d. Personal data files (CV, resume, curriculum — NEVER in public repo)
+PERSONAL_FILES=$(echo "$STAGED_FILES" | grep -iE 'cv|resume|curriculum|amplify|cover.letter|salary' || true)
+if [ -n "$PERSONAL_FILES" ]; then
+  echo -e "${RED}   ❌ BLOCKED: Personal file(s) detected — do NOT commit to public repo!${NC}"
+  echo -e "${RED}   Move to ~/personal/ instead: $PERSONAL_FILES${NC}"
+  ERRORS=$((ERRORS + 1))
+fi
+
+# 1e. Personal data in staged content (phone, CPF patterns)
+for f in $STAGED_FILES; do
+  if [ -f "$f" ]; then
+    PII=$(grep -nE '\+55\s?[0-9]{2}\s?[0-9]{4,5}|[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}|enioxt@gmail' "$f" 2>/dev/null | head -3 || true)
+    if [ -n "$PII" ]; then
+      echo -e "${RED}   ❌ BLOCKED: PII found in $f — remove before committing${NC}"
+      echo "   $PII"
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+done
+
+[ $ERRORS -eq 0 ] && echo -e "${GREEN}   ✅ No secrets, large files, or personal data${NC}"
 
 # ─── SECTION 2: PYTHON CHECKS ────────────────────────────────
 

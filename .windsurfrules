@@ -174,10 +174,46 @@ framework: "egos-lab"
 | Local `.guarani/PREFERENCES.md` | Python/React stack rules | **Override** |
 | Local `.windsurfrules` | This file | **Highest priority** |
 
-## CODEX CLI INTEGRATION (v1.0)
+## PERSONAL vs OPEN-SOURCE (CRITICAL)
 
-> **Codex = async worker delegated by Cascade.** Never runs unsupervised.
+> **Lesson learned 2026-03-04:** Personal data (CV, job applications, phone, email)
+> was accidentally committed to TASKS.md in the public repo.
+
+### Rules
+
+1. **NEVER commit personal data** (CV, resume, job apps, salary, phone, CPF, address) to any public repo.
+2. **Personal files live in `~/personal/`** — never inside `br-acc/`, `egos-lab/`, or `carteira-livre/`.
+3. **TASKS.md is PUBLIC.** Do not add personal tasks (job search, CV, interviews, finances).
+4. **Pre-commit must block** files matching: `*cv*`, `*resume*`, `*curriculum*`, `*amplify*`.
+5. **When in doubt, ASK** the user: "This looks personal — should it go in the public repo?"
+
+### What IS public (open-source)
+
+- Code, configs, docs, tasks, roadmaps for EGOS/br-acc/egos-lab
+- Technical analysis of other repos (Transparencia-360, Brazil Visible)
+- Codex integration rules, workflow improvements
+
+### What is NEVER public
+
+- CVs, resumes, cover letters, job applications
+- Personal contact info (phone, personal email, address)
+- Salary expectations, financial data, interview notes
+- Any file in `~/personal/`
+
+## CODEX CLI INTEGRATION (v1.1)
+
+> **Codex = async worker.** Cascade opens a terminal, delegates, continues working.
 > **Login:** `codex login` (browser OAuth). **Config:** `~/.codex/config.toml`
+
+### Async Pattern (CORRECT)
+
+```
+1. Cascade opens a NEW TERMINAL for Codex task
+2. Cascade runs: codex exec "task description" --cd /path/to/repo
+3. Cascade DOES NOT WAIT — continues working on other tasks
+4. Later, Cascade checks terminal output or `codex cloud list`
+5. Cascade reviews diff before any commit
+```
 
 ### Roles
 
@@ -187,30 +223,17 @@ framework: "egos-lab"
 | **Test Writer** | `codex exec "write integration tests for {module}"` | After new API routes |
 | **Doc Updater** | `codex exec "update SYSTEM_MAP.md with current endpoints"` | After major changes |
 | **Bug Fixer** | `codex exec "fix the failing test in {file}"` | CI failures |
-| **Async Refactor** | `codex cloud exec --env ENV "{task}"` | P2 cleanup tasks |
 | **Security Audit** | `codex exec "audit {file} for injection vulnerabilities"` | Before deploy |
 
 ### Delegation Rules
 
 1. **Cascade delegates, Codex executes.** Cascade defines task, reviews output.
-2. **Read-only by default.** Use `--approval-mode read-only` unless task requires edits.
-3. **Never auto-apply.** Always `codex cloud diff {id}` before `codex cloud apply {id}`.
+2. **Sandbox read-only by default.** Use `-s read-only` unless task requires edits.
+3. **Never auto-apply cloud tasks.** Always `codex cloud diff {id}` before `codex cloud apply {id}`.
 4. **Scope limit.** One module/file per task. Never "refactor entire codebase".
 5. **FROZEN ZONES apply.** Codex must NOT touch auth, docker-compose, Neo4j schema.
 6. **Review output.** Cascade checks diff before committing. Codex errors are common.
-
-### Pipeline Integration
-
-```bash
-# Pre-push: Codex reviews staged changes
-codex exec --approval-mode read-only "Review these changes for bugs, security issues, and LGPD compliance. Report only critical findings."
-
-# Async P2 task delegation
-codex cloud exec --env ENV "Write integration tests for api/src/bracc/routers/monitor.py"
-codex cloud list          # Check status
-codex cloud diff {id}     # Review before applying
-codex cloud apply {id}    # Apply only after Cascade review
-```
+7. **Model:** Default `gpt-5.3-codex`. Do NOT use `gpt-4o` (unsupported with ChatGPT account).
 
 ## MCPs
 

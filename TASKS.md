@@ -1134,13 +1134,6 @@
 - [x] Backend-frontend sync check in pre-commit (Section 8)
 > **Arquivos:** `chat.py`, `Caddyfile`, `Landing.tsx`, `pre-commit-v2.sh`
 
-### TASK-132: CV Amplify IT ✅ (04/03/2026)
-- [x] Created world-class HTML CV (ATS-friendly, international standard)
-- [x] Focused on EGOS Inteligência, EGOS Lab, and Carteira Livre
-- [x] Included Police Investigator experience (soft skills, investigative mindset)
-- [x] Ready for PDF export via browser
-> **Arquivo:** `cv-enio-amplifyit.html`
-
 ---
 
 *"Siga o dinheiro público. Dados abertos, código aberto."*
