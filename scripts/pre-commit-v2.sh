@@ -117,8 +117,8 @@ if [ -n "$TSX_FILES" ]; then
   # 3b. console.log flood (from carteira-livre)
   for f in $TSX_FILES; do
     if [[ "$f" != *"test"* ]] && [[ "$f" != *"spec"* ]]; then
-      COUNT=$(grep -c "console\.log" "$f" 2>/dev/null || echo "0")
-      if [ "$COUNT" -gt 5 ]; then
+      COUNT=$(grep -c "console\.log" "$f" 2>/dev/null | tail -1 || echo "0")
+      if [ "${COUNT:-0}" -gt 5 ] 2>/dev/null; then
         echo -e "${YELLOW}   ⚠️  $f: $COUNT console.log statements${NC}"
         WARNINGS=$((WARNINGS + 1))
       fi
