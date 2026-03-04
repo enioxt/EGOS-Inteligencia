@@ -1,6 +1,6 @@
 """OpenRouter function-calling tool definitions for EGOS Inteligência chat agent.
 
-26 tools covering: Neo4j graph, Portal da Transparência, DataJud, BNMP,
+27 tools covering: Neo4j graph (+ path finder), Portal da Transparência, DataJud, BNMP,
 Querido Diário, PNCP, OAB, OpenCNPJ, Brave Search, and more.
 """
 
@@ -40,6 +40,22 @@ TOOLS = [
                     "entity_id": {"type": "string", "description": "ID da entidade (elementId do Neo4j)"},
                 },
                 "required": ["entity_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_connection_path",
+            "description": "Descobre conexões ocultas entre duas entidades (pessoas, empresas, sanções) através de múltiplos graus de separação. Busca caminhos no grafo: A é sócio de B, que doou para C, que tem contrato com D. Útil para investigações de rede.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "entity_a": {"type": "string", "description": "Nome ou CNPJ da primeira entidade (ex: 'GRUPO PATENSE', 'JOSE DA SILVA')"},
+                    "entity_b": {"type": "string", "description": "Nome ou CNPJ da segunda entidade (ex: 'BNDES', 'PETROBRAS')"},
+                    "max_depth": {"type": "integer", "description": "Graus de separação máximos (1-6). Default: 4. Mais graus = busca mais profunda mas mais lenta.", "default": 4},
+                },
+                "required": ["entity_a", "entity_b"],
             },
         },
     },

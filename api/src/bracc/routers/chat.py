@@ -328,6 +328,98 @@ async def _tool_data_summary(session: AsyncSession) -> dict[str, Any]:
     return summary
 
 
+async def _tool_find_path(
+    session: AsyncSession,
+    entity_a_name: str,
+    entity_b_name: str,
+    max_depth: int = 4,
+) -> dict[str, Any]:
+    """Find shortest connection path between two entities (multi-hop traversal).
+
+    Searches up to max_depth hops. Returns the path with relationship types,
+    node names, and hop count. Cost is low for sparse graphs (<100K rels).
+    """
+    max_depth = min(max_depth, 6)  # Hard cap at 6 hops for safety
+    try:
+        # First, find both entities by name (fuzzy)
+        find_cypher = """
+        CALL db.index.fulltext.queryNodes('entity_search', $query)
+        YIELD node, score
+        WHERE score > 0.5
+        RETURN elementId(node) AS id, labels(node) AS labels,
+               coalesce(node.razao_social, node.name, node.nome_fantasia, '') AS name,
+               score
+        ORDER BY score DESC LIMIT 3
+        """
+        result_a = await session.run(find_cypher, {"query": entity_a_name})
+        entities_a = [dict(r) async for r in result_a]
+
+        result_b = await session.run(find_cypher, {"query": entity_b_name})
+        entities_b = [dict(r) async for r in result_b]
+
+        if not entities_a:
+            return {"error": f"Entidade A não encontrada: {entity_a_name}", "entities_found": []}
+        if not entities_b:
+            return {"error": f"Entidade B não encontrada: {entity_b_name}", "entities_found": []}
+
+        # Try shortest path between best matches
+        path_cypher = """
+        MATCH (a) WHERE elementId(a) = $id_a
+        MATCH (b) WHERE elementId(b) = $id_b
+        MATCH path = shortestPath((a)-[*1..$max_depth]-(b))
+        WITH path, length(path) AS hops
+        RETURN
+          [n IN nodes(path) |
+            {id: elementId(n), labels: labels(n),
+             name: coalesce(n.razao_social, n.name, n.nome_fantasia, n.cpf, '')}
+          ] AS nodes,
+          [r IN relationships(path) |
+            {type: type(r), from: elementId(startNode(r)), to: elementId(endNode(r))}
+          ] AS relationships,
+          hops
+        LIMIT 3
+        """
+        best_paths = []
+        for ea in entities_a[:2]:
+            for eb in entities_b[:2]:
+                if ea["id"] == eb["id"]:
+                    continue
+                result = await session.run(
+                    path_cypher,
+                    {"id_a": ea["id"], "id_b": eb["id"], "max_depth": max_depth},
+                )
+                async for record in result:
+                    best_paths.append({
+                        "entity_a": ea["name"],
+                        "entity_b": eb["name"],
+                        "hops": record["hops"],
+                        "nodes": record["nodes"],
+                        "relationships": record["relationships"],
+                    })
+
+        if not best_paths:
+            return {
+                "connection_found": False,
+                "message": f"Nenhuma conexão encontrada entre '{entity_a_name}' e '{entity_b_name}' em até {max_depth} graus.",
+                "entity_a_candidates": [{"name": e["name"], "type": e["labels"][0]} for e in entities_a[:3]],
+                "entity_b_candidates": [{"name": e["name"], "type": e["labels"][0]} for e in entities_b[:3]],
+                "suggestion": "Tente aumentar max_depth ou verificar se os relacionamentos SOCIO_DE/DOOU estão carregados.",
+            }
+
+        # Sort by hops (shortest first)
+        best_paths.sort(key=lambda p: p["hops"])
+        return {
+            "connection_found": True,
+            "paths": best_paths[:3],
+            "total_paths_found": len(best_paths),
+            "min_hops": best_paths[0]["hops"] if best_paths else 0,
+        }
+
+    except Exception as e:
+        logger.warning("Path finder failed: %s", e)
+        return {"error": str(e), "suggestion": "Verifique se APOC está instalado e os índices existem."}
+
+
 async def _tool_connections(session: AsyncSession, entity_id: str) -> list[dict[str, str]]:
     try:
         cypher = """
@@ -444,6 +536,13 @@ async def _call_openrouter(
                     result = await _tool_stats(session)
                 elif fn_name == "get_entity_connections":
                     result = await _tool_connections(session, fn_args.get("entity_id", ""))
+                elif fn_name == "find_connection_path":
+                    result = await _tool_find_path(
+                        session,
+                        fn_args.get("entity_a", ""),
+                        fn_args.get("entity_b", ""),
+                        min(fn_args.get("max_depth", 4), 6),
+                    )
                 elif fn_name == "web_search":
                     result = await tool_web_search(
                         fn_args.get("query", ""),
@@ -566,6 +665,7 @@ async def _call_openrouter(
                     "search_entities": ("Neo4j Graph", "neo4j://localhost:7687"),
                     "get_graph_stats": ("Neo4j Graph", "neo4j://localhost:7687"),
                     "get_entity_connections": ("Neo4j Graph", "neo4j://localhost:7687"),
+                    "find_connection_path": ("Neo4j Graph — Path Finder", "neo4j://localhost:7687"),
                     "web_search": ("Brave Search / DuckDuckGo", "https://api.search.brave.com/"),
                     "search_emendas": ("Portal da Transparência — Emendas", "api.portaldatransparencia.gov.br"),
                     "search_transferencias": ("Portal da Transparência — Transferências", "api.portaldatransparencia.gov.br"),
