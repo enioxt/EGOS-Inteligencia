@@ -21,6 +21,7 @@ const Analytics = lazy(() => import("./pages/Analytics").then((m) => ({ default:
 const ReportsPage = lazy(() => import("./pages/Reports").then((m) => ({ default: m.Reports })));
 const ActivityPage = lazy(() => import("./pages/Activity").then((m) => ({ default: m.Activity })));
 const MethodologyPage = lazy(() => import("./pages/Methodology").then((m) => ({ default: m.Methodology })));
+const EagleEyePage = lazy(() => import("./pages/EagleEye").then((m) => ({ default: m.EagleEye })));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -47,7 +48,7 @@ export function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ page: location.pathname }),
-    }).catch(() => {});
+    }).catch(() => { });
   }, [location.pathname]);
 
   const restore = useAuthStore((s) => s.restore);
@@ -85,6 +86,7 @@ export function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="search" element={<Search />} />
+        <Route path="eagle-eye" element={<Suspense fallback={<Spinner />}><EagleEyePage /></Suspense>} />
         <Route path="analysis/:entityId" element={<Suspense fallback={<Spinner />}><EntityAnalysis /></Suspense>} />
         <Route path="graph/:entityId" element={<GraphRedirect />} />
         {IS_PATTERNS_ENABLED && <Route path="patterns" element={<Patterns />} />}

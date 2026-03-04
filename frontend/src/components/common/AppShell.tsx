@@ -10,6 +10,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  Eye,
   FolderOpen,
   LogOut,
   Moon,
@@ -32,6 +33,7 @@ import styles from "./AppShell.module.css";
 const NAV_ITEMS = [
   { path: "/app", icon: BarChart3, labelKey: "nav.dashboard" },
   { path: "/app/search", icon: Search, labelKey: "nav.search" },
+  { path: "/app/eagle-eye", icon: Eye, labelKey: "nav.eagleEye" },
   { path: "/app/pesquisas", icon: FolderOpen, labelKey: "nav.investigations" },
   { path: "/app/analytics", icon: Activity, labelKey: "nav.analytics" },
   { path: "/app/reports", icon: FileText, labelKey: "nav.reports" },
@@ -152,19 +154,19 @@ export function AppShell() {
           {NAV_ITEMS
             .filter((item) => !(IS_PUBLIC_MODE && item.path.includes("pesquisas")))
             .map(({ path, icon: Icon, labelKey }) => (
-            <Link
-              key={path}
-              to={path}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', fontSize: '10px',
-                color: isActive(path) ? 'var(--color-primary, #3b82f6)' : 'var(--color-text-secondary, #94a3b8)',
-              }}
-            >
-              <Icon size={20} />
-              <span>{t(labelKey)}</span>
-            </Link>
-          ))}
+              <Link
+                key={path}
+                to={path}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                  padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', fontSize: '10px',
+                  color: isActive(path) ? 'var(--color-primary, #3b82f6)' : 'var(--color-text-secondary, #94a3b8)',
+                }}
+              >
+                <Icon size={20} />
+                <span>{t(labelKey)}</span>
+              </Link>
+            ))}
         </nav>
         <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
         <ToastContainer />
@@ -185,16 +187,16 @@ export function AppShell() {
           {NAV_ITEMS
             .filter((item) => !(IS_PUBLIC_MODE && item.path.includes("pesquisas")))
             .map(({ path, icon: Icon, labelKey }) => (
-            <Link
-              key={path}
-              to={path}
-              className={`${styles.navItem} ${isActive(path) ? styles.navItemActive : ""}`}
-              title={sidebarCollapsed ? t(labelKey) : undefined}
-            >
-              <Icon size={18} />
-              {!sidebarCollapsed && <span>{t(labelKey)}</span>}
-            </Link>
-          ))}
+              <Link
+                key={path}
+                to={path}
+                className={`${styles.navItem} ${isActive(path) ? styles.navItemActive : ""}`}
+                title={sidebarCollapsed ? t(labelKey) : undefined}
+              >
+                <Icon size={18} />
+                {!sidebarCollapsed && <span>{t(labelKey)}</span>}
+              </Link>
+            ))}
         </div>
 
         <div className={styles.sidebarFooter}>
