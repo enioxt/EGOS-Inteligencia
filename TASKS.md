@@ -924,16 +924,18 @@
 - [ ] **Risco:** Modifica TASKS.md/ROADMAP/README (nossos SSOT docs)
 > **PR:** https://github.com/enioxt/EGOS-Inteligencia/pull/31
 
-### TASK-103: Intelink Copy — Linguagem Neutra (só no que migrarmos) ⬜ (P1)
-- [ ] Substituir apenas nos componentes/features que formos usar no EGOS
-- [ ] "investigação/investigações" → "pesquisa/pesquisas"
-- [ ] "operação/operações" → "caso/casos" ou "análise/análises"
-- [ ] "acusado/acusados" → "envolvido/envolvidos" ou "mencionado"
-- [ ] "suspeito/suspeitos" → "pessoa de interesse" ou "mencionado"
-- [ ] "Inteligência Policial" → "Inteligência em Dados Públicos"
-- [ ] NÃO renomear pasta Intelink inteira — só o que for migrado
-- [ ] Manter ambos sites funcionando (intelink.ia.br + inteligencia.egos.ia.br)
+### TASK-103: Intelink Copy — Linguagem Neutra (só no que migrarmos) ⏳ (P1)
+- [x] "investigação/investigações" → "pesquisa/pesquisas" (i18n PT-BR já estava neutro, EN corrigido)
+- [x] Reports.tsx, Dashboard.tsx, PartnershipCTA.tsx — texto hardcoded corrigido
+- [x] i18n EN: "Investigate in depth" → "Research in depth"
+- [ ] "operação/operações" → "caso/casos" ou "análise/análises" (não encontrado em uso)
+- [ ] "acusado/acusados" → "envolvido/envolvidos" (não encontrado em UI)
+- [ ] "suspeito/suspeitos" → "pessoa de interesse" (não encontrado em UI)
+- [ ] "Inteligência Policial" → "Inteligência em Dados Públicos" (não encontrado em UI)
+- [x] NÃO renomear variáveis código (Investigation, investigations) — mantido para API compat
+- [x] Manter ambos sites funcionando (intelink.ia.br + inteligencia.egos.ia.br)
 > **Contexto Discord:** @ericklucioh perguntou "oq seria investigacoes e relatorios?" — @enioxt respondeu "Resquícios do Intelink, vou mudar o nome"
+> **Arquivos:** `Reports.tsx`, `Dashboard.tsx`, `PartnershipCTA.tsx`, `i18n.ts`
 
 ---
 
