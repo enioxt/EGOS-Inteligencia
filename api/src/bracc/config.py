@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     ai_model: str = "openai/gpt-4o-mini"
     redis_url: str = "redis://localhost:6379/0"
 
+    interop_service_key: str = ""
+
     model_config = {"env_prefix": "", "env_file": ".env"}
 
 

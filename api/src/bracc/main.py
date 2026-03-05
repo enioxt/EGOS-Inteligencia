@@ -25,6 +25,7 @@ from bracc.routers import (
     entity,
     gazette_monitor,
     graph,
+    interop,
     investigation,
     meta,
     monitor,
@@ -103,6 +104,7 @@ app.include_router(analytics.router)
 app.include_router(monitor.router)
 app.include_router(activity.router)
 app.include_router(gazette_monitor.router)
+app.include_router(interop.router)
 
 
 @app.get("/health")
