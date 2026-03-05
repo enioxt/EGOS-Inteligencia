@@ -18,7 +18,7 @@ COMPOSE_DIR="/opt/bracc/infra"
 LOG_FILE="/opt/bracc/logs/auto-heal.log"
 STATE_FILE="/opt/bracc/logs/heal-state.json"
 SITE_URL="https://inteligencia.egos.ia.br/"
-API_HEALTH="https://inteligencia.egos.ia.br/api/v1/health"
+API_HEALTH="https://inteligencia.egos.ia.br/health"
 MAX_LOG_LINES=1000
 MAX_CONSECUTIVE_FAILURES=3
 
