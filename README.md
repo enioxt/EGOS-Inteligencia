@@ -35,7 +35,7 @@ O EGOS Inteligência diverge significativamente do upstream:
 | **Algoritmos** | Básico | PageRank, Benford, HHI, Community Detection (roadmap) |
 | **Ecossistema** | Standalone | Integrado ao [EGOS Framework](https://egos.ia.br) (24 agentes AI) |
 
-Mantemos rastreamento do upstream e contribuímos PRs quando aplicável.
+Mantemos rastreamento do upstream e contribuímos PRs quando aplicável. Um job automatizado ([BR-ACC Monitor](scripts/README-bracc-monitor.md)) roda 2x ao dia (GitHub Actions) para listar forks, PRs e issues do upstream, categorizar mudanças e sugerir alinhamento do TASKS.md com PRs mergeados; notificações opcionais no Discord/Telegram.
 
 ---
 
@@ -285,7 +285,7 @@ Veja [ROADMAP.md](ROADMAP.md) para o plano completo. Destaques:
 
 EGOS Inteligência is an open-source platform for cross-referencing Brazilian public data, built on a graph database connecting companies, politicians, contracts, sanctions, and electoral donations.
 
-**Forked from** [World-Open-Graph/br-acc](https://github.com/World-Open-Graph/br-acc) with significant divergence: mobile-first UI, AI chatbot, LGPD-compliant CPF blocking, 14 OSINT tools via Discord/Telegram bots, 79 planned data sources, and integration with the [EGOS Framework](https://egos.ia.br) (24 AI agents).
+**Forked from** [World-Open-Graph/br-acc](https://github.com/World-Open-Graph/br-acc) with significant divergence: mobile-first UI, AI chatbot, LGPD-compliant CPF blocking, 14 OSINT tools via Discord/Telegram bots, 79 planned data sources, and integration with the [EGOS Framework](https://egos.ia.br) (24 AI agents). An automated [BR-ACC Monitor](scripts/README-bracc-monitor.md) runs twice daily (GitHub Actions) to track upstream forks, PRs, issues, and roadmap suggestions.
 
 ## Live Infrastructure
 
@@ -317,6 +317,7 @@ cd infra && docker compose up -d
 - Investigation upload, fork, and sharing (planned)
 - 79 data sources on roadmap (vs 13 upstream)
 - Integrated with EGOS ecosystem (24 AI agents, MCP tools)
+- Automated upstream monitor (forks, PRs, issues; TASK↔PR suggestions in JSON only, no automatic update to TASKS.md) 2x/day via GitHub Actions
 
 ## LGPD Compliance
 

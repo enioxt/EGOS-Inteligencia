@@ -154,11 +154,12 @@
 - [ ] Notificar bots (Telegram/Discord) sobre descobertas
 > **Referência:** `egos-lab/scripts/scan_ideas.ts`, `docs/plans/EGOS_LOST_GEMS.md`
 
-### TASK-013: Fork Monitor (GitHub #9) ⬜
-- [ ] Script 2x/dia checa forks de World-Open-Graph/br-acc
-- [ ] Detectar novos PRs, issues, contribuições
-- [ ] Alertar no Telegram/Discord
-- [ ] Comparar features entre forks
+### TASK-013: Fork Monitor (GitHub #9) ✅ (03/03/2026)
+- [x] Script 2x/dia checa forks de World-Open-Graph/br-acc
+- [x] Detectar novos PRs, issues, contribuições
+- [x] Alertar no Telegram/Discord (webhook + Bot API opcionais)
+- [x] Comparar features entre forks (categorização por arquivos; roadmap sync como sugestões no JSON)
+> **Arquivos:** `scripts/bracc-monitor.ts`, `.github/workflows/bracc-monitor.yml`, [scripts/README-bracc-monitor.md](scripts/README-bracc-monitor.md)
 
 ### TASK-014: Website Redesign (GitHub #21) ⬜
 - [ ] CMD+K global search (portar do Intelink)

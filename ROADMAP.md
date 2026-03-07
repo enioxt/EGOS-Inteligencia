@@ -648,7 +648,7 @@ Contabo VPS: 12 vCPU, 48GB RAM, 500GB SSD ($35/mo)
 | **Pipelines ETL** | #5 Extrateto, #12 IBGE, #13 DENATRAN, #14 Reguladoras, #15 Meio Ambiente, #16 SIAFI |
 | **Algoritmos** | #6 Benford, #7 HHI, #17 Entity Resolution |
 | **Frontend** | #21 Website Redesign (help wanted) |
-| **Infra** | #8 Bots, #9 Fork Monitor, #11 PR Coordination |
+| **Infra** | #8 Bots, #9 Fork Monitor ✅, #11 PR Coordination |
 | **i18n/Docs** | #1 Frontend PT-BR, #2 API PT-BR, #3 Tradução, #4 FAQ |
 | **Agentes** | #23 Gem Hunter |
 | **Global** | #18 Interoperabilidade (FtM, Aleph, ICIJ) |

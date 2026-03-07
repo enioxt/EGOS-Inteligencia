@@ -18,6 +18,10 @@ cd ../etl && uv sync --dev
 cd ../frontend && npm install
 ```
 
+## Scripts e automação
+
+O repositório inclui scripts opcionais. O **Monitor do upstream BR-ACC** (TASK-013) roda 2x ao dia via GitHub Actions para acompanhar forks, PRs e issues do upstream e sugestões de roadmap; ver [scripts/README-bracc-monitor.md](../../scripts/README-bracc-monitor.md) para uso e variáveis de ambiente.
+
 ## Checagens de Qualidade
 
 Execute antes de abrir PR:
