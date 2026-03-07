@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-06 | **Stars:** 74 ⭐ | **Forks:** 8 | **Patterns:** 10 | **Nodes:** 77.0M | **Rels:** 25.1M | **Tools:** 26 | **Tasks:** 103/141 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-06 | **Patterns:** 10 | **Nodes:** 77.0M | **Rels:** 25.1M | **Tools:** 26 | **Tasks:** 103/141 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -1234,6 +1234,57 @@
 > **Depende de:** TASK-001 (ETL) para dados completos
 
 ### TASK-134: [MOVED] Forja — Moved to private repo (github.com/enioxt/FORJA) ✅ (05/03/2026)
+
+---
+
+## P1 — Novas Tasks (Sprint 06/03/2026)
+
+### TASK-135: Padrão de Relatórios — Disclaimers, Fontes, Colaboração ⬜ (P1)
+- [x] Criar template padrão de relatórios (`docs/standards/REPORT_STANDARDS.md`)
+- [ ] Aplicar padrão ao relatório Vorcaro v2 (disclaimer legal, rodapé, fontes por afirmação)
+- [ ] Aplicar padrão a todos os relatórios futuros gerados pelo bot/sistema
+- [ ] Criar validador automático (agent) que verifica conformidade de relatórios
+> **Princípio:** Nenhuma acusação, fontes rastreáveis, convite à correção.
+> **Arquivo:** `docs/standards/REPORT_STANDARDS.md`
+
+### TASK-136: Provenance/Não-Repúdio — Integrar em Pipelines ⬜ (P0)
+- [x] Módulo `bracc_etl/provenance.py` criado com SHA-256 determinístico
+- [x] Testes unitários (`tests/test_provenance.py`)
+- [ ] Integrar `build_audit_fields()` no pipeline CNPJ/QSA
+- [ ] Integrar no pipeline Sanctions (CEIS/CNEP)
+- [ ] Integrar no pipeline DataJud
+- [ ] Marcar dados legados como `audit_status = "legacy"` via script Cypher
+- [ ] Criar nó `:DataSource` + rel `[:PROVENANCE]` no grafo para fontes críticas
+- [ ] Validar que hash é estável (mesmo input → mesmo hash) em produção
+> **Arquivo:** `etl/src/bracc_etl/provenance.py`
+> **Plano:** `docs/analysis/MYCELIUM_AUDIT_TRAIL_2026-03.md`
+
+### TASK-137: Mapa de Bases Governamentais + Posicionamento ⬜ (P1)
+- [x] Criar mapa de bases públicas vs restritas (`docs/standards/GOVERNMENT_DATABASES_MAP.md`)
+- [ ] Adicionar seção "Para Autoridades" na landing page do br-acc
+- [ ] Criar página `/authorities` no frontend com proposta de valor
+- [ ] Incluir mapa de bases na documentação do README
+- [ ] Preparar one-pager PDF para envio a órgãos (MP, CGU, TCU, PF)
+> **Proposta:** Código aberto + dados públicos + infraestrutura gratuita para autoridades.
+> **Arquivo:** `docs/standards/GOVERNMENT_DATABASES_MAP.md`
+
+### TASK-138: DataJud — Ingestão de Dados Judiciais ⬜ (P1)
+- [ ] Obter credencial de acesso à API DataJud (CNJ)
+- [ ] Executar `download_datajud.py` com filtros por entidades do caso Vorcaro
+- [ ] Rodar pipeline DataJud para carregar processos no Neo4j
+- [ ] Cruzar processos judiciais com entidades já mapeadas (Master, Viking, Entre)
+> **Pipeline:** `etl/src/bracc_etl/pipelines/datajud.py` (existe, 0 dados carregados)
+> **Depende de:** Acesso à API DataJud
+
+### TASK-139: Caso Vorcaro v3 — Expansão com Dados Cruzados ⬜ (P1)
+- [x] v1: Fatos oficiais + entidades manuais (06/03/2026)
+- [x] v2: Neo4j cross-reference — 8 CNPJs, 15 empresas Vorcaro, 8 sócios, 0 sanções CEIS/CNEP
+- [ ] v3: Aplicar REPORT_STANDARDS (disclaimer, rodapé, provenance)
+- [ ] v3: Expandir rede 2º grau (sócios dos sócios)
+- [ ] v3: Cruzar com DataJud (quando disponível)
+- [ ] v3: Cruzar com Diários Oficiais (Querido Diário)
+- [ ] v3: Identificar os 14 acusados CVM restantes (requer corpo do PAS)
+> **Arquivo:** `docs/cases/caso-vorcaro-mapa-publico.md`
 
 ---
 
