@@ -4,13 +4,9 @@ Periodically scans official gazettes for investigative patterns.
 Feeds findings into the Activity Feed.
 Can be triggered via API or cron.
 """
-import asyncio
-import json
 import logging
-import os
 from datetime import datetime, timedelta
 from typing import Any
-from urllib.parse import quote_plus
 
 import httpx
 from fastapi import APIRouter

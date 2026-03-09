@@ -25,7 +25,7 @@ O EGOS Inteligência diverge significativamente do upstream:
 |---|---|---|
 | **Idioma** | Inglês | Português-BR nativo |
 | **Interface** | Desktop-only, requer login | Mobile-first, público, chatbot AI |
-| **Dados carregados** | Demo/seed | 278k nós + 53.6M empresas (ETL em andamento) |
+| **Dados carregados** | Demo/seed | **9,1M nós** (8,8M empresas + 133K PEPs + 23K sanções) |
 | **Bots AI** | Nenhum | Discord + Telegram (14 ferramentas OSINT) |
 | **Investigações** | Não | Upload, fork, compartilhamento público |
 | **Relatórios** | Não | 11 relatórios publicados (ex: Patense R$217M BNDES) |
@@ -67,7 +67,7 @@ O EGOS Inteligência faz isso automaticamente:
 | Processos no STF | STF | 2,38M casos |
 | Patrimônio de candidatos | TSE Bens | 14,3M bens declarados |
 
-**Meta: 141M nós e 92M conexões.** Status atual: 278.501 nós carregados, CNPJ ETL em progresso.
+**Status atual: 9.166.587 nós carregados.** Meta: 141M nós e 92M conexões. CNPJ ETL concluído para 8,8M empresas.
 
 > **Importante:** Padrões encontrados são **sinais**, não prova jurídica. Toda conclusão requer revisão humana.
 
@@ -91,24 +91,21 @@ Busque licitações de saúde em São Paulo
 Quem são os maiores supersalários do TJSP?
 ```
 
-**14 ferramentas OSINT integradas:**
+**26 ferramentas OSINT integradas** (testadas em 2026-03-03 — [relatório completo](docs/SYSTEM_CAPABILITIES_2026-03.md)):
 
-| Ferramenta | O Que Faz | Fonte |
+| Categoria | Ferramentas | Fonte |
 |---|---|---|
-| `egos_meta_stats` | Estatísticas gerais do grafo | EGOS Inteligência |
-| `egos_company_graph` | Grafo de vínculos por CNPJ | EGOS Inteligência |
-| `egos_company_patterns` | Padrões de risco de empresa | EGOS Inteligência |
-| `bndes_search` | Financiamentos do BNDES (2002-presente) | BNDES Dados Abertos |
-| `fetch_top_earners` | Maiores supersalários do Judiciário | Extrateto |
-| `check_specific_member` | Dados de servidor público | Extrateto |
-| `get_member_history` | Histórico de pagamentos | Extrateto |
-| `list_orgaos` | Ranking de órgãos do Judiciário | Extrateto |
-| `list_estados` | Estatísticas por estado | Extrateto |
-| `search_gazettes` | Diários oficiais de 5.570+ municípios | Querido Diário |
-| `search_licitacoes` | Licitações e pregões | Querido Diário |
-| `search_contratos` | Contratos públicos | Querido Diário |
-| `web_search` | Busca web em tempo real | Exa AI |
-| `brazil_news_search` | Notícias recentes do Brasil | Exa AI |
+| **Grafo Neo4j** | search_entities, graph_stats, connections, cypher_query, data_summary | Neo4j (9,1M nós) |
+| **Portal Transparência** | servidores, licitações, CPGF, viagens, contratos, sanções, CNPJ | gov.br (API key) |
+| **Câmara dos Deputados** | CEAP (gastos), votações nominais | dadosabertos.camara.leg.br |
+| **Judiciário** | processos (DataJud), mandados de prisão (BNMP) | CNJ |
+| **Diários Oficiais** | search_gazettes (5.570+ municípios) | Querido Diário (OKBR) |
+| **Empresas** | cnpj_info, opencnpj, sanções CEIS/CNEP | Portal Transparência + OpenCNPJ |
+| **Licitações** | PNCP (federal/estadual/municipal) | pncp.gov.br |
+| **Segurança** | procurados (PF/Interpol), lista suja (trabalho escravo) | gov.br |
+| **Jurídico** | OAB (verificação de advogado) | cna.oab.org.br |
+| **Web** | Brave Search + DuckDuckGo fallback | brave.com/search/api |
+| **Municipal** | emendas, transferências federais, PEPs por cidade | TransfereGov API |
 
 ### Opção 2: API Pública
 
@@ -129,21 +126,62 @@ curl http://217.216.95.126/api/v1/public/graph/company/11222333000181
 
 ### Opção 3: Rodar Localmente
 
+#### Pré-requisitos
+- **Docker** e **Docker Compose** instalados ([guia de instalação](https://docs.docker.com/get-docker/))
+- **8GB RAM** mínimo (16GB recomendado)
+- **10GB disco** livre
+
+#### Passo 1: Clonar e configurar
 ```bash
-git clone https://github.com/enioxt/br-acc.git
-cd br-acc
-cp .env.example .env  # Edite NEO4J_PASSWORD
+git clone https://github.com/enioxt/EGOS-Inteligencia.git
+cd EGOS-Inteligencia
+cp .env.example infra/.env
+```
 
+#### Passo 2: Obter API keys (gratuitas)
+
+Edite `infra/.env` e adicione suas keys:
+
+| Key | Onde obter | Custo |
+|-----|-----------|-------|
+| `NEO4J_PASSWORD` | Escolha uma senha forte | Grátis |
+| `OPENROUTER_API_KEY` | [openrouter.ai/keys](https://openrouter.ai/keys) (login com Google) | Grátis (Gemini Flash) |
+| `PORTAL_TRANSPARENCIA_API_KEY` | [portaldatransparencia.gov.br/api-de-dados](https://portaldatransparencia.gov.br/api-de-dados/cadastrar-email) | Grátis |
+| `BRAVE_API_KEY` | [brave.com/search/api](https://brave.com/search/api/) (2000 buscas/mês grátis) | Grátis |
+| `DATAJUD_API_KEY` | [datajud-wiki.cnj.jus.br](https://datajud-wiki.cnj.jus.br/api-publica/acesso) | Grátis (API pública) |
+
+> **Segurança:** Nunca commite o arquivo `.env`. Ele já está no `.gitignore`.
+
+#### Passo 3: Subir os containers
+```bash
 cd infra && docker compose up -d
-# Aguarde Neo4j ficar healthy (~30s)
+# Aguarde Neo4j ficar healthy (~30-60s)
+docker compose ps  # Verifique: neo4j, redis, api, frontend devem estar 'healthy'
+```
 
+#### Passo 4: Carregar dados demo
+```bash
 export NEO4J_PASSWORD=sua_senha
-bash infra/scripts/seed-dev.sh
+bash scripts/seed-dev.sh  # Carrega ~1000 entidades demo
 ```
 
 - **Frontend:** http://localhost:3000
 - **API:** http://localhost:8000/health
 - **Neo4j Browser:** http://localhost:7474
+- **Chat AI:** http://localhost:3000 (precisa de OPENROUTER_API_KEY)
+
+#### Usando com Windsurf IDE
+1. Abra a pasta do projeto no Windsurf
+2. O Windsurf detectará automaticamente o Docker Compose
+3. Use o terminal integrado para rodar `cd infra && docker compose up -d`
+4. O Cascade (AI assistant) pode ajudar com queries Cypher e debugging
+5. Veja os workflows disponíveis em `.windsurf/workflows/`
+
+#### Usando com Antigravity IDE
+1. Abra a pasta do projeto no Antigravity
+2. Configure o terminal para usar o Docker Compose
+3. Use o painel de AI para explorar o código e a documentação
+4. As API keys devem ser configuradas no `infra/.env` (não no IDE)
 
 ---
 
@@ -189,11 +227,11 @@ Veja [ROADMAP.md](ROADMAP.md) para o plano completo. Destaques:
 | Fase | Status | O Que |
 |---|---|---|
 | **CNPJ ETL** | 🔵 Em andamento | 53.6M empresas da Receita Federal |
-| **Chatbot AI** | 🔵 Em desenvolvimento | Interface conversacional no website |
+| **Chatbot AI** | ✅ Operacional | 26 ferramentas OSINT, Gemini 2.0 Flash, R$0,006/consulta |
 | **Redis Cache** | ✅ Pronto | Cache-aside para queries frequentes |
 | **GDS Algoritmos** | 🟡 Planejado | PageRank, Community Detection, Shortest Path |
-| **Investigações** | 🟡 Planejado | Upload, fork, compartilhamento, exportação |
-| **Journey Tracker** | 🟡 Planejado | Rastreamento de passos de investigação |
+| **Investigações** | ✅ Operacional | CRUD, export JSON/PDF, grafo visual |
+| **Journey Tracker** | ✅ Operacional | localStorage, export JSON/MD, Web Share API |
 | **79 Fontes** | 🟡 Gradual | DataJud, IBGE, DENATRAN, reguladoras... |
 
 ---
@@ -225,7 +263,7 @@ Veja [ROADMAP.md](ROADMAP.md) para o plano completo. Destaques:
 
 ---
 
-## Legal & Ética
+## Legal & Ethics
 
 - [Política de Ética](ETHICS.md) — usos proibidos, linguagem neutra
 - [LGPD](LGPD.md) — tratamento de dados pessoais
@@ -262,9 +300,9 @@ EGOS Inteligência is an open-source platform for cross-referencing Brazilian pu
 
 ```bash
 git clone https://github.com/enioxt/br-acc.git && cd br-acc
-cp .env.example .env  # set NEO4J_PASSWORD
+cp .env.example infra/.env  # Edit: NEO4J_PASSWORD + API keys (see docs)
 cd infra && docker compose up -d
-export NEO4J_PASSWORD=your_password && bash infra/scripts/seed-dev.sh
+# See full setup guide: docs/SYSTEM_CAPABILITIES_2026-03.md
 ```
 
 ## Key Differences from Upstream
@@ -272,8 +310,8 @@ export NEO4J_PASSWORD=your_password && bash infra/scripts/seed-dev.sh
 - LGPD-compliant: CPF search/display blocked system-wide
 - Mobile-first responsive design with bottom navigation
 - AI chatbot as primary interface (not just search)
-- 14 OSINT tools via Discord + Telegram bots
-- 278,501 nodes loaded + 53.6M CNPJ ETL in progress
+- 26 OSINT tools via website chat + Discord + Telegram bots
+- 9.1M nodes loaded (8.8M companies, 133K PEPs, 23K sanctions)
 - Redis cache layer for performance
 - 11 real investigation reports published
 - Investigation upload, fork, and sharing (planned)
@@ -290,6 +328,7 @@ CPF (Brazilian personal tax ID) is **never** searchable, displayable, or exporta
 | Documento | O que contém |
 |-----------|-------------|
 | **[Dossiê Técnico](docs/TECHNICAL_DOSSIE_2026-03.md)** | Audit completo: arquitetura, 23 features, 10 pontos fortes, 10 fracos, 8 riscos, 16 recomendações |
+| **[Capacidades do Sistema](docs/SYSTEM_CAPABILITIES_2026-03.md)** | 26 tools testadas, 42 endpoints, 14 APIs externas, comparação competitiva |
 | **[Análise Intelink vs EGOS](docs/MERGE_ANALYSIS.md)** | Comparação frame-by-frame, 3 alternativas de merge |
 | [Stack Decision](docs/analysis/STACK_SCALING_DECISION_2026-03.md) | Python vs Go — decisão de manter Python |
 | [Fontes de Dados](docs/data-sources.md) | 108 fontes documentadas |

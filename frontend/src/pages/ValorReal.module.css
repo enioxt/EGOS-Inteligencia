@@ -1,0 +1,231 @@
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: var(--text-primary);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #60A5FA, #34D399);
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #E2E8F0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card h2 svg {
+    color: #60A5FA;
+}
+
+.inputGroup {
+    margin-bottom: 1.25rem;
+}
+
+.inputGroup label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.inputPrefix {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.inputSuffix {
+    position: absolute;
+    right: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.input.withPrefix {
+    padding-left: 2.5rem;
+}
+
+.input.withSuffix {
+    padding-right: 2.5rem;
+}
+
+.input:focus {
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.resultRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.resultRow:last-child {
+    border-bottom: none;
+}
+
+.resultLabel {
+    color: var(--text-secondary);
+}
+
+.resultValue {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.resultValue.negative {
+    color: #F87171;
+}
+
+.resultValue.positive {
+    color: #34D399;
+}
+
+.resultValue.neutral {
+    color: #94A3B8;
+}
+
+.highlightBox {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(167, 139, 250, 0.1));
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.highlightBox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #8B5CF6, transparent);
+}
+
+.highlightBox h3 {
+    color: #A78BFA;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.highlightValue {
+    font-size: 3rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.highlightSub {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    line-height: 1.5;
+}
+
+.alertBox {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 4px solid #F59E0B;
+    border-radius: 4px;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.alertBox svg {
+    color: #F59E0B;
+    flex-shrink: 0;
+}
+
+.alertBox p {
+    color: #E2E8F0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

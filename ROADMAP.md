@@ -9,30 +9,31 @@
 
 ---
 
-## Status Atual (2026-03-02)
+## Status Atual (2026-03-06)
 
 | Métrica | Valor |
 |---|---|
-| **Nós no grafo** | 317.583 (crescendo — CNPJ ETL em andamento, meta: 90M+) |
-| **Relacionamentos** | 34.507 |
-| **Empresas** | 11.597 (CNPJ 53.6M em carregamento via ETL) |
+| **Entidades no grafo** | 77.035.803 (59.573.749 `Company` + 17.454.980 `Partner` + 7.074 `Person`) |
+| **Relacionamentos confirmados** | 25.091.492 `SOCIO_DE` |
+| **Empresas (`Company`)** | 59.573.749 |
+| **Partners carregados** | 17.454.980 / 24.6M esperados (~70%) |
 | **Sanções carregadas** | 23.847 (CEIS + CNEP) |
 | **OpenSanctions** | 4.136.365 entidades |
 | **PEP** | 133.859 Pessoas Expostas Politicamente |
 | **TSE** | Candidaturas + Doações + Bens (2022+2024, 1.7GB) |
 | **ICIJ Offshore Leaks** | 73MB baixado (Panama/Pandora Papers) |
-| **CNPJ Receita Federal** | 🔄 26GB extraído no Contabo, ETL Phase 1 em andamento |
+| **CNPJ Receita Federal** | ⚠️ Carga principal concluída; pós-load bloqueado por `run_id` ausente em `linking_hooks.py` |
 | **DataJud CNJ** | Script pronto para 80M+ processos judiciais |
 | **Pipelines ETL prontos** | 46 |
-| **Bot Discord** | 14 ferramentas OSINT + fallback de modelos |
-| **Bot Telegram** | 14 ferramentas OSINT (@EGOSin_bot) |
+| **Bots** | 2 bots online via PM2 (`egos-discord`, `egos-telegram`) |
 | **Bot IA** | Gemini 2.0 Flash (free) → fallback pago, memória persistente |
 | **Servidor** | Contabo Cloud VPS 40 SSD — 12 vCPU, 48GB RAM, 500GB SSD ($35/mo) |
 | **Custo total** | $36/mês (100% autofinanciado, sem grants) |
 | **Frontend** | inteligencia.egos.ia.br — público, sem login, stats em tempo real |
 | **Investigações** | Patense v2 publicado (R$217M BNDES, 4 empresas, 563 ops) |
-| **Performance** | Scripts prontos: Neo4j 16G heap + 22G pagecache + 12 indexes |
-| **Framework** | Construído com EGOS (egos.ia.br) — 24 agentes, MCP tools |
+| **Control plane ETL** | `bracc-etl.service` inactive; `/api/v1/meta/etl-progress` stale em 90% |
+| **Performance** | 5/5 containers saudáveis; scripts prontos: Neo4j 16G heap + 22G pagecache + 12 indexes |
+| **Framework** | Construído com EGOS (egos.ia.br) + MCP-first governance |
 
 ---
 
@@ -67,7 +68,7 @@
 
 | # | Fonte | Status | Tamanho | Cruzamento |
 |---|---|---|---|---|
-| 5 | CNPJ/QSA Receita | ⏳ Baixando (23% de 60GB) | 53.6M empresas | CNPJ → Sócios → CPF |
+| 5 | CNPJ/QSA Receita | ⚠️ Carga principal concluída, pós-load bloqueado | 59.6M empresas + 17.45M partners | CNPJ → Sócios → CPF |
 | 6 | Juntas Comerciais | ⬜ Precisa pipeline | Variável | Atos societários |
 | — | Holdings (participações) | 🔧 Pipeline pronto | Variável | CNPJ → Controla → CNPJ |
 
@@ -248,7 +249,7 @@
 | API pública com dados reais | ✅ Feito | Automático |
 | Frontend público (inteligencia.egos.ia.br) | ✅ Feito (sem login) | Automático |
 
-**Resultado:** 210k+ nós nativos + 4.1M OpenSanctions = maior grafo aberto de entidades BR. 10 bases carregadas, 2 bots 24/7, frontend público.
+**Resultado:** 77M+ entidades no grafo, 25M+ relações `SOCIO_DE`, 2 bots 24/7 e frontend público. O bloqueio atual não é mais ingestão bruta, e sim o pós-load/telemetria do ETL do CNPJ.
 
 ### Fase 2 — Expansão Política (Semana 3-4)
 
@@ -325,7 +326,7 @@
 | [GRAS](https://worldbank.org) | World Bank | Procurement | ❌ Interno | 60 red flags em procurement |
 | [Querido Diário](https://queridodiario.ok.org.br) | OKFN Brasil | 5.570 municípios | ✅ MIT | Diários oficiais municipais |
 | [DadosJusBr/Extrateto](https://github.com/dadosjusbr) | DadosJusBr | Judiciário | ✅ | Salários do judiciário |
-| **BR/ACC** | **EGOS + World-Open-Graph** | **40k+ (crescendo)** | **✅ MIT** | **Grafo completo Brasil** |
+| **BR/ACC** | **EGOS + World-Open-Graph** | **77M+ entidades** | **✅ MIT** | **Grafo completo Brasil** |
 
 ---
 
@@ -554,10 +555,10 @@ O projeto [Intelink](https://intelink.ia.br) (EGOS) já implementou capacidades 
 | **IA** | ❌ Nenhuma | ✅ Model fallback (free→paid), memória persistente (Supabase) |
 | **Investigações** | ❌ Nenhuma | ✅ 11 relatórios reais (incl. Patense R$217M BNDES) |
 | **API BNDES** | ❌ | ✅ Consulta automática de financiamentos (2002-presente) |
-| **CNPJ** | Demo data | 🔄 53.6M empresas em carregamento (ETL pronto) |
+| **CNPJ** | Demo data | ⚠️ 59.6M `Company` + 17.45M `Partner` carregados; pós-load ainda falha |
 | **Custos** | Não publicado | ✅ $36/mo transparente, 100% autofinanciado |
 | **Comunidade** | Discord básico | ✅ Discord, Telegram, GitHub Issues automáticos |
-| **Dados** | ~40k nós (demo) | 278k nós reais + 4.1M OpenSanctions |
+| **Dados** | ~40k nós (demo) | 77.0M entidades reais + 25.1M `SOCIO_DE` |
 | **Docs** | README básico | ROADMAP + SHOWCASE + INVESTIGATIONS + DIAGNOSTIC + COMPARISON |
 | **CI/CD** | ❌ | ✅ Gitleaks + Bandit + Privacy Gate |
 

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -32,8 +32,8 @@ async def track_pageview(request: Request, event: PageViewEvent) -> AnalyticsRes
     try:
         redis = await _get_redis()
         if redis:
-            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            hour = datetime.now(timezone.utc).strftime("%H")
+            today = datetime.now(UTC).strftime("%Y-%m-%d")
+            hour = datetime.now(UTC).strftime("%H")
             ip_hash = str(hash(request.client.host if request.client else "unknown"))[-8:]
 
             pipe = redis.pipeline()
@@ -59,7 +59,7 @@ async def analytics_summary() -> dict[str, Any]:
         if not redis:
             return {"error": "Redis not available"}
 
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
 
         pv_today = await redis.hgetall(f"analytics:pv:{today}")
         uv_today = await redis.scard(f"analytics:uv:{today}")
@@ -68,7 +68,7 @@ async def analytics_summary() -> dict[str, Any]:
 
         daily_totals: dict[str, int] = {}
         for i in range(7):
-            d = (datetime.now(timezone.utc) - timedelta(days=i)).strftime("%Y-%m-%d")
+            d = (datetime.now(UTC) - timedelta(days=i)).strftime("%Y-%m-%d")
             pv = await redis.hgetall(f"analytics:pv:{d}")
             daily_totals[d] = sum(int(v) for v in pv.values()) if pv else 0
 

@@ -69,7 +69,7 @@ class QueridoDiarioPipeline(Pipeline):
         self._raw_acts: list[dict[str, str]] = []
         self.acts: list[dict[str, Any]] = []
         self.company_mentions: list[dict[str, Any]] = []
-        self.run_id = f"{self.name}_{pd.Timestamp.utcnow().strftime('%Y%m%d%H%M%S')}"
+        self.run_id = f"{self.name}_{pd.Timestamp.now('UTC').strftime('%Y%m%d%H%M%S')}"
 
     def extract(self) -> None:
         src_dir = Path(self.data_dir) / "querido_diario"

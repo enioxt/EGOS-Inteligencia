@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from neo4j import Driver
@@ -21,14 +21,20 @@ def _split_statements(raw: str) -> list[str]:
     return cleaned
 
 
-def _run_script(driver: Driver, neo4j_database: str, script_path: Path) -> None:
+def _run_script(
+    driver: Driver,
+    neo4j_database: str,
+    script_path: Path,
+    params: dict[str, Any] | None = None,
+) -> None:
     raw = script_path.read_text(encoding="utf-8")
     statements = _split_statements(raw)
     if not statements:
         return
+    query_params = params or {}
     with driver.session(database=neo4j_database) as session:
         for stmt in statements:
-            session.run(stmt)
+            session.run(stmt, query_params)
     logger.info(
         "Post-load linking script applied: %s (%d statements)",
         script_path.name,
@@ -42,6 +48,7 @@ def run_post_load_hooks(
     source: str,
     neo4j_database: str,
     linking_tier: str,
+    run_id: str | None = None,
 ) -> None:
     tier = linking_tier.strip().lower()
     if tier not in {"community", "full"}:
@@ -53,6 +60,7 @@ def run_post_load_hooks(
 
     repo_root = Path(__file__).resolve().parents[3]
     scripts_dir = repo_root / "scripts"
+    params = {"run_id": run_id} if run_id else None
 
     script_names: list[str] = []
     if source == "cnpj":
@@ -69,4 +77,4 @@ def run_post_load_hooks(
         if not script_path.exists():
             logger.warning("Post-load linking script missing (skipped): %s", script_path)
             continue
-        _run_script(driver, neo4j_database, script_path)
+        _run_script(driver, neo4j_database, script_path, params=params)

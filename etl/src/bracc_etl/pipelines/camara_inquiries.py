@@ -82,7 +82,7 @@ class CamaraInquiriesPipeline(Pipeline):
         self.requirement_author_name_rels: list[dict[str, Any]] = []
         self.requirement_company_mentions: list[dict[str, Any]] = []
 
-        self.run_id = f"{self.name}_{pd.Timestamp.utcnow().strftime('%Y%m%d%H%M%S')}"
+        self.run_id = f"{self.name}_{pd.Timestamp.now('UTC').strftime('%Y%m%d%H%M%S')}"
 
     def _read_csv_optional(self, path: Path) -> pd.DataFrame:
         if not path.exists():

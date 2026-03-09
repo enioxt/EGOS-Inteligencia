@@ -9,13 +9,21 @@ interface ActivityItem {
   source: string;
   result_count: number;
   cost_usd: number;
+  model?: string;
   timestamp: string;
 }
 
 interface ActivityStats {
   total_events: number;
+  session_events: number;
   by_type: Record<string, number>;
+  by_source: Record<string, number>;
+  by_model: Record<string, number>;
   total_cost_usd: number;
+  total_results: number;
+  unique_users: number;
+  avg_cost_per_query: number;
+  daily: Record<string, number>;
 }
 
 interface ActivityFeed {
@@ -39,7 +47,31 @@ const TYPE_COLORS: Record<string, string> = {
   tool_call: "#ef4444",
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
+
+function DailyChart({ daily }: { daily: Record<string, number> }) {
+  const entries = Object.entries(daily).sort(([a], [b]) => a.localeCompare(b));
+  const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+  if (entries.length === 0) return null;
+  return (
+    <div className={styles.dailyChart}>
+      <h3 className={styles.sectionTitle}>Atividade diária (7 dias)</h3>
+      <div className={styles.bars}>
+        {entries.map(([date, count]) => (
+          <div key={date} className={styles.barCol}>
+            <div
+              className={styles.bar}
+              style={{ height: `${Math.max((count / maxVal) * 100, 4)}%` }}
+              title={`${date}: ${count} eventos`}
+            />
+            <span className={styles.barLabel}>{date.slice(5)}</span>
+            <span className={styles.barValue}>{count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Activity() {
   const [feed, setFeed] = useState<ActivityFeed | null>(null);
@@ -76,19 +108,42 @@ export function Activity() {
   if (loading) return <div className={styles.loading}>Carregando atividades...</div>;
   if (!feed) return <div className={styles.loading}>Sem dados de atividade.</div>;
 
+  const { stats } = feed;
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Feed de Atividades</h1>
       <p className={styles.subtitle}>
-        Todas as ações do sistema em tempo real — Mycelium Event Trail
+        Monitoramento em tempo real — contagem cumulativa (não reseta)
       </p>
 
+      {/* Main stats */}
       <div className={styles.statsBar}>
         <div className={styles.stat}>
-          <span className={styles.statValue}>{feed.stats.total_events}</span>
-          <span className={styles.statLabel}>Total</span>
+          <span className={styles.statValue}>{stats.total_events}</span>
+          <span className={styles.statLabel}>Total (lifetime)</span>
         </div>
-        {Object.entries(feed.stats.by_type).map(([type, count]) => (
+        <div className={styles.stat}>
+          <span className={styles.statValue}>{stats.unique_users}</span>
+          <span className={styles.statLabel}>Usuários únicos</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statValue}>{stats.total_results}</span>
+          <span className={styles.statLabel}>Resultados</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statValue}>${stats.total_cost_usd.toFixed(4)}</span>
+          <span className={styles.statLabel}>Custo total</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statValue}>${stats.avg_cost_per_query.toFixed(6)}</span>
+          <span className={styles.statLabel}>Custo/query</span>
+        </div>
+      </div>
+
+      {/* Type filter bar */}
+      <div className={styles.statsBar}>
+        {Object.entries(stats.by_type).map(([type, count]) => (
           <div
             key={type}
             className={styles.stat}
@@ -101,12 +156,41 @@ export function Activity() {
             <span className={styles.statLabel}>{type}</span>
           </div>
         ))}
-        <div className={styles.stat}>
-          <span className={styles.statValue}>${feed.stats.total_cost_usd.toFixed(4)}</span>
-          <span className={styles.statLabel}>Custo total</span>
-        </div>
       </div>
 
+      {/* Daily chart */}
+      <DailyChart daily={stats.daily ?? {}} />
+
+      {/* Model usage + Top sources side by side */}
+      <div className={styles.detailsGrid}>
+        {Object.keys(stats.by_model ?? {}).length > 0 && (
+          <div className={styles.detailBox}>
+            <h3 className={styles.sectionTitle}>Modelos de IA</h3>
+            {Object.entries(stats.by_model).map(([model, count]) => (
+              <div key={model} className={styles.detailRow}>
+                <span className={styles.detailLabel}>{model.split("/").pop()}</span>
+                <span className={styles.detailValue}>{count}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {Object.keys(stats.by_source ?? {}).length > 0 && (
+          <div className={styles.detailBox}>
+            <h3 className={styles.sectionTitle}>Top fontes de dados</h3>
+            {Object.entries(stats.by_source).slice(0, 10).map(([source, count]) => (
+              <div key={source} className={styles.detailRow}>
+                <span className={styles.detailLabel}>{source}</span>
+                <span className={styles.detailValue}>{count}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Timeline */}
+      <h3 className={styles.sectionTitle} style={{ marginTop: "1.5rem" }}>
+        Eventos recentes ({stats.session_events} nesta sessão)
+      </h3>
       <div className={styles.timeline}>
         {pagedItems.map((item) => (
           <div key={item.id} className={styles.event}>
@@ -120,21 +204,24 @@ export function Activity() {
                   {TYPE_ICONS[item.type] || "📊"} {item.type}
                 </span>
                 <span className={styles.eventTime}>
-                  {new Date(item.timestamp).toLocaleTimeString("pt-BR")}
+                  {new Date(item.timestamp).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
               <div className={styles.eventTitle}>
-                {item.type === "chat" ? "Consulta ao agente" :
-                 item.type === "search" ? "Busca realizada" :
-                 item.type === "entity_view" ? "Entidade visualizada" :
-                 item.type === "report" ? "Relatório gerado" :
-                 item.type === "tool_call" ? "Ferramenta utilizada" :
-                 "Ação registrada"}
+                {item.title || (
+                  item.type === "chat" ? "Consulta ao agente" :
+                  item.type === "search" ? "Busca realizada" :
+                  item.type === "entity_view" ? "Entidade visualizada" :
+                  item.type === "report" ? "Relatório gerado" :
+                  item.type === "tool_call" ? "Ferramenta utilizada" :
+                  "Ação registrada"
+                )}
               </div>
               <div className={styles.eventMeta}>
                 {item.source && <span>Fonte: {item.source}</span>}
                 {item.result_count > 0 && <span>{item.result_count} resultados</span>}
                 {item.cost_usd > 0 && <span>${item.cost_usd.toFixed(4)}</span>}
+                {item.model && <span>{item.model.split("/").pop()}</span>}
               </div>
             </div>
           </div>

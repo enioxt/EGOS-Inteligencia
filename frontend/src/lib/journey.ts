@@ -38,7 +38,7 @@ export function getJourney(): JourneyData {
       const data = JSON.parse(raw) as JourneyData;
       if (data.version === 1 && Array.isArray(data.entries)) return data;
     }
-  } catch { /* corrupt data, reset */ }
+  } catch { /* malformed data, reset */ }
   return { version: 1, entries: [], createdAt: Date.now(), lastUpdated: Date.now() };
 }
 

@@ -49,10 +49,10 @@ def test_keeps_full_when_modules_are_available(
         settings.product_tier = original_tier
 
 
-def test_community_provider_exposes_exactly_8_patterns() -> None:
+def test_community_provider_exposes_exactly_10_patterns() -> None:
     provider = provider_module.CommunityIntelligenceProvider()
     pattern_ids = [row["id"] for row in provider.list_patterns()]
-    assert len(pattern_ids) == 8
+    assert len(pattern_ids) == 10
     assert set(pattern_ids) == set(provider_module.COMMUNITY_PATTERN_IDS)
 
 

@@ -150,3 +150,86 @@
   color: #888;
   font-size: 0.8rem;
 }
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+}
+.dailyChart {
+  background: #1a1d1e;
+  border: 1px solid #2a2d2e;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.bars {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 100px;
+}
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.bar {
+  width: 100%;
+  max-width: 48px;
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.3s;
+}
+.barLabel {
+  font-size: 0.65rem;
+  color: #666;
+}
+.barValue {
+  font-size: 0.7rem;
+  color: #aaa;
+  font-weight: 600;
+}
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 640px) {
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.detailBox {
+  background: #1a1d1e;
+  border: 1px solid #2a2d2e;
+  border-radius: 10px;
+  padding: 1rem;
+}
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #222;
+  font-size: 0.8rem;
+}
+.detailRow:last-child {
+  border-bottom: none;
+}
+.detailLabel {
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+.detailValue {
+  color: #e0e0e0;
+  font-weight: 600;
+}

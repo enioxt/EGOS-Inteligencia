@@ -318,6 +318,7 @@ class CommunityIntelligenceProvider:
         entity_id: str,
     ) -> ExposureResponse:
         import math
+
         from bracc.services.neo4j_service import execute_query_single
 
         record = await execute_query_single(

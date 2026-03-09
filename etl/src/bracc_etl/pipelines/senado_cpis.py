@@ -136,7 +136,7 @@ class SenadoCpisPipeline(Pipeline):
         self.source_documents: list[dict[str, Any]] = []
         self._inquiry_date_lookup: dict[str, tuple[str, str]] = {}
 
-        self.run_id = f"{self.name}_{pd.Timestamp.utcnow().strftime('%Y%m%d%H%M%S')}"
+        self.run_id = f"{self.name}_{pd.Timestamp.now('UTC').strftime('%Y%m%d%H%M%S')}"
 
     def _read_csv_optional(self, path: Path) -> pd.DataFrame:
         if not path.exists():

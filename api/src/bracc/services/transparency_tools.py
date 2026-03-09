@@ -16,7 +16,36 @@ from urllib.parse import quote_plus
 
 import httpx
 
+from bracc.services.circuit_breaker import circuit_breaker
+
 logger = logging.getLogger(__name__)
+
+
+async def safe_get(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
+    timeout: float = 15.0,
+) -> httpx.Response | None:
+    """HTTP GET with circuit breaker. Returns None if circuit is open or request fails."""
+    from urllib.parse import urlparse
+    host = urlparse(url).hostname or url
+    if not circuit_breaker.allow(host):
+        logger.info("Circuit OPEN for %s — skipping request", host)
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.get(url, params=params, headers=headers or _HEADERS)
+            if resp.status_code < 500:
+                circuit_breaker.record_success(host)
+            else:
+                circuit_breaker.record_failure(host)
+            return resp
+    except Exception as e:
+        circuit_breaker.record_failure(host)
+        logger.warning("Request to %s failed: %s", host, e)
+        return None
+
 
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -57,33 +86,56 @@ async def tool_web_search(query: str, max_results: int = 8) -> list[dict[str, st
         except Exception as e:
             logger.warning("Brave search failed, falling back to DDG: %s", e)
 
-    # Fallback: DuckDuckGo HTML
+    # Fallback: DuckDuckGo HTML (multiple regex patterns for resilience)
     url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(url, headers=_HEADERS)
             html = resp.text
 
+        # Pattern 1: Classic DDG HTML (class="result__a" + class="result__snippet")
         snippets = re.findall(
             r'<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.+?)</a>.*?'
             r'<a[^>]+class="result__snippet"[^>]*>(.+?)</a>',
-            html, re.DOTALL
+            html, re.DOTALL,
         )
+        # Pattern 2: Alternative DDG layout (result-link + result-snippet)
+        if not snippets:
+            snippets = re.findall(
+                r'<a[^>]+class="[^"]*result[_-]?link[^"]*"[^>]+href="([^"]+)"[^>]*>(.+?)</a>.*?'
+                r'<[^>]+class="[^"]*result[_-]?snippet[^"]*"[^>]*>(.+?)</[^>]+>',
+                html, re.DOTALL,
+            )
+        # Pattern 3: Generic link + text extraction from result divs
+        if not snippets:
+            blocks = re.findall(
+                r'<div[^>]+class="[^"]*result[^"]*"[^>]*>(.+?)</div>\s*</div>',
+                html, re.DOTALL,
+            )
+            for block in blocks[:max_results]:
+                link_m = re.search(r'href="(https?://[^"]+)"', block)
+                title_m = re.search(r'>([^<]{10,})<', block)
+                if link_m and title_m:
+                    snippets.append((link_m.group(1), title_m.group(1), block[:300]))
+
+        from urllib.parse import unquote
         for href, title, snippet in snippets[:max_results]:
             actual_url = href
             if "uddg=" in href:
                 m = re.search(r"uddg=([^&]+)", href)
                 if m:
-                    from urllib.parse import unquote
                     actual_url = unquote(m.group(1))
             results.append({
-                "title": re.sub(r"<[^>]+>", "", title).strip(),
+                "title": re.sub(r"<[^>]+>", "", title).strip()[:200],
                 "url": actual_url,
                 "snippet": re.sub(r"<[^>]+>", "", snippet).strip()[:300],
             })
     except Exception as e:
         logger.warning("DDG search also failed: %s", e)
-        results.append({"title": "Erro na busca", "url": "", "snippet": str(e)[:200]})
+
+    # Fallback 3: If both Brave and DDG failed, return empty with message
+    if not results:
+        results.append({"title": f"Busca web indisponível para: {query[:80]}", "url": "", "snippet": "Brave API e DuckDuckGo falharam. Tente novamente em alguns minutos."})
 
     return results
 
@@ -453,7 +505,7 @@ async def tool_search_votacoes(parlamentar: str = "", proposicao: str = "", ano:
                         dep_name = dep.get("nome", "")
                         # Get recent votes
                         # First get recent votações
-                        vot_url = f"https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=5"
+                        vot_url = "https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=5"
                         vot_resp = await client.get(vot_url, headers={"Accept": "application/json"})
                         if vot_resp.status_code == 200:
                             votacoes = vot_resp.json().get("dados", [])
@@ -475,7 +527,7 @@ async def tool_search_votacoes(parlamentar: str = "", proposicao: str = "", ano:
                                         })
             else:
                 # List recent votações
-                vot_url = f"https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=10"
+                vot_url = "https://dadosabertos.camara.leg.br/api/v2/votacoes?ordem=DESC&ordenarPor=dataHoraRegistro&itens=10"
                 resp = await client.get(vot_url, headers={"Accept": "application/json"})
                 if resp.status_code == 200:
                     votacoes = resp.json().get("dados", [])
@@ -1101,40 +1153,61 @@ async def tool_lista_suja(nome: str, uf: str = "") -> dict[str, Any]:
 async def tool_pncp_licitacoes(cnpj_orgao: str = "", uf: str = "", data_inicio: str = "20240101", data_fim: str = "20241231") -> dict[str, Any]:
     """Search national procurement portal (federal + state + municipal)."""
     results: list[dict[str, Any]] = []
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            params: dict[str, str] = {
-                "dataInicial": f"{data_inicio[:4]}-{data_inicio[4:6]}-{data_inicio[6:8]}",
-                "dataFinal": f"{data_fim[:4]}-{data_fim[4:6]}-{data_fim[6:8]}",
-                "pagina": "1",
-                "tamanhoPagina": "10",
-            }
-            if cnpj_orgao:
-                params["cnpj"] = cnpj_orgao.replace(".", "").replace("/", "").replace("-", "")
-            if uf:
-                params["uf"] = uf.upper()
 
-            resp = await client.get(
-                "https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao",
-                params=params,
-                headers={"Accept": "application/json"},
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                items = data if isinstance(data, list) else data.get("data", data.get("content", []))
-                if isinstance(items, list):
-                    for item in items[:10]:
-                        results.append({
-                            "orgao": item.get("nomeOrgao", item.get("orgaoEntidade", {}).get("razaoSocial", "")),
-                            "objeto": str(item.get("objetoCompra", item.get("descricao", "")))[:200],
-                            "modalidade": item.get("modalidadeLicitacao", item.get("modalidadeNome", "")),
-                            "valor_estimado": item.get("valorEstimado", item.get("valorTotalEstimado", "")),
-                            "uf": item.get("uf", uf),
-                            "data_publicacao": item.get("dataPublicacao", ""),
-                            "situacao": item.get("situacaoCompra", item.get("situacaoCompraNome", "")),
-                        })
-            else:
-                logger.warning("PNCP HTTP %s: %s", resp.status_code, resp.text[:200])
+    # Normalize dates to YYYYMMDD format
+    di = data_inicio.replace("-", "")[:8]
+    df = data_fim.replace("-", "")[:8]
+    date_ini = f"{di[:4]}{di[4:6]}{di[6:8]}"
+    date_end = f"{df[:4]}{df[4:6]}{df[6:8]}"
+
+    # PNCP API v1 endpoints (try multiple — API changed several times)
+    _PNCP_URLS = [
+        "https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao",
+        "https://pncp.gov.br/api/pncp/v1/orgaos/contratacoes/publicacoes",
+        "https://pncp.gov.br/api/search/",
+    ]
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+            for base_url in _PNCP_URLS:
+                params: dict[str, str] = {
+                    "dataInicial": f"{date_ini[:4]}-{date_ini[4:6]}-{date_ini[6:8]}",
+                    "dataFinal": f"{date_end[:4]}-{date_end[4:6]}-{date_end[6:8]}",
+                    "pagina": "1",
+                    "tamanhoPagina": "10",
+                }
+                if cnpj_orgao:
+                    cnpj_clean = cnpj_orgao.replace(".", "").replace("/", "").replace("-", "")
+                    params["cnpj"] = cnpj_clean
+                if uf:
+                    params["uf"] = uf.upper()
+
+                try:
+                    resp = await client.get(base_url, params=params, headers={"Accept": "application/json"})
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        items = data if isinstance(data, list) else data.get("data", data.get("content", data.get("items", [])))
+                        if isinstance(items, list):
+                            for item in items[:10]:
+                                orgao_ent = item.get("orgaoEntidade", {})
+                                results.append({
+                                    "orgao": item.get("nomeOrgao", orgao_ent.get("razaoSocial", "") if isinstance(orgao_ent, dict) else ""),
+                                    "objeto": str(item.get("objetoCompra", item.get("descricao", "")))[:200],
+                                    "modalidade": item.get("modalidadeLicitacao", item.get("modalidadeNome", "")),
+                                    "valor_estimado": item.get("valorEstimado", item.get("valorTotalEstimado", "")),
+                                    "uf": item.get("uf", uf),
+                                    "data_publicacao": item.get("dataPublicacao", ""),
+                                    "situacao": item.get("situacaoCompra", item.get("situacaoCompraNome", "")),
+                                })
+                        if results:
+                            break
+                    elif resp.status_code == 400:
+                        logger.info("PNCP %s returned 400, trying next endpoint", base_url)
+                        continue
+                    else:
+                        logger.warning("PNCP HTTP %s from %s: %s", resp.status_code, base_url, resp.text[:200])
+                except Exception:
+                    continue
     except Exception as e:
         logger.warning("PNCP search failed: %s", e)
 

@@ -1,0 +1,318 @@
+.container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  flex: 1;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  color: var(--color-text-secondary, #94a3b8);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.headerStats {
+  display: flex;
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--color-surface, #1e293b);
+  border: 1px solid var(--color-border, #334155);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #10b981;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 0.675rem;
+  color: var(--color-text-secondary, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Filters */
+.filters {
+  background: var(--color-surface, #1e293b);
+  border: 1px solid var(--color-border, #334155);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.keywordTabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.keywordTab {
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border, #334155);
+  background: transparent;
+  color: var(--color-text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.keywordTab:hover {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.keywordTabActive {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.filterRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cityInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #334155);
+  background: var(--color-bg, #0f172a);
+  color: var(--color-text, #e2e8f0);
+  font-size: 0.8125rem;
+}
+
+.cityInput::placeholder {
+  color: var(--color-text-secondary, #475569);
+}
+
+.dateSelect {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #334155);
+  background: var(--color-bg, #0f172a);
+  color: var(--color-text, #e2e8f0);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.searchBtn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.searchBtn:hover {
+  opacity: 0.9;
+}
+
+.searchBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error */
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Results */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loadingState,
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary, #94a3b8);
+  background: var(--color-surface, #1e293b);
+  border: 1px dashed var(--color-border, #334155);
+  border-radius: 0.75rem;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #334155;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Gazette Card */
+.gazetteCard {
+  background: var(--color-surface, #1e293b);
+  border: 1px solid var(--color-border, #334155);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.15s;
+}
+
+.gazetteCard:hover {
+  border-color: #10b98155;
+}
+
+.gazetteHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gazetteInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gazetteTerrritory {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-text, #e2e8f0);
+}
+
+.gazetteDate {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #94a3b8);
+}
+
+.gazetteBadges {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+/* Badges */
+.badgeCritical,
+.badgeOpportunity,
+.badgeInfo,
+.badgeNeutral,
+.badgeExtra {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.badgeCritical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badgeOpportunity {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badgeInfo {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badgeNeutral {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.badgeExtra {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Excerpt */
+.excerpt {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary, #cbd5e1);
+  border-left: 2px solid #334155;
+  padding-left: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.excerpt :global(mark) {
+  background: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+  padding: 0 0.125rem;
+  border-radius: 2px;
+}
+
+/* Source Link */
+.sourceLink {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #10b981;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.sourceLink:hover {
+  color: #34d399;
+  text-decoration: underline;
+}

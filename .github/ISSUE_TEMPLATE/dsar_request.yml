@@ -1,0 +1,68 @@
+name: Data Subject Access Request (DSAR)
+description: Exercise your LGPD Art. 18 rights — access, correction, deletion, or portability of personal data.
+title: "[DSAR] "
+labels:
+  - compliance
+  - dsar
+  - lgpd
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## LGPD Data Subject Access Request
+
+        Under LGPD Art. 18, you have the right to request access, correction, anonymization,
+        deletion, or portability of your personal data processed by EGOS Inteligência.
+
+        **Response deadline:** 15 business days (LGPD Art. 18, §5°).
+
+        All data processed comes from public government sources. See our
+        [LGPD Baseline Policy](../../LGPD.md) and
+        [Registro de Tratamento](../../docs/legal/REGISTRO_TRATAMENTO.md).
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Type of request
+      description: What right are you exercising?
+      options:
+        - Access — confirm what data is processed about me
+        - Correction — fix inaccurate data
+        - Anonymization — remove identifying information
+        - Deletion — erase my personal data
+        - Portability — export my data in machine-readable format
+        - Objection — object to specific processing
+    validations:
+      required: true
+  - type: input
+    id: identity
+    attributes:
+      label: Your identification
+      description: Full name or entity name for us to locate your data.
+      placeholder: "Full name or CNPJ"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Request details
+      description: Describe what data you want accessed, corrected, or deleted. Be as specific as possible.
+      placeholder: "I want to know what data about [entity] is stored and its sources."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence (optional)
+      description: Any documents or references that support your request.
+      placeholder: "Links, screenshots, or document references"
+    validations:
+      required: false
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I confirm I am the data subject or their authorized representative.
+          required: true
+        - label: I understand the response deadline is 15 business days.
+          required: true

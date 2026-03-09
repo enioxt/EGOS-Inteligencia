@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { type Investigation, listInvestigations, searchEntities, type SearchResult } from "@/api/client";
+import { type Investigation, listInvestigations, searchEntities, type SearchResult, getStats, type StatsResponse } from "@/api/client";
 import { Skeleton } from "@/components/common/Skeleton";
 import { useToastStore } from "@/stores/toast";
 import { addJourneyEntry } from "@/lib/journey";
@@ -21,10 +21,13 @@ export function Dashboard() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
 
+  const [stats, setStats] = useState<StatsResponse | null>(null);
+
   useEffect(() => {
+    getStats().then(setStats).catch(() => { });
     listInvestigations(1, 3)
       .then((res) => setRecentInvestigations(res.investigations))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoadingInvestigations(false));
   }, []);
 
@@ -82,6 +85,52 @@ export function Dashboard() {
         )}
       </section>
 
+      <section className={styles.onboardingSection}>
+        <h2 className={styles.sectionTitle}>Dicas de Uso (OSINT)</h2>
+        <div className={styles.onboardingCards}>
+          <div className={styles.onboardingCard}>
+            <h3>Busca de Políticos (PEP)</h3>
+            <p>Ative o filtro PEP na Central de Pesquisa Inteligente para focar em investigados expostos.</p>
+          </div>
+          <div className={styles.onboardingCard}>
+            <h3>Empresas Sancionadas</h3>
+            <p>Ative o filtro "Com Sanções (CEIS/CNEP)" para encontrar empresas inidôneas.</p>
+          </div>
+          <div className={styles.onboardingCard}>
+            <h3>Recursos Públicos</h3>
+            <p>Busque por cidades específicas para pesquisar contratos municipais e fornecedores locais.</p>
+          </div>
+        </div>
+      </section>
+
+      {stats && (
+        <section className={styles.statsSection}>
+          <h2 className={styles.sectionTitle}>Motor de Dados do EGOS Inteligência</h2>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{stats.total_nodes.toLocaleString("pt-BR")}</span>
+              <span className={styles.statLabel}>Entidades Monitoradas</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{stats.person_count.toLocaleString("pt-BR")}</span>
+              <span className={styles.statLabel}>Pessoas</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{stats.company_count.toLocaleString("pt-BR")}</span>
+              <span className={styles.statLabel}>Empresas</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{stats.contract_count.toLocaleString("pt-BR")}</span>
+              <span className={styles.statLabel}>Contratos Públicos</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{stats.sanction_count.toLocaleString("pt-BR")}</span>
+              <span className={styles.statLabel}>Sanções (CEIS/CNEP)</span>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className={styles.investigationsSection}>
         <h2 className={styles.sectionTitle}>{t("dashboard.recentInvestigations")}</h2>
         {loadingInvestigations ? (
@@ -110,6 +159,6 @@ export function Dashboard() {
         )}
       </section>
       <JourneyPanel />
-      </div>
+    </div>
   );
 }

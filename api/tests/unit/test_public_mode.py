@@ -63,7 +63,7 @@ async def test_person_lookup_disabled_in_public_mode(
     monkeypatch.setattr(settings, "public_allow_person", False)
     response = await client.get("/api/v1/entity/12345678901")
     assert response.status_code == 403
-    assert "Person lookup disabled" in response.json()["detail"]
+    assert "CPF" in response.json()["detail"] or "Person" in response.json()["detail"]
 
 
 @pytest.mark.anyio

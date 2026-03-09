@@ -215,3 +215,70 @@
     font-size: var(--font-size-xs);
   }
 }
+
+/* === Stats & Onboarding === */
+.statsSection {
+  margin-bottom: var(--space-2xl);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.onboardingSection {
+  margin-bottom: var(--space-2xl);
+}
+
+.onboardingCards {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.onboardingCard {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-left: 4px solid rgb(59, 130, 246);
+  padding: 1rem;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.onboardingCard h3 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.onboardingCard p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}

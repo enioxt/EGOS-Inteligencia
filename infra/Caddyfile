@@ -15,12 +15,12 @@
 	header @api Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 
 	@frontend not path /api/* /health
-	header @frontend Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://{$DOMAIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	header @frontend Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://{$DOMAIN} https://www.clarity.ms https://api.queridodiario.ok.org.br https://api.portaldatransparencia.gov.br https://api-publica.datajud.cnj.jus.br https://brasilapi.com.br https://api.brave.com https://openrouter.ai https://pncp.gov.br https://api.cnj.jus.br; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
 
 	# --- Global security headers ---
 	header {
 		X-Content-Type-Options nosniff
-		X-Frame-Options DENY
+		X-Frame-Options SAMEORIGIN
 		X-XSS-Protection "1; mode=block"
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		Referrer-Policy strict-origin-when-cross-origin

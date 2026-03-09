@@ -18,6 +18,7 @@ from bracc.models.investigation import (
     TagCreate,
 )
 from bracc.services import investigation_service as svc
+from bracc.services.export_service import render_investigation_html, render_investigation_md
 from bracc.services.neo4j_service import execute_query_single
 from bracc.services.pdf_service import render_investigation_pdf
 from bracc.services.public_guard import ensure_investigations_enabled
@@ -318,5 +319,87 @@ async def export_investigation_pdf(
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+async def _resolve_entities(
+    session: "AsyncSession",
+    entity_ids: list[str],
+    user_id: str,
+) -> list[dict[str, str]]:
+    """Resolve entity IDs to name/type/document dicts with CPF masking."""
+    entities: list[dict[str, str]] = []
+    for entity_id in entity_ids:
+        record = await execute_query_single(session, "entity_by_id", {"id": entity_id})
+        if record is not None:
+            node = record["e"]
+            labels = record["entity_labels"]
+            document = str(node.get("cpf", node.get("cnpj", "")))
+
+            cpf_val = node.get("cpf")
+            if cpf_val and isinstance(cpf_val, str):
+                role = str(node.get("role", node.get("cargo", ""))).lower()
+                is_pep = role in PEP_ROLES
+                if not is_pep:
+                    if "." in document and "-" in document:
+                        document = mask_formatted_cpf(document)
+                    elif len(document) == 11 and document.isdigit():
+                        document = mask_raw_cpf(document)
+
+            entities.append({
+                "name": str(node.get("name", "")),
+                "type": labels[0] if labels else "",
+                "document": document,
+            })
+    return entities
+
+
+@router.get("/{investigation_id}/export/md")
+async def export_investigation_md(
+    investigation_id: str,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: CurrentUser,
+    lang: Annotated[Literal["pt", "en"], Query()] = "pt",
+) -> Response:
+    investigation = await svc.get_investigation(session, investigation_id, user.id)
+    if investigation is None:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+
+    annotations = await svc.list_annotations(session, investigation_id, user.id)
+    tags = await svc.list_tags(session, investigation_id, user.id)
+    entities = await _resolve_entities(session, investigation.entity_ids, user.id)
+
+    md_content = render_investigation_md(investigation, annotations, tags, entities, lang=lang)
+    safe_title = "".join(c for c in investigation.title if c.isalnum() or c in " _-")[:100]
+    filename = f"{safe_title or 'investigation'}.md"
+    return Response(
+        content=md_content,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/{investigation_id}/export/html")
+async def export_investigation_html(
+    investigation_id: str,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: CurrentUser,
+    lang: Annotated[Literal["pt", "en"], Query()] = "pt",
+) -> Response:
+    investigation = await svc.get_investigation(session, investigation_id, user.id)
+    if investigation is None:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+
+    annotations = await svc.list_annotations(session, investigation_id, user.id)
+    tags = await svc.list_tags(session, investigation_id, user.id)
+    entities = await _resolve_entities(session, investigation.entity_ids, user.id)
+
+    html_content = render_investigation_html(investigation, annotations, tags, entities, lang=lang)
+    safe_title = "".join(c for c in investigation.title if c.isalnum() or c in " _-")[:100]
+    filename = f"{safe_title or 'investigation'}.html"
+    return Response(
+        content=html_content,
+        media_type="text/html; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

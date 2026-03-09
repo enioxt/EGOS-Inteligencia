@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     invite_code: str = ""
     cors_origins: str = "http://localhost:3000"
     product_tier: str = "community"
-    patterns_enabled: bool = False
+    patterns_enabled: bool = True
     public_mode: bool = False
     public_allow_person: bool = False
     public_allow_entity_lookup: bool = False
@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     ai_model: str = "openai/gpt-4o-mini"
     redis_url: str = "redis://localhost:6379/0"
+
+    interop_service_key: str = ""
 
     model_config = {"env_prefix": "", "env_file": ".env"}
 

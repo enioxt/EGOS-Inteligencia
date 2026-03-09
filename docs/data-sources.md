@@ -53,7 +53,7 @@ All sources below have working ETL pipelines in `etl/src/bracc_etl/pipelines/` a
 
 *\* InternationalSanction: 39.2K total across OFAC + EU + UN + World Bank*
 
-**Production totals (2026-02-26):** ~141M nodes, ~92M relationships across 35 node labels and 33 relationship types.
+**Production totals (2026-03-03):** ~9.2M nodes, ~34.5K relationships across 35 node labels and 33 relationship types. Target: 141M+ nodes as more ETL pipelines complete.
 
 ---
 

@@ -1,0 +1,125 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.toggleBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: fit-content;
+}
+
+.toggleBtn:hover {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+}
+
+.badge {
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 9999px;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.filterBox {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    animation: slideDown 0.2s ease-out;
+}
+
+.pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pill:hover {
+    background: var(--bg-surface-hover);
+}
+
+.activePep {
+    background: rgba(234, 179, 8, 0.1);
+    color: rgb(234, 179, 8);
+    border-color: rgba(234, 179, 8, 0.5);
+}
+
+.activeSanction {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgb(239, 68, 68);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.activeContract {
+    background: rgba(16, 185, 129, 0.1);
+    color: rgb(16, 185, 129);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.locationControls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.select,
+.input {
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.select:focus,
+.input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

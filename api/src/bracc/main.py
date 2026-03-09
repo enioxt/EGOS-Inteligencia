@@ -10,27 +10,30 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from bracc.config import settings
 from bracc.dependencies import close_driver, init_driver
-from bracc.services.cache import cache
+from bracc.logging_config import configure_logging
 from bracc.middleware.cpf_masking import CPFMaskingMiddleware
 from bracc.middleware.rate_limit import limiter
+from bracc.middleware.request_id import RequestIDMiddleware
 from bracc.middleware.security_headers import SecurityHeadersMiddleware
 from bracc.routers import (
-    gazette_monitor,
     activity,
     analytics,
     auth,
     baseline,
-    conversations,
-    monitor,
     chat,
+    conversations,
     entity,
+    gazette_monitor,
     graph,
+    interop,
     investigation,
     meta,
+    monitor,
     patterns,
     public,
     search,
 )
+from bracc.services.cache import cache
 from bracc.services.neo4j_service import ensure_schema
 
 _logger = logging.getLogger(__name__)
@@ -38,7 +41,12 @@ _logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    configure_logging(app_env=settings.app_env, log_level=settings.log_level)
     if settings.jwt_secret_key == "change-me-in-production" or len(settings.jwt_secret_key) < 32:
+        if settings.app_env == "production":
+            raise RuntimeError(
+                "JWT_SECRET_KEY is weak or default — set a secure value (>= 32 chars)"
+            )
         _logger.critical(
             "JWT secret is weak or default"
             " — set JWT_SECRET_KEY env var (>= 32 chars)"
@@ -67,10 +75,17 @@ app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins.split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "Origin",
+        "X-Requested-With",
+    ],
 )
 app.add_middleware(SecurityHeadersMiddleware, app_env=settings.app_env)
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(CPFMaskingMiddleware)
 
 app.include_router(meta.router)
@@ -89,6 +104,7 @@ app.include_router(analytics.router)
 app.include_router(monitor.router)
 app.include_router(activity.router)
 app.include_router(gazette_monitor.router)
+app.include_router(interop.router)
 
 
 @app.get("/health")

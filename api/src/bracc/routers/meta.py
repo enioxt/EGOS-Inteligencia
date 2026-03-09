@@ -4,6 +4,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from neo4j import AsyncSession
 
+from bracc.config import settings
 from bracc.dependencies import get_session
 from bracc.services.cache import cache
 from bracc.services.neo4j_service import execute_query_single
@@ -117,12 +118,34 @@ async def flush_cache() -> dict[str, Any]:
     return {"flushed_keys": count}
 
 
+@router.get("/security")
+async def security_posture() -> dict[str, Any]:
+    """Report API security posture — no secrets, just feature flags."""
+    return {
+        "cors_explicit_headers": True,
+        "cors_origins_count": len(settings.cors_origins.split(",")),
+        "jwt_algorithm": settings.jwt_algorithm,
+        "jwt_secret_strong": len(settings.jwt_secret_key) >= 32
+        and settings.jwt_secret_key != "change-me-in-production",
+        "rate_limit_anon": settings.rate_limit_anon,
+        "rate_limit_auth": settings.rate_limit_auth,
+        "public_mode": settings.public_mode,
+        "public_allow_person": settings.public_allow_person,
+        "patterns_enabled": settings.patterns_enabled,
+        "prompt_injection_detection": True,
+        "cpf_masking": True,
+        "security_headers": True,
+        "request_id_tracing": True,
+        "hsts": settings.app_env == "production",
+        "csp": True,
+    }
+
+
 @router.get("/etl-progress")
 async def etl_progress() -> dict[str, Any]:
     """Parse ETL log to show current progress."""
     import os
     import re
-    from datetime import datetime
 
     log_path = os.environ.get("ETL_LOG_PATH", "/opt/bracc/cnpj-etl.log")
     result: dict[str, Any] = {
@@ -154,7 +177,7 @@ async def etl_progress() -> dict[str, Any]:
         result["running"] = age_seconds < 10800  # updated in last 3h (each CSV file takes ~2h)
         result["log_age_seconds"] = int(age_seconds)
 
-        with open(log_path, "r") as f:
+        with open(log_path) as f:
             lines = f.readlines()
 
         # Parse phases and files

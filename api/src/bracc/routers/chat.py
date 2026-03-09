@@ -18,41 +18,41 @@ from typing import Annotated, Any
 import httpx
 from fastapi import APIRouter, Depends
 from neo4j import AsyncSession
-from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from bracc.config import settings
 from bracc.dependencies import get_session
 from bracc.middleware.rate_limit import limiter
-from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.routers.activity import log_activity
-from bracc.services.transparency_tools import (
-    tool_web_search,
-    tool_search_emendas,
-    tool_search_transferencias,
-    tool_search_ceap,
-    tool_search_pep_city,
-    tool_search_gazettes,
-    tool_cnpj_info,
-    tool_search_votacoes,
-    tool_search_servidores,
-    tool_search_licitacoes,
-    tool_search_cpgf,
-    tool_search_viagens,
-    tool_search_contratos,
-    tool_search_sancoes,
-    tool_search_processos,
-    tool_bnmp_mandados,
-    tool_procurados_lookup,
-    tool_lista_suja,
-    tool_pncp_licitacoes,
-    tool_oab_advogado,
-    tool_opencnpj,
-)
+from bracc.services.cache import cache
+from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.services.public_guard import (
     has_person_labels,
     sanitize_public_properties,
     should_hide_person_entities,
+)
+from bracc.services.transparency_tools import (
+    tool_bnmp_mandados,
+    tool_cnpj_info,
+    tool_lista_suja,
+    tool_oab_advogado,
+    tool_opencnpj,
+    tool_pncp_licitacoes,
+    tool_procurados_lookup,
+    tool_search_ceap,
+    tool_search_contratos,
+    tool_search_cpgf,
+    tool_search_emendas,
+    tool_search_gazettes,
+    tool_search_licitacoes,
+    tool_search_pep_city,
+    tool_search_processos,
+    tool_search_sancoes,
+    tool_search_servidores,
+    tool_search_transferencias,
+    tool_search_viagens,
+    tool_search_votacoes,
+    tool_web_search,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,13 +62,13 @@ router = APIRouter(prefix="/api/v1", tags=["chat"])
 _CNPJ_RE = re.compile(r"\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}")
 _LUCENE_SPECIAL = re.compile(r'([+\-&|!(){}\[\]^"~*?:\\/])')
 
-# --- In-memory conversation store (keyed by IP, max 20 messages, 30min TTL) ---
+# --- In-memory conversation store (fallback when Redis unavailable) ---
 _conversations: dict[str, list[dict[str, str]]] = defaultdict(list)
 _conversation_ts: dict[str, float] = {}
 _MAX_HISTORY = 20
 _TTL_SECONDS = 1800
 
-# --- Rate limit + model fallback (per IP, resets daily) ---
+# --- Rate limit (in-memory fallback, Redis preferred) ---
 _usage_counts: dict[str, int] = defaultdict(int)
 _usage_day: dict[str, str] = {}
 
@@ -79,6 +79,9 @@ _TIER_FREE_LIMIT = 50
 # Model tiers — all Gemini Flash for cost optimization (~$0.0003/query)
 MODEL_PREMIUM = "google/gemini-2.0-flash-001"   # ~$0.0003/query, good tool-calling
 MODEL_FREE = "google/gemini-2.0-flash-001"      # same model, no tier difference now
+MODEL_FALLBACK = "google/gemini-2.0-flash-exp:free"  # free fallback when credits exhausted
+
+_CREDIT_EXHAUSTED = False  # runtime flag set when 402/payment required detected
 
 def _get_client_id(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
@@ -87,18 +90,36 @@ def _get_client_id(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _get_usage(client_id: str) -> int:
-    """Get daily usage count, reset if new day."""
+async def _get_usage(client_id: str) -> int:
+    """Get daily usage count from Redis (fallback: in-memory)."""
     today = time.strftime("%Y-%m-%d")
+    redis = cache._client
+    if redis and cache._available:
+        try:
+            key = f"egos:usage:{today}:{client_id}"
+            val = await redis.get(key)
+            return int(val) if val else 0
+        except Exception:
+            pass
     if _usage_day.get(client_id) != today:
         _usage_counts[client_id] = 0
         _usage_day[client_id] = today
     return _usage_counts[client_id]
 
 
-def _increment_usage(client_id: str) -> int:
-    """Increment and return new usage count."""
+async def _increment_usage(client_id: str) -> int:
+    """Increment daily usage in Redis (fallback: in-memory). Returns new count."""
     today = time.strftime("%Y-%m-%d")
+    redis = cache._client
+    if redis and cache._available:
+        try:
+            key = f"egos:usage:{today}:{client_id}"
+            new_val = await redis.incr(key)
+            if new_val == 1:
+                await redis.expire(key, 86400)
+            return int(new_val)
+        except Exception:
+            pass
     if _usage_day.get(client_id) != today:
         _usage_counts[client_id] = 0
         _usage_day[client_id] = today
@@ -106,11 +127,11 @@ def _increment_usage(client_id: str) -> int:
     return _usage_counts[client_id]
 
 
-def _select_model(client_id: str, byok_key: str = "") -> tuple[str, str, str]:
+async def _select_model(client_id: str, byok_key: str = "") -> tuple[str, str, str]:
     """Select model based on usage tier or BYOK. Returns (model, api_key, tier_label)."""
     if byok_key:
         return MODEL_PREMIUM, byok_key, "byok"
-    usage = _get_usage(client_id)
+    usage = await _get_usage(client_id)
     if usage < _TIER_PREMIUM_LIMIT:
         remaining = _TIER_PREMIUM_LIMIT - usage
         return MODEL_PREMIUM, settings.openrouter_api_key, f"premium ({remaining} restantes)"
@@ -134,37 +155,8 @@ def _trim_conversation(history: list[dict[str, str]]) -> None:
         history.pop(0)
 
 
-# --- Models ---
-
-class ChatMessage(BaseModel):
-    message: str = Field(min_length=1, max_length=1000)
-    conversation_id: str = Field(default="", max_length=64)
-
-
-class EntityCard(BaseModel):
-    id: str
-    type: str
-    name: str
-    properties: dict[str, Any] = {}
-    connections: int = 0
-    sources: list[str] = []
-
-
-class EvidenceItem(BaseModel):
-    tool: str
-    source: str
-    query: str
-    result_count: int = 0
-    timestamp: str = ""
-    api_url: str = ""
-
-class ChatResponse(BaseModel):
-    reply: str
-    entities: list[EntityCard] = []
-    suggestions: list[str] = []
-    evidence_chain: list[EvidenceItem] = []
-    cost_usd: float = 0.0
-
+# --- Models (extracted to chat_models.py) ---
+from bracc.routers.chat_models import ChatMessage, ChatResponse, EntityCard, EvidenceItem
 
 # --- Neo4j tool functions ---
 
@@ -339,6 +331,100 @@ async def _tool_data_summary(session: AsyncSession) -> dict[str, Any]:
     return summary
 
 
+async def _tool_find_path(
+    session: AsyncSession,
+    entity_a_name: str,
+    entity_b_name: str,
+    max_depth: int = 4,
+) -> dict[str, Any]:
+    """Find shortest connection path between two entities (multi-hop traversal).
+
+    Searches up to max_depth hops. Returns the path with relationship types,
+    node names, and hop count. Cost is low for sparse graphs (<100K rels).
+    """
+    max_depth = min(max_depth, 6)  # Hard cap at 6 hops for safety
+    try:
+        # First, find both entities by name (fuzzy)
+        find_cypher = """
+        CALL db.index.fulltext.queryNodes('entity_search', $query)
+        YIELD node, score
+        WHERE score > 0.5
+        RETURN elementId(node) AS id, labels(node) AS labels,
+               coalesce(node.razao_social, node.name, node.nome_fantasia, '') AS name,
+               score
+        ORDER BY score DESC LIMIT 3
+        """
+        result_a = await session.run(find_cypher, {"query": entity_a_name})
+        entities_a = [dict(r) async for r in result_a]
+
+        result_b = await session.run(find_cypher, {"query": entity_b_name})
+        entities_b = [dict(r) async for r in result_b]
+
+        if not entities_a:
+            return {"error": f"Entidade A não encontrada: {entity_a_name}", "entities_found": []}
+        if not entities_b:
+            return {"error": f"Entidade B não encontrada: {entity_b_name}", "entities_found": []}
+
+        # Try shortest path between best matches
+        # Note: Neo4j shortestPath doesn't support parameterized depth,
+        # so we interpolate the validated integer directly into the query.
+        path_cypher = f"""
+        MATCH (a) WHERE elementId(a) = $id_a
+        MATCH (b) WHERE elementId(b) = $id_b
+        MATCH path = shortestPath((a)-[*1..{max_depth}]-(b))
+        WITH path, length(path) AS hops
+        RETURN
+          [n IN nodes(path) |
+            {{id: elementId(n), labels: labels(n),
+             name: coalesce(n.razao_social, n.name, n.nome_fantasia, n.cpf, '')}}
+          ] AS nodes,
+          [r IN relationships(path) |
+            {{type: type(r), from_id: elementId(startNode(r)), to_id: elementId(endNode(r))}}
+          ] AS relationships,
+          hops
+        LIMIT 3
+        """
+        best_paths = []
+        for ea in entities_a[:2]:
+            for eb in entities_b[:2]:
+                if ea["id"] == eb["id"]:
+                    continue
+                result = await session.run(
+                    path_cypher,
+                    {"id_a": ea["id"], "id_b": eb["id"]},
+                )
+                async for record in result:
+                    best_paths.append({
+                        "entity_a": ea["name"],
+                        "entity_b": eb["name"],
+                        "hops": record["hops"],
+                        "nodes": record["nodes"],
+                        "relationships": record["relationships"],
+                    })
+
+        if not best_paths:
+            return {
+                "connection_found": False,
+                "message": f"Nenhuma conexão encontrada entre '{entity_a_name}' e '{entity_b_name}' em até {max_depth} graus.",
+                "entity_a_candidates": [{"name": e["name"], "type": e["labels"][0]} for e in entities_a[:3]],
+                "entity_b_candidates": [{"name": e["name"], "type": e["labels"][0]} for e in entities_b[:3]],
+                "suggestion": "Tente aumentar max_depth ou verificar se os relacionamentos SOCIO_DE/DOOU estão carregados.",
+            }
+
+        # Sort by hops (shortest first)
+        best_paths.sort(key=lambda p: p["hops"])
+        return {
+            "connection_found": True,
+            "paths": best_paths[:3],
+            "total_paths_found": len(best_paths),
+            "min_hops": best_paths[0]["hops"] if best_paths else 0,
+        }
+
+    except Exception as e:
+        logger.warning("Path finder failed: %s", e)
+        return {"error": str(e), "suggestion": "Verifique se APOC está instalado e os índices existem."}
+
+
 async def _tool_connections(session: AsyncSession, entity_id: str) -> list[dict[str, str]]:
     try:
         cypher = """
@@ -362,465 +448,9 @@ async def _tool_connections(session: AsyncSession, entity_id: str) -> list[dict[
         return []
 
 
-# --- Tool definitions for OpenRouter function calling ---
-
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "search_entities",
-            "description": "Pesquisa entidades no grafo Neo4j por nome, CNPJ, ou termo. Retorna empresas, sanções, contratos, embargos, etc.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Termo de busca: nome de empresa, CNPJ, ou palavra-chave"},
-                    "entity_type": {"type": "string", "description": "Filtro opcional: company, sanction, contract, embargo, person, election, finance", "enum": ["company", "sanction", "contract", "embargo", "person", "election", "finance", "convenio", "publicoffice"]},
-                    "limit": {"type": "integer", "description": "Máximo de resultados (1-20)", "default": 8},
-                },
-                "required": ["query"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_graph_stats",
-            "description": "Retorna estatísticas gerais do grafo: total de nós, relacionamentos, contagem por tipo de entidade.",
-            "parameters": {"type": "object", "properties": {}},
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_entity_connections",
-            "description": "Busca conexões/relacionamentos de uma entidade específica no grafo.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "entity_id": {"type": "string", "description": "ID da entidade (elementId do Neo4j)"},
-                },
-                "required": ["entity_id"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "web_search",
-            "description": "Pesquisa na web por noticias, investigacoes, denuncias, materias de jornais sobre empresas, politicos, cidades. Use para encontrar informacoes atuais que nao estao no grafo.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Termo de busca (ex: 'investigacao prefeito Uberlandia', 'denuncia empresa X CNPJ')"},
-                    "max_results": {"type": "integer", "description": "Maximo de resultados (1-10)", "default": 5},
-                },
-                "required": ["query"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_emendas",
-            "description": "Busca emendas parlamentares direcionadas a um municipio. Mostra quanto dinheiro federal foi destinado via emendas.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "municipio": {"type": "string", "description": "Nome do municipio (ex: Uberlandia, Sao Paulo, Patos de Minas)"},
-                    "uf": {"type": "string", "description": "Sigla do estado (ex: MG, SP, RJ)"},
-                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
-                },
-                "required": ["municipio"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_transferencias",
-            "description": "Busca transferencias federais (convenios, repasses) para um municipio. Mostra o fluxo de dinheiro federal para a cidade.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "municipio": {"type": "string", "description": "Nome do municipio"},
-                    "uf": {"type": "string", "description": "Sigla do estado"},
-                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
-                },
-                "required": ["municipio"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_ceap",
-            "description": "Busca gastos CEAP (Cota para Exercicio da Atividade Parlamentar) de deputados. Mostra despesas com passagens, combustivel, alimentacao, etc.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "parlamentar": {"type": "string", "description": "Nome do parlamentar (ex: 'Joao Silva')"},
-                    "uf": {"type": "string", "description": "Sigla do estado para filtrar deputados"},
-                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_pep_city",
-            "description": "Busca pessoas politicamente expostas (PEPs) de uma cidade: deputados, prefeito, vereadores, investigados. Retorna deputados federais do estado e noticias sobre politicos locais.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "cidade": {"type": "string", "description": "Nome da cidade (ex: Uberlandia, Patos de Minas)"},
-                    "uf": {"type": "string", "description": "Sigla do estado (ex: MG, SP)"},
-                },
-                "required": ["cidade"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_gazettes",
-            "description": "Busca em diarios oficiais municipais via Querido Diario (Open Knowledge Brasil). Encontra licitacoes, contratos, nomeacoes, decretos publicados no diario oficial da cidade.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "municipio": {"type": "string", "description": "Nome do municipio (ex: Uberlandia, Sao Paulo)"},
-                    "query": {"type": "string", "description": "Termo de busca no diario oficial (ex: 'licitacao', 'contrato', nome de empresa)"},
-                    "max_results": {"type": "integer", "description": "Maximo de resultados (1-10)", "default": 5},
-                },
-                "required": ["municipio"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "cnpj_info",
-            "description": "Busca informacoes de empresa por CNPJ: razao social, socios, capital social, CNAE, situacao cadastral. Use para investigar fornecedores encontrados no CEAP ou em contratos.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "cnpj": {"type": "string", "description": "CNPJ da empresa (com ou sem formatacao, ex: 12.345.678/0001-90 ou 12345678000190)"},
-                },
-                "required": ["cnpj"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_votacoes",
-            "description": "Busca votacoes nominais na Camara dos Deputados. Mostra como cada deputado votou em proposicoes. Sem nome de parlamentar, lista votacoes recentes com placar (sim/nao/abstencao).",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "parlamentar": {"type": "string", "description": "Nome do deputado para ver como votou (opcional)"},
-                    "proposicao": {"type": "string", "description": "Tema ou numero da proposicao (opcional)"},
-                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_servidores",
-            "description": "Busca servidores publicos federais: nome, salario, cargo, orgao. Portal da Transparencia oficial.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome do servidor"},
-                    "cpf": {"type": "string", "description": "CPF do servidor (opcional)"},
-                    "orgao": {"type": "string", "description": "Orgao de exercicio (opcional)"},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_licitacoes",
-            "description": "Busca licitacoes do governo federal: pregoes, concorrencias, dispensas. Filtro por UF e ano.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "orgao": {"type": "string", "description": "Codigo do orgao (opcional)"},
-                    "uf": {"type": "string", "description": "UF (ex: SP, MG, RJ)"},
-                    "ano": {"type": "integer", "description": "Ano de referencia", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_cpgf",
-            "description": "Busca gastos com cartao corporativo do governo (CPGF). Restaurantes, hoteis, compras. Investigue gastos suspeitos.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome do portador do cartao"},
-                    "orgao": {"type": "string", "description": "Codigo do orgao"},
-                    "mes": {"type": "integer", "description": "Mes (1-12)"},
-                    "ano": {"type": "integer", "description": "Ano", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_viagens",
-            "description": "Busca viagens a servico do governo: diarias, passagens, destinos. Investigue viagens frequentes ou caras.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome do servidor que viajou"},
-                    "orgao": {"type": "string", "description": "Codigo do orgao"},
-                    "ano": {"type": "integer", "description": "Ano", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_contratos",
-            "description": "Busca contratos do governo federal: fornecedor, valor, vigencia. Investigue aditivos e sobrepreco.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "orgao": {"type": "string", "description": "Codigo do orgao"},
-                    "fornecedor": {"type": "string", "description": "Nome do fornecedor"},
-                    "ano": {"type": "integer", "description": "Ano", "default": 2024},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_sancoes",
-            "description": "Busca empresas sancionadas (CEIS - inidoneas, CNEP - punidas). Empresa sancionada ganhando contrato = irregularidade.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "cnpj": {"type": "string", "description": "CNPJ da empresa"},
-                    "nome": {"type": "string", "description": "Nome da empresa"},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_processos",
-            "description": "Busca processos judiciais no DataJud (CNJ). Todos os tribunais do Brasil. Busque por numero, classe (recuperacao judicial, improbidade) ou recentes.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "numero_processo": {"type": "string", "description": "Numero do processo (formato CNJ)"},
-                    "nome_parte": {"type": "string", "description": "Nome de uma das partes (limitado)"},
-                    "tribunal": {"type": "string", "description": "Tribunal: TJSP, TJRJ, TJMG, TRF1-6, STJ, TST, etc.", "default": "TJSP"},
-                    "classe": {"type": "string", "description": "Classe processual: Recuperacao Judicial, Acao de Improbidade, Execucao Fiscal, etc."},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "bnmp_mandados",
-            "description": "Busca mandados de prisao no BNMP (Banco Nacional de Mandados de Prisao - CNJ). Verifica se pessoa tem mandado ativo.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome completo da pessoa"},
-                },
-                "required": ["nome"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "procurados_lookup",
-            "description": "Busca pessoas procuradas pela Policia Federal e Interpol Brasil.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome da pessoa procurada"},
-                },
-                "required": ["nome"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "lista_suja_lookup",
-            "description": "Consulta a Lista Suja do Trabalho Escravo (MTE). Verifica se empresa ou empregador foi flagrado com trabalho analogo a escravidao.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome do empregador ou empresa"},
-                    "uf": {"type": "string", "description": "Sigla do estado (opcional)"},
-                },
-                "required": ["nome"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "pncp_licitacoes",
-            "description": "Busca licitacoes no PNCP (Portal Nacional de Contratacoes Publicas). Inclui TODAS as esferas: federal, estadual e municipal.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "cnpj_orgao": {"type": "string", "description": "CNPJ do orgao contratante"},
-                    "uf": {"type": "string", "description": "Sigla do estado (ex: SP, MG)"},
-                    "data_inicio": {"type": "string", "description": "Data inicio (YYYYMMDD)", "default": "20240101"},
-                    "data_fim": {"type": "string", "description": "Data fim (YYYYMMDD)", "default": "20241231"},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "oab_advogado",
-            "description": "Consulta advogado pelo numero OAB ou nome. Verifica se inscricao esta ativa, seccional, situacao.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "nome": {"type": "string", "description": "Nome do advogado"},
-                    "numero_oab": {"type": "string", "description": "Numero de inscricao OAB"},
-                    "seccional": {"type": "string", "description": "Seccional OAB (ex: SP, RJ, MG)"},
-                },
-                "required": [],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "opencnpj",
-            "description": "Consulta CNPJ via OpenCNPJ (API publica gratuita). Retorna dados cadastrais completos: razao social, socios (QSA), CNAEs, capital social, situacao cadastral. Use como alternativa/complemento a cnpj_info.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "cnpj": {"type": "string", "description": "CNPJ da empresa (com ou sem formatacao)"},
-                },
-                "required": ["cnpj"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "cypher_query",
-            "description": "Executa query Cypher READ-ONLY no Neo4j. Use para consultas analiticas que os outros tools nao cobrem: top N por criterio, contagens, agregacoes, cruzamentos. Labels disponiveis: Company, Person, Sanction, Contract, PublicOffice, Embargo, Election, Amendment, Convenio, PEPRecord, GovCardExpense, GovTravel, BarredNGO. Propriedades comuns: name, razao_social, cnpj, cpf, source, value, date. Relacionamentos: SOCIO_DE, CONTRATADA_POR, SANCIONADA_POR, RECEBEU_EMENDA, VIAJOU_PARA. SEMPRE use LIMIT (max 50).",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Query Cypher read-only (MATCH/RETURN apenas). Ex: MATCH (c:Company)-[:SOCIO_DE]-(p:Person) RETURN c.razao_social, p.name LIMIT 10"},
-                    "params": {"type": "object", "description": "Parametros opcionais para a query ($nome, $cnpj, etc.)"},
-                },
-                "required": ["query"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "data_summary",
-            "description": "Retorna resumo dinamico do sistema: total de nos, relacionamentos, fontes de dados, tipos de entidades com contagem, numero de ferramentas. Use para responder perguntas sobre o que o sistema tem/sabe.",
-            "parameters": {"type": "object", "properties": {}},
-        },
-    },
-
-]
-
-SYSTEM_PROMPT = """Você é o agente de pesquisa do EGOS Inteligência (inteligencia.egos.ia.br).
-
-## Identidade
-Agente de pesquisa em dados públicos brasileiros. Open-source, autofinanciado, 26 ferramentas integradas.
-Acesso DIRETO ao grafo Neo4j, APIs de transparência, diários oficiais, processos judiciais, mandados, sanções, CNPJ.
-
-## REGRA #1: SEMPRE USE FERRAMENTAS — NUNCA RESPONDA DE MEMÓRIA
-Você DEVE chamar ferramentas ANTES de responder. Se o usuário pergunta QUALQUER coisa sobre dados, chame a ferramenta.
-- Perguntas sobre o sistema → chame data_summary
-- Perguntas sobre empresas → chame search_entities + opencnpj + search_sancoes
-- Perguntas analíticas → chame cypher_query (contagens, rankings, cruzamentos)
-- NUNCA diga "temos X mil entidades" sem chamar data_summary primeiro
-- NUNCA invente números — busque sempre dados reais
-
-## REGRA #2: USE MÚLTIPLAS FERRAMENTAS EM PARALELO
-Chame 2-4 ferramentas simultaneamente. Quanto mais cruzamento, melhor a pesquisa.
-- CIDADE: search_pep_city + search_emendas + search_transferencias + search_gazettes
-- POLÍTICO: search_ceap + search_entities + web_search + search_votacoes
-- EMPRESA/CNPJ: opencnpj + search_entities + search_sancoes + lista_suja_lookup
-- DINHEIRO: search_emendas + search_transferencias + search_ceap + pncp_licitacoes
-- PESSOA SUSPEITA: bnmp_mandados + procurados_lookup + search_entities + web_search
-- ANÁLISE DO GRAFO: cypher_query (top N, contagens, agregações, cruzamentos)
-
-## cypher_query — Seu Superpoder
-Use para consultas analíticas que outros tools não cobrem:
-- Top empresas com mais sanções: MATCH (s:Sanction)--(c:Company) RETURN c.razao_social, count(s) AS total ORDER BY total DESC LIMIT 10
-- Sócios de empresa: MATCH (c:Company)-[:SOCIO_DE]-(p:Person) WHERE c.cnpj = $cnpj RETURN p.name, c.razao_social
-- Empresas conectadas a político: MATCH (p:Person {name: $nome})-[*1..2]-(c:Company) RETURN DISTINCT c.razao_social, c.cnpj LIMIT 20
-- Contagem por tipo: MATCH (n) RETURN labels(n)[0] AS tipo, count(n) AS total ORDER BY total DESC
-- Labels: Company, Person, Sanction, Contract, PublicOffice, Embargo, PEPRecord, GovCardExpense, GovTravel, BarredNGO
-- Rels: SOCIO_DE, CONTRATADA_POR, SANCIONADA_POR, RECEBEU_EMENDA, VIAJOU_PARA
-- SEMPRE use LIMIT (max 50)
-
-## Regras de Resposta
-- Português brasileiro SEMPRE
-- Responda de forma completa mas concisa (max ~1500 chars)
-- Use **negrito** para nomes, valores, CNPJs
-- Cite a fonte de cada dado (CEIS, CNEP, Câmara, DataJud, etc.)
-- NUNCA exponha CPF ou dados pessoais sensíveis
-- Padrões são SINAIS, nunca prova jurídica
-- Sugira próximos passos de pesquisa ao final
-- Mostre o CAMINHO DO DINHEIRO: emenda → convênio → empresa → sócios
-- Se não encontrar resultados, sugira variações de busca
-- NUNCA peça informação que você pode buscar sozinho — PESQUISE PRIMEIRO
-- Se a pergunta é genérica, busque dados NACIONAIS primeiro
-
-## Análise de Risco
-1. **RISCO:** Sanções? Processos? Conexões suspeitas?
-2. **MODUS OPERANDI:** Padrão repetido? Mesmos sócios em várias empresas?
-3. **CROSS-REFERENCE:** Cruzar grafo + Portal + DataJud + Querido Diário + web
-4. **RED FLAGS:** Empresa sancionada com contrato ativo, sócio em falida + nova, fornecedor em RJ, doação + contrato
-
-## Relatórios Publicados
-1. **SUPERAR LTDA** — RJ + contratos públicos + fraude patrimonial → /reports/report-01-superar-ltda.md
-2. **Manaus Transparência** — Emendas, convênios, licitações → /reports/report-02-manaus-transparencia.md
-3. **Recuperação Judicial SP** — Empresas em RJ com contratos → /reports/report-03-recuperacao-judicial-sp.md
-4. **Patense** — Pesquisa completa → /reports/patense.html
-
-## Limitações (seja honesto)
-- CNPJ/QSA: parcial (ETL em progresso — 53M empresas)
-- ICIJ Offshore Leaks: não disponível ainda
-- Doações de campanha TSE: próximo ETL
-
-## Disclaimer
-Pesquisa cidadã com dados públicos. Padrões são sinais para aprofundar, não prova jurídica."""
+# --- Tool definitions + System prompt (extracted to separate modules) ---
+from bracc.routers.chat_prompt import SYSTEM_PROMPT
+from bracc.routers.chat_tools import TOOLS
 
 
 async def _call_openrouter(
@@ -869,6 +499,36 @@ async def _call_openrouter(
                 )
                 resp.raise_for_status()
                 data = resp.json()
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code in (402, 429):
+                    global _CREDIT_EXHAUSTED
+                    _CREDIT_EXHAUSTED = True
+                    logger.warning("OpenRouter credits exhausted (HTTP %s). Switching to free model.", e.response.status_code)
+                    # Retry with free fallback model
+                    payload["model"] = MODEL_FALLBACK
+                    headers["Authorization"] = f"Bearer {effective_key}"
+                    try:
+                        resp = await client.post(
+                            "https://openrouter.ai/api/v1/chat/completions",
+                            headers=headers,
+                            json=payload,
+                        )
+                        resp.raise_for_status()
+                        data = resp.json()
+                    except Exception as e2:
+                        logger.error("Fallback model also failed: %s", e2)
+                        return (
+                            "⚠️ **Créditos de IA esgotados.** Este projeto é 100% open-source e autofinanciado.\n\n"
+                            "A busca direta no grafo ainda funciona — digite um CNPJ ou nome de empresa.\n\n"
+                            "Se quiser ajudar a manter o chatbot ativo, qualquer contribuição ajuda:\n"
+                            "- 🌟 [GitHub Star](https://github.com/enioxt/EGOS-Inteligencia)\n"
+                            "- 💬 [Telegram](https://t.me/EthikIntelligence)",
+                            [], [], 0.0,
+                        )
+                else:
+                    logger.error("OpenRouter call failed: %s", e)
+                    text, ents = await _fallback_search(messages[-1].get("content", ""), session)
+                    return text, ents, [], 0.0
             except Exception as e:
                 logger.error("OpenRouter call failed: %s", e)
                 text, ents = await _fallback_search(messages[-1].get("content", ""), session)
@@ -911,6 +571,13 @@ async def _call_openrouter(
                     result = await _tool_stats(session)
                 elif fn_name == "get_entity_connections":
                     result = await _tool_connections(session, fn_args.get("entity_id", ""))
+                elif fn_name == "find_connection_path":
+                    result = await _tool_find_path(
+                        session,
+                        fn_args.get("entity_a", ""),
+                        fn_args.get("entity_b", ""),
+                        min(fn_args.get("max_depth", 4), 6),
+                    )
                 elif fn_name == "web_search":
                     result = await tool_web_search(
                         fn_args.get("query", ""),
@@ -1033,6 +700,7 @@ async def _call_openrouter(
                     "search_entities": ("Neo4j Graph", "neo4j://localhost:7687"),
                     "get_graph_stats": ("Neo4j Graph", "neo4j://localhost:7687"),
                     "get_entity_connections": ("Neo4j Graph", "neo4j://localhost:7687"),
+                    "find_connection_path": ("Neo4j Graph — Path Finder", "neo4j://localhost:7687"),
                     "web_search": ("Brave Search / DuckDuckGo", "https://api.search.brave.com/"),
                     "search_emendas": ("Portal da Transparência — Emendas", "api.portaldatransparencia.gov.br"),
                     "search_transferencias": ("Portal da Transparência — Transferências", "api.portaldatransparencia.gov.br"),
@@ -1057,7 +725,7 @@ async def _call_openrouter(
                     "cypher_query": ("Neo4j Graph — Cypher Query", "neo4j://localhost:7687"),
                     "data_summary": ("Sistema EGOS Inteligência", "inteligencia.egos.ia.br"),
                 }.get(fn_name, ("Desconhecido", ""))
-                
+
                 result_count = 0
                 if isinstance(result, list):
                     result_count = len(result)
@@ -1070,7 +738,7 @@ async def _call_openrouter(
                         elif isinstance(v, list):
                             result_count = len(v)
                             break
-                
+
                 from datetime import datetime
                 evidence_chain.append({
                     "tool": fn_name,
@@ -1197,12 +865,12 @@ async def chat(
     """AI-powered conversational search for EGOS Inteligência."""
 
     client_id = _get_client_id(request)
-    
+
     # Conversation persistence: use Redis if conversation_id provided
     conv_id = body.conversation_id.strip() if body.conversation_id else ""
     client_header = (request.headers.get("x-client-id") or "").strip()
     effective_client = client_header if client_header else client_id
-    
+
     if conv_id:
         from bracc.routers.conversations import get_conversation_messages
         history = await get_conversation_messages(conv_id, effective_client)
@@ -1213,12 +881,18 @@ async def chat(
     byok_key = (request.headers.get("x-openrouter-key") or "").strip()
 
     # Select model based on usage tier or BYOK
-    selected_model, selected_key, tier_label = _select_model(client_id, byok_key)
+    selected_model, selected_key, tier_label = await _select_model(client_id, byok_key)
 
     # Rate limit check — if limit reached, prepend warning
     tier_notice = ""
     if tier_label == "limite_atingido":
         tier_notice = "\n\n⚠️ **Limite diário atingido** (30 consultas). O agente continua funcionando com modelo gratuito, mas a qualidade pode ser menor.\n\n💡 **Traga sua própria chave!** Crie uma conta grátis em [openrouter.ai](https://openrouter.ai), insira créditos (~$5 dura meses) e cole sua chave nas configurações. Assim você usa os melhores modelos sem restrição."
+
+    # Prompt injection soft check (logs but does not block)
+    from bracc.middleware.input_sanitizer import check_injection
+    injection_pattern = check_injection(body.message)
+    if injection_pattern:
+        log_activity("prompt_injection_detected", {"pattern": injection_pattern[:80], "client": client_id})
 
     # Build messages for LLM
     messages: list[dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -1267,7 +941,7 @@ async def chat(
         evidence, cost = [], 0.0
 
     # Increment usage AFTER successful call
-    new_count = _increment_usage(client_id)
+    new_count = await _increment_usage(client_id)
 
     # Append tier notice to reply
     if tier_notice:

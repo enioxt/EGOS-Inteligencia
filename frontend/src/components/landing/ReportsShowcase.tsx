@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Report {
   id: string;
@@ -10,45 +10,6 @@ interface Report {
   highlight?: string;
 }
 
-const REPORTS: Report[] = [
-  {
-    id: "patense",
-    title: "Grupo Patense — Rede Societaria e Financeira",
-    date: "2026-03-01",
-    description: "Pesquisa de 13 empresas interligadas com R$217M em financiamentos BNDES e R$2.15B em divida ativa.",
-    tags: ["BNDES", "rede societaria", "divida ativa"],
-    url: "/reports/patense.html",
-    highlight: "R$2.15B em divida ativa",
-  },
-  {
-    id: "superar",
-    title: "SUPERAR LTDA — Empresa Sancionada",
-    date: "2026-03-02",
-    description: "Empresa com 7 sancoes no grafo, socio PJ — pesquisa de cadeia societaria e beneficiarios finais.",
-    tags: ["sancoes", "CEIS", "cadeia societaria"],
-    url: "/reports/report-01-superar-ltda.html",
-    highlight: "7 sancoes",
-  },
-  {
-    id: "manaus",
-    title: "Transparencia Municipal — Manaus (AM)",
-    date: "2026-03-02",
-    description: "Emendas parlamentares, 4.664 processos judiciais e diarios oficiais de Manaus. Foco ambiental.",
-    tags: ["emendas", "DataJud", "meio ambiente"],
-    url: "/reports/report-02-manaus-transparencia.html",
-    highlight: "4.664 processos",
-  },
-  {
-    id: "rj-sp",
-    title: "Recuperacao Judicial — Sao Paulo",
-    date: "2026-03-02",
-    description: "3.704 processos de recuperacao judicial no TJSP. Cruzamentos com contratos publicos e sancoes.",
-    tags: ["recuperacao judicial", "TJSP", "DataJud"],
-    url: "/reports/report-03-recuperacao-judicial-sp.html",
-    highlight: "3.704 processos",
-  },
-];
-
 const TAG_BG: Record<string, string> = {
   BNDES: "#f59e0b",
   "rede societaria": "#3b82f6",
@@ -57,8 +18,16 @@ const TAG_BG: Record<string, string> = {
 
 export function ReportsShowcase() {
   const [hover, setHover] = useState<string | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
 
-  if (REPORTS.length === 0) return null;
+  useEffect(() => {
+    fetch("/updates/reports.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: Report[]) => setReports(data))
+      .catch(() => setReports([]));
+  }, []);
+
+  if (reports.length === 0) return null;
 
   return (
     <section style={{ padding: "2rem 1.5rem", maxWidth: 1000, margin: "0 auto" }}>
@@ -73,7 +42,7 @@ export function ReportsShowcase() {
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        {REPORTS.map((r) => (
+        {reports.map((r) => (
           <a
             key={r.id}
             href={r.url}

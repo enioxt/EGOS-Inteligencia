@@ -2,14 +2,15 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { type SearchResult, type StatsResponse, getStats, searchEntities } from "@/api/client";
-import { addJourneyEntry } from "@/lib/journey";
+import { type StatsResponse, getStats } from "@/api/client";
 import { FeatureCard } from "@/components/landing/FeatureCard";
 import {
   GraphIcon,
   InvestigationIcon,
   PatternIcon,
 } from "@/components/landing/FeatureIcons";
+import { HeroSearch } from "@/components/landing/HeroSearch";
+import { PartnershipCTA } from "@/components/landing/PartnershipCTA";
 import { JourneyPanel } from "@/components/journey/JourneyPanel";
 import { ReportsShowcase } from "@/components/landing/ReportsShowcase";
 import { ETLProgress } from "@/components/landing/ETLProgress";
@@ -22,122 +23,6 @@ import { NetworkAnimation } from "@/components/landing/NetworkAnimation";
 import { StatsBar } from "@/components/landing/StatsBar";
 
 import styles from "./Landing.module.css";
-
-const SEARCH_SUGGESTIONS = [
-  { label: "Empresas sancionadas", query: "sancionada", icon: "\u{1F3E2}" },
-  { label: "Pol\u00edticos de SP", query: "S\u00e3o Paulo", icon: "\u{1F3DB}\uFE0F" },
-  { label: "Lista suja trabalho escravo", query: "trabalho escravo", icon: "\u{26D3}\uFE0F" },
-  { label: "Emendas parlamentares", query: "emenda parlamentar", icon: "\u{1F4B0}" },
-  { label: "Licita\u00e7\u00f5es RJ", query: "Rio de Janeiro licita\u00e7\u00e3o", icon: "\u{1F4CB}" },
-  { label: "Mandados de pris\u00e3o", query: "mandado pris\u00e3o", icon: "\u{1F6A8}" },
-];
-
-function HeroSearch({ onSendToChat }: { onSendToChat: (query: string) => void }) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const doSearch = useCallback(async (q: string) => {
-    const trimmed = q.trim();
-    if (!trimmed) return;
-    setSearching(true);
-    setHasSearched(true);
-    try {
-      addJourneyEntry({ type: "search", title: trimmed.slice(0, 80), query: trimmed, url: "/", description: "Landing search" });
-      const res = await searchEntities(trimmed, undefined, 1, 6);
-      setResults(res.results);
-    } catch {
-      setResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    doSearch(query);
-  };
-
-  const handleSuggestion = (suggestion: string) => {
-    setQuery(suggestion);
-    doSearch(suggestion);
-  };
-
-  return (
-    <div className={styles.heroSearch}>
-      <form className={styles.heroSearchForm} onSubmit={handleSubmit}>
-        <span className={styles.heroSearchIcon}>{"\uD83D\uDD0D"}</span>
-        <input
-          ref={inputRef}
-          type="text"
-          className={styles.heroSearchInput}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="CNPJ, nome, empresa, cidade ou tema..."
-          autoComplete="off"
-        />
-        <button type="submit" className={styles.heroSearchBtn} disabled={searching}>
-          {searching ? "Buscando..." : "Pesquisar"}
-        </button>
-      </form>
-
-      {!hasSearched && (
-        <div className={styles.heroSuggestions}>
-          {SEARCH_SUGGESTIONS.map((s) => (
-            <button
-              key={s.query}
-              className={styles.heroSuggestionChip}
-              onClick={() => handleSuggestion(s.query)}
-              type="button"
-            >
-              <span>{s.icon}</span> {s.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {hasSearched && results.length > 0 && (
-        <div className={styles.heroResults}>
-          {results.map((r) => (
-            <a
-              key={r.id}
-              href={`/app/analysis/${r.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.heroResultItem}
-            >
-              <span className={styles.heroResultType}>{r.type}</span>
-              <span className={styles.heroResultName}>{r.name}</span>
-              {r.document && <span className={styles.heroResultDoc}>{r.document}</span>}
-            </a>
-          ))}
-          <button
-            type="button"
-            className={styles.heroSendToChat}
-            onClick={() => onSendToChat(query)}
-          >
-            {"\uD83E\uDD16"} Aprofundar com IA
-          </button>
-        </div>
-      )}
-
-      {hasSearched && results.length === 0 && !searching && (
-        <div className={styles.heroNoResults}>
-          <span>Nenhum resultado para "{query}"</span>
-          <button
-            type="button"
-            className={styles.heroSendToChat}
-            onClick={() => onSendToChat(query)}
-          >
-            {"\uD83E\uDD16"} Perguntar \u00e0 IA sobre isso
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function useReveal() {
   const setRef = useCallback((node: HTMLElement | null) => {
@@ -164,34 +49,6 @@ function useReveal() {
   return setRef;
 }
 
-function formatCount(n: number): string {
-  if (n >= 1_000_000) return `${(Math.round(n / 100_000) / 10).toFixed(1)}M`;
-  if (n >= 1_000) return `${(Math.round(n / 100) / 10).toFixed(1)}K`;
-  return String(n);
-}
-
-interface SourceDef {
-  nameKey: string;
-  descKey: string;
-  countFn: (s: StatsResponse) => number | null;
-}
-
-const DATA_SOURCES: SourceDef[] = [
-  { nameKey: "CNPJ", descKey: "landing.sources.cnpj", countFn: (s) => s.company_count },
-  { nameKey: "TSE", descKey: "landing.sources.tse", countFn: (s) => s.person_count },
-  { nameKey: "Transparência", descKey: "landing.sources.transparencia", countFn: (s) => s.contract_count },
-  { nameKey: "CEIS/CNEP", descKey: "landing.sources.sanctions", countFn: (s) => s.sanction_count },
-  { nameKey: "DATASUS", descKey: "landing.sources.cnes", countFn: (s) => s.health_count },
-  { nameKey: "BNDES", descKey: "landing.sources.bndes", countFn: (s) => s.finance_count },
-  { nameKey: "PGFN", descKey: "landing.sources.pgfn", countFn: () => null },
-  { nameKey: "IBAMA", descKey: "landing.sources.ibama", countFn: (s) => s.embargo_count },
-  { nameKey: "ComprasNet", descKey: "landing.sources.comprasnet", countFn: () => null },
-  { nameKey: "TCU", descKey: "landing.sources.tcu", countFn: () => null },
-  { nameKey: "TransfereGov", descKey: "landing.sources.transferegov", countFn: (s) => s.amendment_count },
-  { nameKey: "RAIS", descKey: "landing.sources.rais", countFn: (s) => s.laborstats_count },
-  { nameKey: "INEP", descKey: "landing.sources.inep", countFn: (s) => s.education_count },
-];
-
 interface FeatureDef {
   key: string;
   icon: ReactNode;
@@ -206,140 +63,6 @@ const FEATURES: FeatureDef[] = [
 
 const STATS_CACHE_KEY = "bracc_stats_cache";
 
-function LiveDatabaseStatus({ stats }: { stats: StatsResponse | null }) {
-  if (!stats) return null;
-
-  const DB_ROWS = [
-    { label: "Empresas (CNPJ)", count: stats.company_count, loading: stats.company_count < 1000 },
-    { label: "Sanções (CEIS/CNEP/OpenSanctions)", count: stats.sanction_count, loading: false },
-    { label: "Pessoas / Sócios", count: stats.person_count, loading: stats.person_count < 100 },
-    { label: "Contratos Públicos", count: stats.contract_count, loading: false },
-    { label: "Financiamentos (BNDES)", count: stats.finance_count, loading: false },
-    { label: "Saúde (DATASUS)", count: stats.health_count, loading: false },
-    { label: "Embargos (IBAMA)", count: stats.embargo_count, loading: false },
-  ].filter((r) => r.count > 0 || r.loading);
-
-  return (
-    <section style={{
-      padding: "clamp(3rem, 6vw, 5rem) 0",
-      background: "linear-gradient(180deg, #090b0b 0%, #0a0b0c 100%)",
-      borderTop: "1px solid rgba(255,255,255,0.06)",
-    }}>
-      <div style={{ width: "min(72rem, calc(100% - 4rem))", margin: "0 auto" }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: "0.6rem",
-          marginBottom: "0.8rem",
-          fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 500,
-          letterSpacing: "0.12em", textTransform: "uppercase" as const,
-          color: "rgba(148,163,154,0.9)",
-        }}>
-          <span style={{ width: "1.5rem", height: "1px", background: "rgba(0,229,195,0.72)" }} />
-          STATUS EM TEMPO REAL
-        </div>
-        <h2 style={{
-          fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400,
-          fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", lineHeight: 1,
-          letterSpacing: "-0.018em", color: "#f0f3f1",
-          marginBottom: "clamp(1.5rem, 3vw, 2rem)",
-        }}>
-          Base de Dados
-        </h2>
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(16rem, 1fr))",
-          gap: "0.6rem",
-        }}>
-          {DB_ROWS.map((row) => (
-            <div key={row.label} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "0.85rem 1.1rem",
-              background: "#111416", border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "0.6rem",
-            }}>
-              <span style={{ fontSize: "0.85rem", color: "rgba(232,237,233,0.8)" }}>
-                {row.label}
-              </span>
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: "0.85rem", fontWeight: 600,
-                color: row.loading ? "rgba(234,179,8,0.9)" : "rgba(0,229,195,0.9)",
-                display: "flex", alignItems: "center", gap: "0.4rem",
-              }}>
-                {row.loading && (
-                  <span style={{
-                    width: 6, height: 6, borderRadius: "50%",
-                    background: "rgba(234,179,8,0.9)",
-                    animation: "pulse 1.5s ease-in-out infinite",
-                  }} />
-                )}
-                {row.count > 0 ? formatCount(row.count) : "Carregando..."}
-              </span>
-            </div>
-          ))}
-        </div>
-        <p style={{
-          marginTop: "1rem", fontSize: "0.78rem",
-          color: "rgba(148,163,154,0.7)", fontFamily: "var(--font-mono)",
-        }}>
-          Total: {formatCount(stats.total_nodes)} entidades · {formatCount(stats.total_relationships)} conexões · Atualizado a cada visita
-        </p>
-      </div>
-      <style>{`@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
-    </section>
-  );
-}
-
-function PartnershipCTA() {
-  return (
-    <section style={{
-      padding: "clamp(3rem, 6vw, 4.5rem) 0",
-      background: "linear-gradient(135deg, rgba(30,58,95,0.3) 0%, rgba(30,27,75,0.3) 100%)",
-      borderTop: "1px solid rgba(59,130,246,0.15)",
-    }}>
-      <div style={{
-        width: "min(64rem, calc(100% - 4rem))", margin: "0 auto", textAlign: "center" as const,
-      }}>
-        <h2 style={{
-          fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400,
-          fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1,
-          color: "#f0f3f1", marginBottom: "1rem",
-        }}>
-          Aberto a Parcerias
-        </h2>
-        <p style={{
-          maxWidth: "38rem", margin: "0 auto 2rem", fontSize: "1rem",
-          lineHeight: 1.6, color: "rgba(232,237,233,0.7)",
-        }}>
-          Pesquisadores, jornalistas, desenvolvedores, instituições, governos e universidades
-          podem contribuir integrando novas bases de dados, criando investigações e expandindo o sistema.
-          Quanto mais bases conectadas, mais poderoso o cruzamento.
-        </p>
-        <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap" as const }}>
-          <a href="https://github.com/enioxt/EGOS-Inteligencia" target="_blank" rel="noopener noreferrer" style={{
-            display: "inline-flex", alignItems: "center", padding: "0.75rem 1.8rem",
-            background: "rgba(59,130,246,0.9)", color: "white", borderRadius: "0.6rem",
-            textDecoration: "none", fontWeight: 600, fontSize: "0.9rem",
-          }}>
-            GitHub — Código e Roadmap
-          </a>
-          <a href="https://t.me/EthikIntelligence" target="_blank" rel="noopener noreferrer" style={{
-            display: "inline-flex", alignItems: "center", padding: "0.75rem 1.8rem",
-            background: "transparent", color: "rgba(232,237,233,0.9)",
-            border: "1px solid rgba(255,255,255,0.2)", borderRadius: "0.6rem",
-            textDecoration: "none", fontWeight: 600, fontSize: "0.9rem",
-          }}>
-            Telegram
-          </a>
-        </div>
-        <p style={{
-          marginTop: "1.5rem", fontSize: "0.78rem",
-          color: "rgba(148,163,154,0.7)", fontFamily: "var(--font-mono)",
-        }}>
-          100% open-source · Infraestrutura: $105/mês autofinanciado · Sem investidores, sem publicidade
-        </p>
-      </div>
-    </section>
-  );
-}
-
 export function Landing() {
   const { t } = useTranslation();
   const chatRef = useRef<HTMLDivElement>(null);
@@ -347,7 +70,6 @@ export function Landing() {
   const featuresRef = useReveal();
   const howRef = useReveal();
   const trustRef = useReveal();
-  const sourcesRef = useReveal();
 
   const handleSendToChat = useCallback((query: string) => {
     if (chatRef.current) {
@@ -461,37 +183,10 @@ export function Landing() {
           <span className={styles.trustLabel}>{t("landing.trust.neutral")}</span>
         </div>
         <div className={styles.trustItem}>
-          <span className={styles.trustValue}>{t("landing.trust.auditableValue")}</span>
+          <span className={styles.trustValue}>{stats?.data_sources ?? "—"}</span>
           <span className={styles.trustLabel}>{t("landing.trust.auditable")}</span>
         </div>
       </div>
-
-      <section className={styles.sources}>
-        <div ref={sourcesRef} className={`${styles.sourcesInner} ${styles.reveal}`}>
-          <span className={styles.sectionLabel}>
-            {t("landing.sources.sectionLabel")}
-          </span>
-          <h2 className={styles.sectionHeading}>
-            {t("landing.sources.sectionHeading")}
-          </h2>
-          <div className={styles.sourcesGrid}>
-            {DATA_SOURCES.map((source) => {
-              const count = stats ? source.countFn(stats) : null;
-              return (
-                <div key={source.nameKey} className={styles.sourceCard}>
-                  <div className={styles.sourceHeader}>
-                    <span className={styles.sourceName}>{source.nameKey}</span>
-                    <span className={styles.sourceCount}>
-                      {count != null ? formatCount(count) : "\u2014"}
-                    </span>
-                  </div>
-                  <span className={styles.sourceDesc}>{t(source.descKey)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       <ReportsShowcase />
 
@@ -502,7 +197,6 @@ export function Landing() {
       <UpdatesTimeline />
 
       <JourneyPanel />
-      <LiveDatabaseStatus stats={stats} />
 
       <PartnershipCTA />
 

@@ -52,11 +52,10 @@ const resources = {
           openSource: "Código aberto",
           neutralValue: "100%",
           neutral: "Dados neutros",
-          auditableValue: "13",
           auditable: "Fontes públicas",
         },
         sources: {
-          sectionLabel: "13 fontes",
+          sectionLabel: "{{count}} fontes",
           sectionHeading: "De onde vêm os dados",
           cnpj: "Cadastro de empresas da Receita Federal",
           tse: "Doações eleitorais do TSE",
@@ -124,6 +123,9 @@ const resources = {
         analytics: "Analytics",
         reports: "Relatórios",
         activity: "Atividades",
+        methodology: "Metodologia",
+        eagleEye: "Eagle Eye",
+        valorReal: "Calculadora PJ",
         login: "Entrar",
         logout: "Sair",
         register: "Registrar",
@@ -452,7 +454,7 @@ const resources = {
       landing: {
         hero: "Follow the public money",
         heroSubtitle:
-          "87 million connections between companies, politicians, and contracts. 13 government sources. Open data.",
+          "Cross-referencing companies, politicians, and public contracts. Multiple government sources. Open data.",
         badge: "EGOS Inteligência · Open data",
         cta: "Explore the graph",
         stats: {
@@ -465,23 +467,23 @@ const resources = {
           sectionHeading: "What EGOS Inteligência reveals",
           graph: "Map any connection",
           graphDesc:
-            "Navigate 87 million entities — companies, people, contracts, donations, sanctions — in an interactive graph.",
+            "Navigate entities — companies, people, contracts, donations, sanctions — in an interactive graph with real data.",
           patterns: "Detect patterns",
           patternsDesc:
-            "8 algorithms cross-reference 13 data sources to find patterns in contracts, donations, and sanctions.",
-          investigations: "Investigate in depth",
+            "Algorithms cross-reference multiple data sources to find patterns in contracts, donations, and sanctions.",
+          investigations: "Research in depth",
           investigationsDesc:
-            "Build dossiers with annotations, tags, and exports. Source attribution on every data point.",
+            "Build research dossiers with annotations, tags, and exports. Source attribution on every data point.",
         },
         howItWorks: {
           sectionLabel: "How it works",
           sectionHeading: "From source to graph",
           step1: "Collect",
           step1Desc:
-            "13 government sources updated monthly — from CNPJ to IBAMA, from TSE to PGFN.",
+            "Government sources updated periodically — CNPJ, CEIS, CNEP, BNDES, TSE, IBAMA and more.",
           step2: "Cross-reference",
           step2Desc:
-            "Entity resolution connects records across sources. 53 million relationships mapped.",
+            "Entity resolution connects records across sources. Relationships mapped automatically.",
           step3: "Analyze",
           step3Desc:
             "Explore connections, detect patterns, and export reports with source attribution.",
@@ -491,11 +493,10 @@ const resources = {
           openSource: "Open source",
           neutralValue: "100%",
           neutral: "Neutral data",
-          auditableValue: "13",
           auditable: "Public sources",
         },
         sources: {
-          sectionLabel: "13 sources",
+          sectionLabel: "{{count}} sources",
           sectionHeading: "Where the data comes from",
           cnpj: "Federal Revenue company registry",
           tse: "Electoral Court donation records",
@@ -561,8 +562,11 @@ const resources = {
         baseline: "Baseline",
         investigations: "Research",
         analytics: "Analytics",
-        reports: "Relatórios",
-        activity: "Atividades",
+        reports: "Reports",
+        activity: "Activity",
+        methodology: "Methodology",
+        eagleEye: "Eagle Eye",
+        valorReal: "Real Value",
         login: "Login",
         logout: "Logout",
         register: "Register",

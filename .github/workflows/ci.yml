@@ -102,13 +102,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for banned words
+      - name: Check for banned accusatory words
         run: |
-          ! grep -rn \
-            "suspicious\|corrupt\|criminal\|fraudulent\|illegal\|guilty" \
+          BANNED="suspicious|corrupt|criminal|fraudulent|illegal|guilty|money.laundering|bribery|embezzlement"
+          if grep -rniE "$BANNED" \
             api/src/ etl/src/ frontend/src/ \
             --include="*.py" --include="*.ts" --include="*.tsx" --include="*.json" \
-            || (echo "NEUTRALITY VIOLATION: banned words found in source" && exit 1)
+            | grep -v "test_no_banned" | grep -v "# neutrality-ok"; then
+            echo "::error::NEUTRALITY VIOLATION: accusatory words found in source code"
+            echo "Use factual language: 'pattern detected' not 'suspicious activity'"
+            exit 1
+          fi
 
   integration:
     name: Integration Tests

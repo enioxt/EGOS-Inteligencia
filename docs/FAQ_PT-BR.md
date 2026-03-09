@@ -24,7 +24,7 @@ Não. O EGOS Inteligência é 100% gratuito e de código aberto (licença AGPL-3
 
 ## De onde vêm os dados?
 
-Todos os dados são **públicos e oficiais**, coletados de fontes governamentais abertas. Hoje temos 38 fontes integradas, incluindo:
+Todos os dados são **públicos e oficiais**, coletados de fontes governamentais abertas. Hoje temos 36 fontes integradas (108 mapeadas), incluindo:
 
 | Fonte | O que tem | Exemplos |
 |-------|-----------|----------|

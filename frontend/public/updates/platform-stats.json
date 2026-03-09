@@ -1,0 +1,65 @@
+{
+  "_comment": "SSOT for all platform statistics. Updated manually or via API. All pages/reports MUST reference this file instead of hardcoding numbers.",
+  "_updated": "2026-03-03",
+  "_source": "docs/SYSTEM_CAPABILITIES_2026-03.md + /api/v1/meta/stats",
+  "graph": {
+    "total_nodes": 9166587,
+    "total_relationships": 34507,
+    "companies": 8860601,
+    "pep_records": 133859,
+    "global_peps": 117901,
+    "sanctions": 23848,
+    "gov_travels": 13184,
+    "persons": 7074,
+    "gov_card_expenses": 6483,
+    "barred_ngos": 3590,
+    "contracts": 10,
+    "investigations": 3,
+    "users": 18,
+    "database_size_gb": 6.7
+  },
+  "sources": {
+    "total_registered": 108,
+    "implemented_pipelines": 45,
+    "loaded_healthy": 36,
+    "stale": 3,
+    "blocked": 1,
+    "discovered_not_ingested": 63
+  },
+  "tools": {
+    "chat_tools": 26,
+    "pattern_detectors": 10,
+    "etl_pipelines": 46
+  },
+  "infrastructure": {
+    "monthly_cost_usd": 36,
+    "breakdown": {
+      "vps_contabo": 35,
+      "domain": 1,
+      "apis_gov": 0,
+      "llm_openrouter": 0,
+      "vercel": 0,
+      "supabase": 0
+    },
+    "vps_specs": "12 vCPU, 48GB RAM, 500GB SSD",
+    "vps_provider": "Contabo Cloud VPS"
+  },
+  "project": {
+    "license": "AGPL-3.0",
+    "repo": "https://github.com/enioxt/EGOS-Inteligencia",
+    "website": "https://inteligencia.egos.ia.br",
+    "bots": {
+      "discord": true,
+      "telegram": "@EGOSin_bot"
+    },
+    "containers": 5,
+    "frontend_pages": 14,
+    "api_endpoints": 55
+  },
+  "targets": {
+    "_comment": "These are GOALS, not current values. Never display as current.",
+    "target_nodes": 141000000,
+    "target_relationships": 92000000,
+    "target_sources": 108
+  }
+}

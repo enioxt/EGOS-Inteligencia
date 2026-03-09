@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transparencia e Metodologia | EGOS Inteligencia</title>
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--bg3:#1a2234;--text:#e2e8f0;--mu:#94a3b8;--ac:#3b82f6;--gn:#22c55e;--yl:#eab308;--rd:#ef4444;--bd:#1e293b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.c{max-width:940px;margin:0 auto;padding:2rem 1.5rem}
+.hd{background:linear-gradient(135deg,#0f172a,#1e1b4b);border-bottom:1px solid var(--bd);padding:1.2rem 0}
+.hd .c{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:.8rem;color:var(--ac);font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none}
+h1{font-size:1.8rem;font-weight:800;margin-bottom:.5rem}
+h2{font-size:1.25rem;font-weight:700;margin:2rem 0 .8rem;padding-bottom:.3rem;border-bottom:2px solid var(--ac);display:inline-block}
+h3{font-size:1rem;font-weight:600;margin:1.2rem 0 .5rem;color:var(--ac)}
+p,li{font-size:.87rem;color:var(--mu);margin:.4rem 0}
+ul,ol{padding-left:1.5rem}
+table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.77rem}
+th{background:var(--bg3);color:var(--ac);font-weight:600;text-align:left;padding:.5rem;font-size:.67rem;text-transform:uppercase;letter-spacing:1px}
+td{padding:.4rem .5rem;border-bottom:1px solid var(--bd)}
+tr:hover td{background:rgba(59,130,246,.04)}
+.g{color:var(--gn);font-weight:600}.y{color:var(--yl);font-weight:600}
+.hero{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:2.5rem;margin:2rem 0}
+.hero .sub{color:var(--mu);font-size:1rem;margin-bottom:1rem;max-width:700px}
+.tags{display:flex;gap:.6rem;flex-wrap:wrap;font-size:.76rem;color:var(--mu)}
+.tags span{background:var(--bg3);padding:.2rem .6rem;border-radius:5px;border:1px solid var(--bd)}
+.box{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:1rem;margin:.5rem 0}
+.box h4{color:var(--ac);margin-bottom:.2rem;font-size:.92rem}
+.box p{font-size:.82rem;color:var(--mu)}
+.al{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:.7rem;margin:.5rem 0;font-size:.84rem}
+.al strong{color:var(--yl)}
+.lm{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:.7rem;margin:.5rem 0;font-size:.84rem}
+.lm strong{color:var(--rd)}
+.ob{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.12);border-radius:8px;padding:.7rem;margin:.5rem 0;font-size:.84rem}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem;margin:1rem 0}
+.sb{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:.8rem;text-align:center}
+.sb .n{font-size:1.5rem;font-weight:800;color:var(--ac);display:block}
+.sb .l{font-size:.68rem;color:var(--mu);text-transform:uppercase;letter-spacing:1px}
+.cta{background:linear-gradient(135deg,#1e3a5f,#1e1b4b);border:1px solid var(--ac);border-radius:12px;padding:1.8rem;margin:2rem 0;text-align:center}
+.cta a{display:inline-block;background:var(--ac);color:white;padding:.5rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:700;margin:.3rem;font-size:.85rem}
+.cta a.s2{background:transparent;border:1px solid var(--ac)}
+.ft{text-align:center;padding:1.5rem;color:var(--mu);font-size:.7rem;border-top:1px solid var(--bd);margin-top:2rem}
+</style>
+</head>
+<body>
+<div class="hd"><div class="c"><a class="logo" href="https://inteligencia.egos.ia.br">EGOS Inteligencia</a><span style="font-size:.7rem;color:var(--mu);font-family:monospace">Relatorio de Transparencia &bull; 03/03/2026</span></div></div>
+<div class="c">
+<div class="hero">
+<h1>Transparencia, Metodologia e Fontes de Dados</h1>
+<p class="sub">Como a EGOS Inteligencia funciona: usamos exclusivamente dados publicos e abertos para construir o maior grafo de relacoes entre entidades publicas e privadas do Brasil. 100% open source, verificavel e acessivel a qualquer cidadao.</p>
+<div class="tags">
+<span>36 fontes carregadas</span><span>108 fontes mapeadas</span><span>9.2M nos no grafo</span><span>34.5K relacionamentos</span><span>Open Source (AGPL-3.0)</span><span>~$36/mes total</span>
+</div>
+</div>
+
+<div class="sg">
+<div class="sb"><span class="n">9.2M</span><span class="l">Nos no Grafo</span></div>
+<div class="sb"><span class="n">34.5K</span><span class="l">Relacionamentos</span></div>
+<div class="sb"><span class="n">36</span><span class="l">Fontes Carregadas</span></div>
+<div class="sb"><span class="n">108</span><span class="l">Fontes Mapeadas</span></div>
+<div class="sb"><span class="n">46</span><span class="l">Pipelines ETL</span></div>
+<div class="sb"><span class="n">26</span><span class="l">Tools de IA</span></div>
+<div class="sb"><span class="n">10</span><span class="l">Detectores de Padrao</span></div>
+<div class="sb"><span class="n">$36</span><span class="l">Custo Mensal</span></div>
+</div>
+
+<!-- SECTION 1: METODOLOGIA -->
+<h2 id="met">1. Metodologia</h2>
+<p>A EGOS Inteligencia opera com uma metodologia simples e transparente em 5 etapas:</p>
+
+<div class="box"><h4>Etapa 1: Coleta &mdash; Apenas Dados Publicos</h4>
+<p>Todos os dados sao provenientes de fontes publicas oficiais: Portal da Transparencia, Receita Federal (CNPJ publico), TSE, CNJ, CGU, ICIJ (Panama Papers), OpenSanctions, entre 79+ fontes. <strong style="color:var(--gn)">Nenhum dado privado, hackeado ou obtido ilegalmente.</strong></p></div>
+
+<div class="box"><h4>Etapa 2: Transformacao &mdash; Pipelines ETL</h4>
+<p>46 pipelines automatizados (Python) baixam, limpam e normalizam os dados. CPFs de nao-PEP sao mascarados conforme LGPD. Dados sao convertidos para o formato de grafo (nos + relacionamentos).</p></div>
+
+<div class="box"><h4>Etapa 3: Armazenamento &mdash; Grafo de Conhecimento (Neo4j)</h4>
+<p>Entidades (pessoas, empresas, contratos, sancoes) conectam-se por relacionamentos (SOCIO_DE, DOOU, VENCEU, SANCIONADA). Isso permite cruzamentos impossiveis em tabelas &mdash; como descobrir que o socio de uma empresa sancionada doou para o deputado autor da emenda que beneficiou aquela empresa.</p></div>
+
+<div class="box"><h4>Etapa 4: Analise &mdash; IA + 26 Ferramentas</h4>
+<p>Um agente de IA consulta 26 ferramentas em tempo real: busca no grafo Neo4j, APIs publicas (Portal Transparencia, DataJud, Querido Diario, PNCP, Camara, Senado), e busca web. O agente cruza informacoes e gera respostas com cadeia de fontes rastreavel.</p></div>
+
+<div class="box"><h4>Etapa 5: Publicacao &mdash; Aberta e Verificavel</h4>
+<p>Todo codigo e open source (AGPL-3.0). Relatorios incluem fontes consultadas, custo da analise e limitacoes. <strong style="color:var(--ac)">Nenhuma acusacao &mdash; apenas dados publicos cruzados.</strong></p></div>
+
+<!-- SECTION 2: PRINCIPIOS -->
+<h2 id="prin">2. Principios Eticos</h2>
+<div class="ob"><strong>Declaracao de Neutralidade:</strong> A EGOS Inteligencia nao faz acusacoes. Apresentamos dados publicos cruzados para que cidadaos, jornalistas e orgaos de controle tirem suas conclusoes. Padroes detectados sao <em>indicios</em>, nao provas.</div>
+<ul>
+<li><strong>Dados Publicos Apenas:</strong> Nenhuma fonte privada, vazada ou ilegal</li>
+<li><strong>LGPD Compliance:</strong> CPFs mascarados (***.***.***-XX). Registro de Tratamento Art. 37 publicado</li>
+<li><strong>Neutralidade Politica:</strong> Algoritmos aplicados uniformemente. CI audita linguagem tendenciosa</li>
+<li><strong>Open Source (AGPL-3.0):</strong> Codigo em github.com/enioxt/EGOS-Inteligencia</li>
+<li><strong>Rastreabilidade:</strong> Cada resposta inclui fontes consultadas e custo</li>
+<li><strong>Autofinanciado:</strong> ~$36/mes (VPS $35 + dominio $1), sem patrocinadores, sem grants</li>
+</ul>
+
+<!-- SECTION 3: FONTES ATIVAS -->
+<h2 id="fontes">3. Fontes de Dados Ativas (36 carregadas)</h2>
+<p>Fontes com pipelines ETL funcionais e dados no grafo Neo4j de producao. A coluna "No Grafo" mostra o volume efetivamente carregado; "No Dataset" mostra o volume total disponivel na fonte original.</p>
+
+<h3>Empresas e Sociedade</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>CNPJ Receita Federal</td><td class="g">8.86M empresas no grafo</td><td>De 53.6M no dataset. ETL Phase 2 completo, Phase 3 (socios) em andamento</td></tr>
+<tr><td>Holdings (derivado)</td><td class="g">59K relacoes</td><td>Cadeias de participacao societaria empresa-empresa</td></tr>
+</table>
+
+<h3>Politico-Eleitoral (TSE)</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>Candidaturas + Doacoes</td><td class="g">7.1M pessoas, 8.2M doacoes</td><td>Historico eleitoral 2002-2024</td></tr>
+<tr><td>Bens de Candidatos</td><td class="g">14.3M bens declarados</td><td>Patrimonio declarado por eleicao</td></tr>
+<tr><td>Filiados a Partidos</td><td class="g">16.5M filiacoes</td><td>Historico de filiacao partidaria</td></tr>
+</table>
+
+<h3>Sancoes e Controle</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>CEIS + CNEP (CGU)</td><td class="g">23.8K sancoes</td><td>Empresas/pessoas impedidas de contratar com governo</td></tr>
+<tr><td>TCU Auditorias</td><td class="g">45K sancoes</td><td>Inidoneos e inabilitados pelo Tribunal de Contas</td></tr>
+<tr><td>CEAF (CGU)</td><td class="g">4.1K expulsoes</td><td>Servidores expulsos por corrupcao</td></tr>
+<tr><td>CEPIM (CGU)</td><td class="g">3.6K ONGs</td><td>ONGs impedidas de receber verba publica</td></tr>
+<tr><td>Acordos de Leniencia</td><td class="g">112 acordos</td><td>Empresas que confessaram corrupcao</td></tr>
+<tr><td>PEP CGU</td><td class="g">133.8K PEPs</td><td>Pessoas Expostas Politicamente</td></tr>
+</table>
+
+<h3>Contratos e Orcamento</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>Portal da Transparencia</td><td class="y">10 contratos no grafo</td><td>Pipeline pronto. Volume no dataset: 38K+ contratos. Carregamento pendente (prioridade P0)</td></tr>
+<tr><td>ComprasNet</td><td class="y">Pipeline pronto, nao carregado</td><td>1.08M contratos no dataset. Carregamento pendente</td></tr>
+<tr><td>TransfereGov</td><td class="g">71K emendas, 67K convenios</td><td>Transferencias federais a municipios</td></tr>
+<tr><td>SIOP</td><td class="g">71.1K emendas</td><td>Execucao de emendas parlamentares</td></tr>
+<tr><td>Renuncias Fiscais</td><td class="g">291.8K incentivos</td><td>R$414B+ em incentivos fiscais concedidos</td></tr>
+</table>
+
+<h3>Financeiro</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>PGFN (Divida Ativa)</td><td class="g">24M dividas</td><td>Devedores da Uniao</td></tr>
+<tr><td>BNDES</td><td class="g">9.2K financiamentos</td><td>Emprestimos do banco de desenvolvimento</td></tr>
+<tr><td>CVM Processos</td><td class="g">522 processos</td><td>Sancoes do mercado de capitais</td></tr>
+<tr><td>CVM Fundos</td><td class="g">41K fundos</td><td>Registro de fundos de investimento</td></tr>
+<tr><td>BCB Penalidades</td><td class="g">3.5K multas</td><td>Multas a instituicoes financeiras</td></tr>
+</table>
+
+<h3>Legislativo</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>Camara (CEAP)</td><td class="g">4.6M despesas</td><td>Gastos de gabinete de deputados</td></tr>
+<tr><td>Senado (CEAP)</td><td class="g">272K despesas</td><td>Gastos de gabinete de senadores</td></tr>
+<tr><td>CPIs (Senado)</td><td class="g">3 CPIs</td><td>Investigacoes parlamentares</td></tr>
+</table>
+
+<h3>Diarios Oficiais e Juridico</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>DOU (Diario Oficial)</td><td class="g">3.98M atos</td><td>Atos do Diario Oficial da Uniao</td></tr>
+<tr><td>STF</td><td class="g">2.38M processos</td><td>Supremo Tribunal Federal</td></tr>
+</table>
+
+<h3>Saude, Educacao, Trabalho, Meio Ambiente</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>DATASUS/CNES</td><td class="g">602K unidades</td><td>Registro de unidades de saude</td></tr>
+<tr><td>INEP</td><td class="g">224K escolas</td><td>Censo escolar + mantenedoras</td></tr>
+<tr><td>RAIS</td><td class="g">29.5K registros</td><td>Estatisticas trabalhistas agregadas</td></tr>
+<tr><td>IBAMA Embargos</td><td class="g">79K embargos</td><td>Propriedades embargadas por crimes ambientais</td></tr>
+<tr><td>CPGF (Cartao Gov)</td><td class="g">1.46M transacoes</td><td>Gastos no cartao corporativo do governo</td></tr>
+<tr><td>Viagens Gov</td><td class="g">3.71M viagens</td><td>Viagens a servico do governo federal</td></tr>
+</table>
+
+<h3>Internacional</h3>
+<table><tr><th>Fonte</th><th>Volume</th><th>Descricao</th></tr>
+<tr><td>OpenSanctions</td><td class="g">118K matches</td><td>PEPs e sancionados globais cruzados com BR</td></tr>
+<tr><td>ICIJ Offshore Leaks</td><td class="g">4.8K entidades, 6.6K officers</td><td>Panama/Paradise/Pandora Papers</td></tr>
+<tr><td>OFAC + EU + UN + World Bank</td><td class="g">39.2K sancoes</td><td>Sancoes internacionais consolidadas</td></tr>
+</table>
+
+<!-- SECTION 4: FONTES FUTURAS -->
+<h2 id="futuro">4. Fontes Planejadas (41+ adicionais)</h2>
+<p>Fontes ja identificadas e mapeadas que serao integradas nas proximas fases. Todas sao publicas e abertas.</p>
+
+<div class="al"><strong>Nota:</strong> Muitas destas fontes ja possuem pipeline ETL pronto, aguardando apenas tempo de processamento ou download de dados.</div>
+
+<table><tr><th>Grupo</th><th>Fontes</th><th>Status</th><th>Valor</th></tr>
+<tr><td><strong>Judiciario</strong></td><td>DataJud CNJ (80M+ processos), STJ, CNCIAI (improbidade), CARF</td><td class="y">Pipeline pronto</td><td>MUITO ALTO</td></tr>
+<tr><td><strong>Compras Publicas</strong></td><td>PNCP (nacional), SIAFI, SICONFI, Tesouro Transparente, MiDES</td><td class="y">Parcial</td><td>MUITO ALTO</td></tr>
+<tr><td><strong>Regulacao</strong></td><td>ANEEL, ANP, ANATEL, ANVISA, ANS, ANAC, ANTAQ, ANM</td><td>Pipeline pendente</td><td>MEDIO</td></tr>
+<tr><td><strong>Meio Ambiente</strong></td><td>MapBiomas, SiCAR (7M propriedades), INPE DETER/PRODES, INCRA</td><td>Pipeline pendente</td><td>ALTO</td></tr>
+<tr><td><strong>Trabalho</strong></td><td>CAGED (detalhado), RAIS microdados, INSS/DATAPREV, PREVIC</td><td class="y">Parcial</td><td>MEDIO</td></tr>
+<tr><td><strong>Financeiro</strong></td><td>CVM completo (ownership), BCB series, B3 negociacoes</td><td class="y">Pipeline pronto</td><td>ALTO</td></tr>
+<tr><td><strong>Estadual/Municipal</strong></td><td>TCEs (SP, RJ, RS, PE, MG...), portais estaduais, Querido Diario</td><td>Pipeline pendente</td><td>ALTO</td></tr>
+<tr><td><strong>Infraestrutura</strong></td><td>DENATRAN (110M veiculos), ANAC RAB, DNIT, PRF</td><td>Pipeline pendente</td><td>MEDIO</td></tr>
+<tr><td><strong>Estatisticas</strong></td><td>IBGE (Censo, PNAD, PIB), IPEAData, Base dos Dados</td><td>Pipeline pendente</td><td>BAIXO</td></tr>
+</table>
+
+<!-- SECTION 5: FERRAMENTAS -->
+<h2 id="tools">5. Ferramentas de Analise do Chat (26 tools)</h2>
+<p>O agente de IA tem acesso a 26 ferramentas que consulta em tempo real durante uma conversa:</p>
+
+<table><tr><th>#</th><th>Ferramenta</th><th>Fonte</th><th>Descricao</th></tr>
+<tr><td>1</td><td>search_entities</td><td>Neo4j</td><td>Busca de entidades no grafo (fuzzy + wildcard)</td></tr>
+<tr><td>2</td><td>get_entity_connections</td><td>Neo4j</td><td>Conexoes de uma entidade (1 hop)</td></tr>
+<tr><td>3</td><td>cypher_query</td><td>Neo4j</td><td>Query Cypher direto no grafo</td></tr>
+<tr><td>4</td><td>web_search</td><td>Brave/DDG</td><td>Busca web com fallback</td></tr>
+<tr><td>5-6</td><td>search_emendas/transferencias</td><td>TransfereGov</td><td>Emendas e transferencias federais</td></tr>
+<tr><td>7</td><td>search_ceap</td><td>Camara</td><td>Gastos de gabinete (CEAP)</td></tr>
+<tr><td>8</td><td>search_votacoes</td><td>Camara</td><td>Votacoes nominais de deputados</td></tr>
+<tr><td>9</td><td>search_gazettes</td><td>Querido Diario</td><td>Diarios oficiais municipais</td></tr>
+<tr><td>10</td><td>search_servidores</td><td>Portal Transparencia</td><td>Servidores publicos federais + salarios</td></tr>
+<tr><td>11</td><td>search_licitacoes</td><td>Portal Transparencia</td><td>Licitacoes federais</td></tr>
+<tr><td>12</td><td>search_contratos</td><td>Portal Transparencia</td><td>Contratos federais</td></tr>
+<tr><td>13</td><td>search_sancoes</td><td>Portal Transparencia</td><td>Sancoes federais</td></tr>
+<tr><td>14</td><td>search_cpgf</td><td>Portal Transparencia</td><td>Gastos no cartao corporativo</td></tr>
+<tr><td>15</td><td>pncp_licitacoes</td><td>PNCP</td><td>Licitacoes nacionais (todas as esferas)</td></tr>
+<tr><td>16</td><td>cnpj_info</td><td>Querido Diario</td><td>Info empresa + socios</td></tr>
+<tr><td>17</td><td>opencnpj</td><td>OpenCNPJ</td><td>Dados Receita Federal</td></tr>
+<tr><td>18</td><td>oab_advogado</td><td>OAB/CNA</td><td>Cadastro de advogados</td></tr>
+<tr><td>19</td><td>bnmp_mandados</td><td>BNMP/CNJ</td><td>Mandados de prisao</td></tr>
+<tr><td>20</td><td>procurados_lookup</td><td>Policia Federal</td><td>Pessoas procuradas</td></tr>
+<tr><td>21</td><td>lista_suja_lookup</td><td>MTE</td><td>Lista suja trabalho escravo</td></tr>
+<tr><td>22</td><td>datajud_processos</td><td>DataJud/CNJ</td><td>Processos judiciais</td></tr>
+<tr><td>23</td><td>interpol_notices</td><td>Interpol</td><td>Alertas vermelhos/amarelos</td></tr>
+<tr><td>24</td><td>search_pep_city</td><td>Camara + Web</td><td>PEPs por cidade</td></tr>
+<tr><td>25</td><td>search_receita_cnpj</td><td>Receita Federal</td><td>Busca direta CNPJ</td></tr>
+<tr><td>26</td><td>get_graph_stats</td><td>Neo4j</td><td>Estatisticas gerais do grafo</td></tr>
+</table>
+
+<!-- SECTION 6: PADROES -->
+<h2 id="pad">6. Deteccao de Padroes (10 algoritmos)</h2>
+<p>Algoritmos automatizados que analisam o grafo para detectar padroes suspeitos:</p>
+
+<table><tr><th>Padrao</th><th>Descricao</th><th>Indicador</th></tr>
+<tr><td><strong>Contract Splitting</strong></td><td>Fracionamento de contratos para evitar licitacao</td><td>Multiplos contratos < R$80K para mesmo fornecedor</td></tr>
+<tr><td><strong>HHI Concentration</strong></td><td>Concentracao de mercado em licitacoes</td><td>Indice Herfindahl-Hirschman > 0.25</td></tr>
+<tr><td><strong>Benford Analysis</strong></td><td>Desvio da Lei de Benford em valores de contratos</td><td>MAD > 0.015 nos primeiros digitos</td></tr>
+<tr><td><strong>PEP Company Ownership</strong></td><td>Pessoa Politicamente Exposta como socia de empresa</td><td>PEP -> SOCIO_DE -> Empresa com contratos gov</td></tr>
+<tr><td><strong>Revolving Door</strong></td><td>Porta giratoria publico-privada</td><td>Servidor -> demissao -> socio de fornecedor</td></tr>
+<tr><td><strong>Amendment Beneficiary</strong></td><td>Emenda parlamentar que beneficia empresa do doador</td><td>Doador -> DOOU -> Deputado -> EMENDA -> Empresa</td></tr>
+<tr><td><strong>Single Bidder Repeat</strong></td><td>Licitacoes repetidas com fornecedor unico</td><td>Mesmo CNPJ vence sem concorrencia</td></tr>
+<tr><td><strong>Same Day Contracts</strong></td><td>Multiplos contratos no mesmo dia</td><td>Orgao emite >3 contratos identicos no mesmo dia</td></tr>
+<tr><td><strong>Shared Address Network</strong></td><td>Empresas concorrentes com mesmo endereco</td><td>Fornecedores "diferentes" dividem sede</td></tr>
+<tr><td><strong>Inexigibilidade Recurrence</strong></td><td>Uso repetido de dispensa de licitacao</td><td>>3 dispensas para mesmo fornecedor/ano</td></tr>
+</table>
+
+<!-- SECTION 7: ROADMAP -->
+<h2 id="road">7. Roadmap</h2>
+
+<div class="box" style="border-left:3px solid var(--gn)"><h4>Fase 1 &mdash; Fundacao &#10004; CONCLUIDA</h4>
+<p>36 fontes carregadas, 9.2M nos, 34.5K relacionamentos. Frontend publico, 2 bots (Discord + Telegram), API com 26 tools, 10 detectores de padrao. 46 pipelines ETL.</p></div>
+
+<div class="box" style="border-left:3px solid var(--yl)"><h4>Fase 2 &mdash; Expansao Politica (em andamento)</h4>
+<p>Integrar dados eleitorais completos (TSE historico), gastos legislativos detalhados, CPIs, DOU completo, Querido Diario. Objetivo: rede Politico -> Doador -> Empresa -> Contrato -> Sancao.</p></div>
+
+<div class="box" style="border-left:3px solid var(--yl)"><h4>Fase 3 &mdash; Corpo Empresarial (em andamento)</h4>
+<p>CNPJ completo (53.6M empresas em carregamento), ComprasNet/PNCP, BNDES, RAIS, CVM, BCB. Objetivo: mapear toda a economia e cruzar com politica.</p></div>
+
+<div class="box" style="border-left:3px solid var(--mu)"><h4>Fase 4 &mdash; Analise Avancada (proximo)</h4>
+<p>Entity Resolution (fuzzy matching), PageRank, Community Detection (Louvain), Anomaly Detection, Timeline Analysis, Geographic Clustering, Red Flag Scoring (60 indicadores GRAS/World Bank).</p></div>
+
+<div class="box" style="border-left:3px solid var(--mu)"><h4>Fase 5 &mdash; Ecossistema Global (futuro)</h4>
+<p>Interoperabilidade com FollowTheMoney, Aleph (OCCRP), ICIJ DataShare, Serenata de Amor. Exportar entidades no formato FtM para compatibilidade internacional.</p></div>
+
+<div class="box" style="border-left:3px solid var(--mu)"><h4>Fase 6 &mdash; MCP Tools (futuro)</h4>
+<p>Publicar as 26+ ferramentas OSINT como servidor MCP, permitindo que qualquer IDE ou agente de IA acesse os dados do grafo diretamente.</p></div>
+
+<!-- SECTION 8: LIMITACOES -->
+<h2 id="lim">8. Limitacoes Atuais</h2>
+<p>Transparencia exige honestidade sobre o que <strong>nao</strong> conseguimos fazer (ainda):</p>
+
+<div class="lm"><strong>Cobertura Parcial:</strong> Das 108 fontes mapeadas, apenas 36 estao carregadas. Fontes criticas como DataJud (80M processos), PNCP completo, e TCEs estaduais ainda nao estao integradas.</div>
+
+<div class="lm"><strong>CNPJ em Carregamento:</strong> O dataset completo de 53.6M empresas da Receita Federal esta sendo carregado (ETL em andamento). Ate a conclusao, consultas de empresas podem retornar resultados incompletos.</div>
+
+<div class="lm"><strong>Entity Resolution Basica:</strong> Ainda nao temos fuzzy matching avancado. "JOSE DA SILVA" e "JOSE DA SILVA LTDA" podem nao ser reconhecidos como a mesma entidade. Fase 4 abordara isso.</div>
+
+<div class="lm"><strong>Sem Dados Privados:</strong> Nao temos acesso a dados bancarios, fiscais individuais (IR), comunicacoes privadas ou qualquer dado protegido por sigilo. Operamos apenas com dados publicos.</div>
+
+<div class="lm"><strong>IA Pode Errar:</strong> O agente de IA pode interpretar dados incorretamente ou fazer conexoes que nao existem. Sempre verifique as fontes citadas. Padroes detectados sao indicios, nao provas.</div>
+
+<div class="lm"><strong>Latencia em APIs Externas:</strong> Algumas APIs (PNCP, Portal da Transparencia, DataJud) podem estar lentas ou indisponiveis. O sistema tem fallbacks, mas nao garante 100% de disponibilidade.</div>
+
+<div class="lm"><strong>Servidor Unico:</strong> Toda a infraestrutura roda em um unico VPS ($36/mes). Picos de uso podem causar lentidao. Nao temos redundancia geografica.</div>
+
+<div class="lm"><strong>Equipe de Uma Pessoa:</strong> O projeto e mantido por um desenvolvedor solo com auxilio de agentes de IA. Contribuicoes da comunidade sao essenciais para escalar.</div>
+
+<!-- SECTION 9: CUSTOS -->
+<h2 id="custo">9. Custos e Infraestrutura</h2>
+<table><tr><th>Item</th><th>Custo Mensal</th><th>Descricao</th></tr>
+<tr><td>Contabo Cloud VPS</td><td>$35/mes</td><td>12 vCPU, 48GB RAM, 500GB SSD</td></tr>
+<tr><td>Dominio</td><td>~$1/mes</td><td>egos.ia.br</td></tr>
+<tr><td>APIs publicas</td><td>$0</td><td>Todas as APIs governamentais sao gratuitas</td></tr>
+<tr><td>IA (LLM)</td><td>~$5/mes</td><td>Gemini Flash (gratuito) + OpenRouter pago sob demanda</td></tr>
+<tr><td>Vercel</td><td>$0</td><td>Free tier para frontend</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>~$36/mes</strong></td><td><strong>100% autofinanciado</strong></td></tr>
+</table>
+<div class="ob"><strong>Comparacao:</strong> Palantir Gotham custa ~US$10M/ano para analise equivalente. Nosso custo e 300.000x menor.</div>
+
+<!-- SECTION 10: PARTICIPAR -->
+<h2 id="part">10. Como Participar</h2>
+<p>A EGOS Inteligencia e um projeto open source que precisa da comunidade para crescer:</p>
+
+<div class="box"><h4>Desenvolvedores</h4>
+<p>Contribua com codigo: pipelines ETL para novas fontes, melhorias no frontend, algoritmos de deteccao. Veja issues abertas no GitHub com tags "good first issue" e "help wanted".</p></div>
+
+<div class="box"><h4>Jornalistas Investigativos</h4>
+<p>Use a plataforma para investigacoes. Reporte bugs, sugira fontes, compartilhe metodologias. O chat IA pode cruzar dados em segundos que levariam dias manualmente.</p></div>
+
+<div class="box"><h4>Pesquisadores e Academicos</h4>
+<p>Proponha novos algoritmos de deteccao, valide padroes encontrados, publique papers usando os dados. A API e aberta para pesquisa.</p></div>
+
+<div class="box"><h4>Cidadaos</h4>
+<p>Use, teste, reporte problemas. Compartilhe com amigos. Quanto mais pessoas usarem, mais rapido encontramos problemas e melhoramos.</p></div>
+
+<div class="cta">
+<h2 style="margin-bottom:.5rem">Junte-se ao Projeto</h2>
+<p style="color:var(--mu);font-size:.87rem;max-width:500px;margin:0 auto .8rem">108 fontes de dados publicas mapeadas (36 carregadas). 10 algoritmos de deteccao. 26 ferramentas de IA. Zero custo para o cidadao.</p>
+<a href="https://github.com/enioxt/EGOS-Inteligencia">GitHub</a>
+<a href="https://inteligencia.egos.ia.br">Acessar Plataforma</a>
+<a href="https://github.com/enioxt/EGOS-Inteligencia/issues" class="s2">Issues Abertas</a>
+</div>
+
+<div class="ft">
+EGOS Inteligencia &mdash; Dados publicos, codigo aberto, transparencia real.<br>
+Nenhum dado privado. Nenhuma acusacao. Apenas fatos verificaveis.<br>
+github.com/enioxt/EGOS-Inteligencia &bull; AGPL-3.0 License &bull; 2026
+</div>
+</div>
+</body>
+</html>

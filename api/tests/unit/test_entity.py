@@ -86,7 +86,7 @@ def test_entity_by_id_has_all_id_fields() -> None:
 async def test_entity_lookup_rejects_invalid_format(client: AsyncClient) -> None:
     response = await client.get("/api/v1/entity/abc")
     assert response.status_code == 400
-    assert "Invalid CPF or CNPJ" in response.json()["detail"]
+    assert "Formato inválido" in response.json()["detail"]
 
 
 @pytest.mark.anyio

@@ -1,5 +1,7 @@
 import logging
 import os
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import click
 from neo4j import GraphDatabase
@@ -100,6 +102,66 @@ PIPELINES: dict[str, type] = {
 }
 
 
+# Pipeline dependency groups for parallel execution.
+# Group 0 (foundation) MUST run first — other pipelines link to Company/Person nodes.
+# Groups 1+ are independent and can run in parallel.
+PIPELINE_GROUPS: list[list[str]] = [
+    # Group 0: Foundation data (sequential)
+    ["cnpj"],
+    # Group 1: Sanctions & compliance (independent, parallel)
+    ["sanctions", "pep_cgu", "opensanctions", "ofac", "eu_sanctions", "un_sanctions",
+     "leniency", "cepim", "world_bank"],
+    # Group 2: Electoral & legislative (independent, parallel)
+    ["tse", "tse_bens", "tse_filiados", "camara", "camara_inquiries",
+     "senado", "senado_cpis"],
+    # Group 3: Government finance & procurement (independent, parallel)
+    ["transparencia", "comprasnet", "pncp", "transferegov", "cpgf",
+     "viagens", "siop", "siconfi", "renuncias", "bndes", "pgfn"],
+    # Group 4: Regulatory, judicial & other (independent, parallel)
+    ["tcu", "stf", "datajud", "dou", "bcb", "cvm", "cvm_funds",
+     "ibama", "icij", "holdings", "ceaf", "inep", "datasus",
+     "rais", "caged", "mides", "querido_diario"],
+]
+
+logger = logging.getLogger(__name__)
+
+
+def _run_single_pipeline(
+    source: str,
+    neo4j_uri: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_database: str,
+    data_dir: str,
+    limit: int | None,
+    chunk_size: int,
+    linking_tier: str,
+) -> tuple[str, bool, float, str]:
+    """Run a single pipeline in a subprocess. Returns (source, success, elapsed_secs, error)."""
+    os.environ["NEO4J_DATABASE"] = neo4j_database
+    started = time.monotonic()
+    try:
+        driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+        pipeline_cls = PIPELINES[source]
+        try:
+            pipeline = pipeline_cls(
+                driver=driver, data_dir=data_dir, limit=limit, chunk_size=chunk_size,
+            )
+        except TypeError:
+            pipeline = pipeline_cls(
+                driver=driver, data_dir=data_dir, limit=limit, chunk_size=chunk_size,
+            )
+        pipeline.run()
+        run_post_load_hooks(
+            driver=driver, source=source, neo4j_database=neo4j_database,
+            linking_tier=linking_tier, run_id=getattr(pipeline, "run_id", None),
+        )
+        driver.close()
+        return (source, True, time.monotonic() - started, "")
+    except Exception as exc:
+        return (source, False, time.monotonic() - started, str(exc)[:500])
+
+
 @click.group()
 def cli() -> None:
     """BRACC ETL — Data ingestion pipelines for Brazilian public data."""
@@ -174,9 +236,116 @@ def run(
         source=source,
         neo4j_database=neo4j_database,
         linking_tier=linking_tier,
+        run_id=getattr(pipeline, "run_id", None),
     )
 
     driver.close()
+
+
+@cli.command("run-all")
+@click.option("--neo4j-uri", default="bolt://localhost:7687", help="Neo4j URI")
+@click.option("--neo4j-user", default="neo4j", help="Neo4j user")
+@click.option("--neo4j-password", required=True, help="Neo4j password")
+@click.option("--neo4j-database", default="neo4j", help="Neo4j database")
+@click.option("--data-dir", default="./data", help="Directory for downloaded data")
+@click.option("--limit", type=int, default=None, help="Limit rows processed")
+@click.option("--chunk-size", type=int, default=50_000, help="Chunk size for batch processing")
+@click.option(
+    "--linking-tier",
+    type=click.Choice(["community", "full"]),
+    default=os.getenv("LINKING_TIER", "full"),
+    show_default=True,
+    help="Post-load linking strategy tier",
+)
+@click.option("--workers", type=int, default=4, help="Max parallel workers per group")
+@click.option("--skip-cnpj", is_flag=True, help="Skip CNPJ foundation pipeline")
+@click.option("--group", type=int, default=None, help="Run only a specific group (0-4)")
+@click.option("--dry-run", is_flag=True, help="Show execution plan without running")
+def run_all(
+    neo4j_uri: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_database: str,
+    data_dir: str,
+    limit: int | None,
+    chunk_size: int,
+    linking_tier: str,
+    workers: int,
+    skip_cnpj: bool,
+    group: int | None,
+    dry_run: bool,
+) -> None:
+    """Run all ETL pipelines with parallel execution by dependency group."""
+    groups_to_run = PIPELINE_GROUPS if group is None else [PIPELINE_GROUPS[group]]
+    if skip_cnpj and group is None:
+        groups_to_run = groups_to_run[1:]
+
+    total_pipelines = sum(len(g) for g in groups_to_run)
+    click.echo(f"\n{'='*60}")
+    click.echo(f"BRACC ETL — Parallel Runner")
+    click.echo(f"{'='*60}")
+    click.echo(f"Pipelines: {total_pipelines} | Workers: {workers} | Groups: {len(groups_to_run)}")
+    click.echo(f"Neo4j: {neo4j_uri} | Database: {neo4j_database}")
+
+    for i, grp in enumerate(groups_to_run):
+        group_idx = PIPELINE_GROUPS.index(grp) if grp in PIPELINE_GROUPS else i
+        parallel = len(grp) > 1
+        mode = f"parallel ({min(workers, len(grp))} workers)" if parallel else "sequential"
+        click.echo(f"\n  Group {group_idx}: [{mode}] {', '.join(grp)}")
+
+    if dry_run:
+        click.echo(f"\n✅ Dry run complete. {total_pipelines} pipelines would run.")
+        return
+
+    all_results: list[tuple[str, bool, float, str]] = []
+    total_start = time.monotonic()
+
+    for grp_idx, grp in enumerate(groups_to_run):
+        real_idx = PIPELINE_GROUPS.index(grp) if grp in PIPELINE_GROUPS else grp_idx
+        click.echo(f"\n{'─'*40}")
+        click.echo(f"▶ Group {real_idx}: {len(grp)} pipeline(s)")
+
+        if len(grp) == 1:
+            result = _run_single_pipeline(
+                grp[0], neo4j_uri, neo4j_user, neo4j_password,
+                neo4j_database, data_dir, limit, chunk_size, linking_tier,
+            )
+            all_results.append(result)
+            status = "✅" if result[1] else "❌"
+            click.echo(f"  {status} {result[0]} ({result[2]:.1f}s)")
+            if not result[1]:
+                click.echo(f"     Error: {result[3][:200]}")
+        else:
+            w = min(workers, len(grp))
+            with ProcessPoolExecutor(max_workers=w) as executor:
+                futures = {
+                    executor.submit(
+                        _run_single_pipeline,
+                        src, neo4j_uri, neo4j_user, neo4j_password,
+                        neo4j_database, data_dir, limit, chunk_size, linking_tier,
+                    ): src
+                    for src in grp
+                }
+                for future in as_completed(futures):
+                    result = future.result()
+                    all_results.append(result)
+                    status = "✅" if result[1] else "❌"
+                    click.echo(f"  {status} {result[0]} ({result[2]:.1f}s)")
+                    if not result[1]:
+                        click.echo(f"     Error: {result[3][:200]}")
+
+    total_elapsed = time.monotonic() - total_start
+    succeeded = sum(1 for r in all_results if r[1])
+    failed = sum(1 for r in all_results if not r[1])
+
+    click.echo(f"\n{'='*60}")
+    click.echo(f"SUMMARY: {succeeded} succeeded, {failed} failed, {total_elapsed:.1f}s total")
+    if failed:
+        click.echo(f"\nFailed pipelines:")
+        for r in all_results:
+            if not r[1]:
+                click.echo(f"  ❌ {r[0]}: {r[3][:200]}")
+    click.echo(f"{'='*60}\n")
 
 
 @cli.command()

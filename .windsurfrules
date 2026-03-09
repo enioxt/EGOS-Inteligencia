@@ -1,0 +1,249 @@
+# .windsurfrules — EGOS Inteligência (BR/ACC)
+# VERSION 2.0.0 — Updated 2026-03-04
+# Sacred Code: 000.111.369.963.1618
+
+---
+project: "egos-inteligencia"
+type: "intelligence-platform"
+framework: "egos-lab"
+---
+
+## SSOT (Single Source of Truth)
+
+> **5 arquivos governam tudo. Não crie novos docs — atualize estes.**
+
+| Arquivo | Propósito | MAX linhas |
+|---------|-----------|------------|
+| `AGENTS.md` | Config do projeto, stack, commands | 200 |
+| `TASKS.md` | Todas as tasks (SSOT) | 500 |
+| `.windsurfrules` | Regras do agente (este arquivo) | 300 |
+| `.guarani/PREFERENCES.md` | Padrões de código | 150 |
+| `.guarani/IDENTITY.md` | Identidade do agente | 50 |
+
+> `.guarani/` é **LOCAL** a este projeto.
+> Orchestration canonical em `egos-lab/.guarani/orchestration/`.
+
+## PRIME DIRECTIVE
+
+> **NEVER write manual logic if a Tool (MCP) exists.**
+> **NEVER create new documentation files — update existing SSOT docs.**
+> **CHALLENGE before EXECUTE. Process before code.**
+> **SEARCH before CREATE — verify no duplication exists.**
+
+## ORCHESTRATION PROTOCOL (MANDATORY)
+
+> **Every message follows:** INTAKE -> CHALLENGE -> PLAN -> GATE -> EXECUTE -> VERIFY -> LEARN
+> **Canonical spec:** `egos-lab/.guarani/orchestration/`
+> **Domain rules (local):** `.guarani/orchestration/DOMAIN_RULES.md`
+
+| Complexity | Pipeline Depth | Min Thoughts |
+|------------|---------------|---------------|
+| TRIVIAL (typo, import) | Skip to Execute | 0 |
+| SIMPLE (add field, fix bug) | Intake + Plan + Execute | 0 |
+| MODERATE (component, API) | Full pipeline, questions mandatory | 3 |
+| COMPLEX (feature, payment) | Full pipeline + Sequential Thinking | 5 |
+| CRITICAL (migration, auth) | Full pipeline + user approval | 7 |
+
+## MANDAMENTOS
+
+1. **CHALLENGE** → Do NOT just accept user input. Question, detect contradictions
+2. **READ** → "Já Concluído" = NÃO REIMPLEMENTAR
+3. **THINK** → Sequential Thinking para tasks P0/P1 (min 5 thoughts)
+4. **COMMIT** → Convencional (feat:/fix:/chore:) cada 30-60min
+5. **SIZE** → Python: 400 lines/module, React: 500/component, 300/API route
+6. **REUSE** → Verificar existente antes de criar novo
+7. **VERIFY** → Python: `uv run ruff check src/` + `uv run pytest -x`. Frontend: `npx tsc --noEmit`
+8. **TASKS** → Atualizar TASKS.md IMEDIATAMENTE após implementar feature
+9. **ASK** → PERGUNTAR antes de criar páginas/features/campos novos
+10. **SCOPE** → Fazer APENAS o que foi pedido, nada mais
+11. **COST** → VPS $36/mês. Cada docker build = tempo. Commit often, deploy once.
+12. **SEARCH** → Antes de criar arquivo, pesquisar se já existe equivalente
+
+## PROIBIÇÕES ABSOLUTAS
+
+### NUNCA fazer sem pedir permissão:
+1. Criar novas páginas/rotas
+2. Adicionar novas features não solicitadas
+3. Mudar schema do Neo4j (labels, relationship types)
+4. Alterar docker-compose.yml
+5. Criar novos campos no banco
+6. Adicionar integrações com serviços externos
+7. Criar novos documentos (atualizar SSOT existentes)
+
+### Exceções (pode fazer sem perguntar):
+- Corrigir bugs óbvios
+- Ajustar espaçamentos/alinhamentos
+- Adicionar imports necessários
+- Corrigir erros de linting
+- Melhorar mensagens de erro existentes
+
+## TASK MANAGEMENT (SSOT)
+
+### TASKS.md é a ÚNICA Fonte de Verdade
+
+1. **Ao implementar feature:**
+   - Marcar task como ✅ com data
+   - Adicionar referência: `> **Arquivos:** path/to/file`
+   - Commit incluir: `docs(tasks): mark TASK-ID as completed`
+
+2. **Ao criar nova feature:**
+   - PRIMEIRO verificar se task já existe
+   - Se não existe, criar task ANTES de implementar
+   - Nunca implementar feature "órfã" sem task
+
+## BUILD & DEPLOY DISCIPLINE
+
+```
+# API (Python)
+❌ PROIBIDO: docker compose build após cada edit
+✅ QUICK CHECK: uv run ruff check src/ && uv run pytest -x --tb=short
+✅ DEPLOY: git push → ssh VPS → git pull → docker compose restart api
+
+# Frontend (React/Vite)
+❌ PROIBIDO: npm run build após cada edit
+✅ QUICK CHECK: npx tsc --noEmit --pretty false 2>&1 | grep "error TS" | head -20
+✅ DEPLOY: git push → ssh VPS → git pull → docker compose build frontend → up -d
+```
+
+## TIMEOUT POLICY
+
+| Command Type | Max Time | How |
+|---|---|---|
+| Shell basics | 5s | No wrapper |
+| Git operations | 15s | `timeout 15s git ...` |
+| pytest | 3min | `timeout 3m uv run pytest` |
+| Docker build | 5min | `timeout 5m docker compose build` |
+| curl / network | 15s | `curl --max-time 15 ...` |
+
+## TEST DISCIPLINE (AI-Era)
+
+| Priority | Type | When |
+|----------|------|------|
+| 1 | `ruff check` + `tsc --noEmit` | Before commit |
+| 2 | `pytest -x --tb=short` | After changing API code |
+| 3 | Integration against real Neo4j | After changing graph queries |
+| 4 | E2E manual test on VPS | Before announcing changes |
+
+```
+❌ No new unit tests with mocks
+✅ New tests MUST run against real Neo4j/APIs
+✅ tsc --noEmit as minimum gate (~30s)
+```
+
+## SECURITY
+
+- **API Keys:** NEVER hardcode. Use `.env`. Never commit `.env`
+- **PII:** CPFs mascarados (***.***.***-XX) em output público
+- **Neo4j:** Queries DEVEM ter LIMIT (max 1000)
+- **JWT:** Secret em env var, nunca no código
+- **Prompt Injection:** Sanitize user input before LLM
+
+## DOCUMENTATION SSOT (CRITICAL — No Duplication)
+
+> **Lição aprendida 2026-03-03:** Docs duplicados encontrados entre docs/ e frontend/public/reports/.
+
+| Topic | SSOT Location | Notes |
+|-------|--------------|-------|
+| **Data Sources** | `docs/data-sources.md` | Catálogo completo de 79+ fontes |
+| **Roadmap** | `ROADMAP.md` (root) | Fases de implementação |
+| **Ethics** | `ETHICS.md` (root) | Política ética |
+| **LGPD** | `LGPD.md` (root) | Proteção de dados |
+| **System Capabilities** | `docs/SYSTEM_CAPABILITIES_2026-03.md` | Capacidades técnicas |
+| **Methodology (public)** | `frontend/public/reports/transparencia-metodologia.html` | Relatório público |
+| **Tasks** | `TASKS.md` (root) | ÚNICA fonte de tasks |
+
+> Files in `frontend/public/reports/` are **published reports** for the website.
+> Files in `docs/` are **internal documentation**.
+> NEVER duplicate content between them.
+
+## FROZEN ZONES
+
+> **NÃO EDITAR** sem solicitação explícita:
+> - **Auth/JWT:** `api/src/bracc/auth.py`
+> - **Docker Compose:** `infra/docker-compose.yml`
+> - **ETL em andamento:** Qualquer pipeline rodando
+> - **Neo4j schema:** Labels e relationship types em produção
+
+## CROSS-REPO RULES
+
+| Source | What | How |
+|--------|------|-----|
+| `egos-lab/.guarani/orchestration/` | Pipeline, Gates, Questions | Read on demand |
+| `egos-lab/.guarani/refinery/` | Intent classification | Read on demand |
+| `egos-lab/.guarani/PREFERENCES.md` | Shared coding standards | Reference |
+| Local `.guarani/PREFERENCES.md` | Python/React stack rules | **Override** |
+| Local `.windsurfrules` | This file | **Highest priority** |
+
+## PERSONAL vs OPEN-SOURCE (CRITICAL)
+
+> **Lesson learned 2026-03-04:** Personal data (CV, job applications, phone, email)
+> was accidentally committed to TASKS.md in the public repo.
+
+### Rules
+
+1. **NEVER commit personal data** (CV, resume, job apps, salary, phone, CPF, address) to any public repo.
+2. **Personal files live in `~/personal/`** — never inside `br-acc/`, `egos-lab/`, or `carteira-livre/`.
+3. **TASKS.md is PUBLIC.** Do not add personal tasks (job search, CV, interviews, finances).
+4. **Pre-commit must block** files matching: `*cv*`, `*resume*`, `*curriculum*`, `*amplify*`.
+5. **When in doubt, ASK** the user: "This looks personal — should it go in the public repo?"
+
+### What IS public (open-source)
+
+- Code, configs, docs, tasks, roadmaps for EGOS/br-acc/egos-lab
+- Technical analysis of other repos (Transparencia-360, Brazil Visible)
+- Codex integration rules, workflow improvements
+
+### What is NEVER public
+
+- CVs, resumes, cover letters, job applications
+- Personal contact info (phone, personal email, address)
+- Salary expectations, financial data, interview notes
+- Any file in `~/personal/`
+
+## CODEX CLI INTEGRATION (v1.1)
+
+> **Codex = async worker.** Cascade opens a terminal, delegates, continues working.
+> **Login:** `codex login` (browser OAuth). **Config:** `~/.codex/config.toml`
+
+### Async Pattern (CORRECT)
+
+```
+1. Cascade opens a NEW TERMINAL for Codex task
+2. Cascade runs: codex exec "task description" --cd /path/to/repo
+3. Cascade DOES NOT WAIT — continues working on other tasks
+4. Later, Cascade checks terminal output or `codex cloud list`
+5. Cascade reviews diff before any commit
+```
+
+### Roles
+
+| Role | Command | When |
+|------|---------|------|
+| **Code Review** | `codex exec "review uncommitted changes, focus on security and LGPD"` | Pre-push |
+| **Test Writer** | `codex exec "write integration tests for {module}"` | After new API routes |
+| **Doc Updater** | `codex exec "update SYSTEM_MAP.md with current endpoints"` | After major changes |
+| **Bug Fixer** | `codex exec "fix the failing test in {file}"` | CI failures |
+| **Security Audit** | `codex exec "audit {file} for injection vulnerabilities"` | Before deploy |
+
+### Delegation Rules
+
+1. **Cascade delegates, Codex executes.** Cascade defines task, reviews output.
+2. **Sandbox read-only by default.** Use `-s read-only` unless task requires edits.
+3. **Never auto-apply cloud tasks.** Always `codex cloud diff {id}` before `codex cloud apply {id}`.
+4. **Scope limit.** One module/file per task. Never "refactor entire codebase".
+5. **FROZEN ZONES apply.** Codex must NOT touch auth, docker-compose, Neo4j schema.
+6. **Review output.** Cascade checks diff before committing. Codex errors are common.
+7. **Model:** Default `gpt-5.3-codex`. Do NOT use `gpt-4o` (unsupported with ChatGPT account).
+
+## MCPs
+
+| MCP | Use |
+|-----|-----|
+| Sequential Thinking | Planning P0/P1 tasks |
+| Memory | Cross-session persistence |
+| Exa | Web search for docs/APIs |
+| Codex CLI | Async code review, test writing, refactoring |
+
+---
+
+*"Dados públicos, código aberto, transparência real. Powered by EGOS Framework."*

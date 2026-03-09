@@ -8,8 +8,8 @@ from starlette.requests import Request
 from bracc.dependencies import get_session
 from bracc.middleware.rate_limit import limiter
 from bracc.models.entity import SourceAttribution
-from bracc.services.cache import cache
 from bracc.models.search import SearchResponse, SearchResult
+from bracc.services.cache import cache
 from bracc.services.neo4j_service import execute_query, sanitize_props
 from bracc.services.public_guard import (
     has_person_labels,
@@ -67,6 +67,11 @@ async def search_entities(
     entity_type: Annotated[str | None, Query(alias="type")] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     size: Annotated[int, Query(ge=1, le=100)] = 20,
+    is_pep: Annotated[bool, Query()] = False,
+    has_sanctions: Annotated[bool, Query()] = False,
+    has_contracts: Annotated[bool, Query()] = False,
+    city: Annotated[str | None, Query(max_length=100)] = None,
+    state: Annotated[str | None, Query(max_length=2)] = None,
 ) -> SearchResponse:
     skip = (page - 1) * size
     type_filter = entity_type.lower() if entity_type else None
@@ -85,6 +90,11 @@ async def search_entities(
             "entity_type": type_filter,
             "skip": skip,
             "limit": size,
+            "is_pep": is_pep,
+            "has_sanctions": has_sanctions,
+            "has_contracts": has_contracts,
+            "city": city.upper() if city else None,
+            "state": state.upper() if state else None,
         },
     )
 

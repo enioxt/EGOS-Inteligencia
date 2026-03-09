@@ -37,12 +37,20 @@ Este diretório centraliza documentação técnica, operacional, legal e materia
 ### Relatórios e análises
 - [Relatórios](reports/)
 - [Análises](analysis/)
+- **[Capacidades do Sistema (Março 2026)](SYSTEM_CAPABILITIES_2026-03.md)** — 26 tools testadas, 42 endpoints, 14 APIs, comparação competitiva brutal
 - **[Dossiê Técnico Completo (Março 2026)](TECHNICAL_DOSSIE_2026-03.md)** — Audit: arquitetura, features, riscos, LGPD, 13 tasks
+- [Avaliação Honesta](HONEST_ASSESSMENT_2026-03.md) — O que funciona e o que não funciona (de verdade)
 - [Análise Comparativa Intelink vs EGOS](MERGE_ANALYSIS.md) — Alternativas de merge, recomendação
 - [Decisão de stack e escala (Python/Go/Node)](analysis/STACK_SCALING_DECISION_2026-03.md)
 - [Plano Mycelium Audit Trail (não repúdio)](analysis/MYCELIUM_AUDIT_TRAIL_2026-03.md)
 - [Showcase](showcase/)
 - [Planos](plans/)
+
+### Para novos contribuidores
+- [README principal (setup local, API keys, IDEs)](../README.md#opção-3-rodar-localmente)
+- [GitHub Issues abertas](https://github.com/enioxt/EGOS-Inteligencia/issues) — issues #44-#48 com instruções claras
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [TASKS.md](../TASKS.md) — todas as tasks com status real
 
 ## Convenções
 

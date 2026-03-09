@@ -84,7 +84,7 @@ export function Reports() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Relatórios de Investigação</h1>
+      <h1 className={styles.title}>Relatórios de Pesquisa</h1>
       <p className={styles.subtitle}>
         Relatórios gerados com dados reais do grafo Neo4j, Portal da Transparência, DataJud e outras fontes públicas.
       </p>
