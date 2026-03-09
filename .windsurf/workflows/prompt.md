@@ -1,0 +1,1 @@
+/home/enio/.egos/workflows/prompt.md
