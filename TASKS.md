@@ -96,6 +96,13 @@
 - [x] Deploy no Contabo
 > **Arquivos:** `frontend/Dockerfile`, `frontend/src/pages/Landing.tsx`
 
+### TASK-075: Integrar Chatbot "Padrão 852" (Vercel AI SDK) ao EGOS ⬜ 🚨
+- [ ] Analisar arquitetura do `/home/enio/852` (Next.js App Router, `ai` sdk, persistência Supabase)
+- [ ] Mapear lacunas do atual `frontend/src/components/chat/ChatInterface.tsx` (que usa UI customizada Vite/React)
+- [ ] Portar formatação refinada de Markdown, exibição de fontes e retenção de contexto para o EGOS
+- [ ] Adequar o OpenRouter do EGOS aos padrões máximos encontrados no 852
+> **Motivo:** O repositório 852 possui o chatbot mais avançado de todo o workspace. Torná-lo o benchmark oficial.
+
 ### TASK-072: Reality Check — VPS, ETL e Métricas do Sistema ⬜
 - [ ] Verificar estado real do `bracc-etl.service` e processos relacionados no VPS
 - [ ] Atualizar porcentagem real do ETL e gargalo atual (Phase 1/3/4) com evidência
