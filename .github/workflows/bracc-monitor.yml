@@ -1,0 +1,69 @@
+# BR-ACC Upstream Monitor — TASK-013
+# Runs 2x/day (06:00 and 18:00 UTC-3 = 09:00 and 21:00 UTC); optional Discord/Telegram notifications.
+name: BR-ACC Monitor
+
+on:
+  schedule:
+    # 09:00 UTC and 21:00 UTC = 06:00 and 18:00 UTC-3
+    - cron: '0 9,21 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    name: Upstream monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore monitor state
+        uses: actions/cache/restore@v4
+        id: cache-state
+        with:
+          path: scripts/.bracc-monitor-state.json
+          key: bracc-monitor-state-${{ github.repository }}-${{ github.run_id }}
+          restore-keys: |
+            bracc-monitor-state-${{ github.repository }}-
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run monitor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: npm run monitor
+
+      - name: Save monitor state
+        uses: actions/cache/save@v4
+        if: success() || failure()
+        with:
+          path: scripts/.bracc-monitor-state.json
+          key: bracc-monitor-state-${{ github.repository }}-${{ github.run_id }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bracc-monitor-report
+          path: scripts/bracc-monitor-report.json
+          retention-days: 14

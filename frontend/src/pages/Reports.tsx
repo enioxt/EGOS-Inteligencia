@@ -75,7 +75,7 @@ export function Reports() {
         if (data.error) md += `\n**Erro:** ${data.error}`;
         setGenResult(md);
       }
-    } catch (e) {
+    } catch {
       setGenResult("Erro ao gerar relatório");
     } finally {
       setGenerating(false);

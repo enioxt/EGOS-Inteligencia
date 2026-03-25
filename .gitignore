@@ -68,6 +68,10 @@ data/cnpj/reference/*
 audit-results/
 scripts/audit-prompts/
 
+# BR-ACC monitor (generated state and report)
+scripts/.bracc-monitor-state.json
+scripts/bracc-monitor-report.json
+
 # Screenshots and images (large binary files)
 *.png
 !docs/brand/wtg-header.png
