@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/orchestration/GATES.md

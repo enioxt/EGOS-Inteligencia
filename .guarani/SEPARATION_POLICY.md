@@ -1,0 +1,1 @@
+../.egos/guarani/SEPARATION_POLICY.md

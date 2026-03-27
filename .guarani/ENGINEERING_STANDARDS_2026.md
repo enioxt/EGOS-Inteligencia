@@ -1,0 +1,1 @@
+../.egos/guarani/ENGINEERING_STANDARDS_2026.md

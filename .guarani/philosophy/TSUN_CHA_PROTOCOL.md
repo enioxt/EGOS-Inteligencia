@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/philosophy/TSUN_CHA_PROTOCOL.md

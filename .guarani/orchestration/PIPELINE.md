@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/orchestration/PIPELINE.md

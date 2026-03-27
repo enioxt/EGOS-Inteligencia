@@ -1,0 +1,1 @@
+../.egos/guarani/DESIGN_IDENTITY.md

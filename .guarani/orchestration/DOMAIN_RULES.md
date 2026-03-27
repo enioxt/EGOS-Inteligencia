@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/orchestration/DOMAIN_RULES.md

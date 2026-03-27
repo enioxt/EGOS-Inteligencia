@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/prompts/meta/universal-strategist.md

@@ -1,0 +1,1 @@
+../.egos/guarani/PREFERENCES_SHARED.md

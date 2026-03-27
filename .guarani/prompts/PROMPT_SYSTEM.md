@@ -1,1 +1,0 @@
-/home/enio/.egos/guarani/prompts/PROMPT_SYSTEM.md
