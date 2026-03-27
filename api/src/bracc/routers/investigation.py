@@ -2,10 +2,11 @@ import json
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import Response
 from neo4j import AsyncSession
 from pydantic import ValidationError
 
+from bracc.config import settings
 from bracc.constants import PEP_ROLES
 from bracc.dependencies import CurrentUser, get_session
 from bracc.middleware.cpf_masking import mask_formatted_cpf, mask_raw_cpf
@@ -85,7 +86,12 @@ async def import_investigation(
             detail="Investigation import currently supports exported JSON bundles only",
         )
 
-    raw = await file.read()
+    raw = await file.read(settings.investigation_import_max_bytes + 1)
+    if len(raw) > settings.investigation_import_max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail="Investigation import file is too large",
+        )
     try:
         payload = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -324,7 +330,7 @@ async def export_investigation(
     investigation_id: str,
     session: Annotated[AsyncSession, Depends(get_session)],
     user: CurrentUser,
-) -> JSONResponse:
+) -> InvestigationExportBundle:
     investigation = await svc.get_investigation(session, investigation_id, user.id)
     if investigation is None:
         raise HTTPException(status_code=404, detail="Investigation not found")
@@ -332,12 +338,11 @@ async def export_investigation(
     annotations = await svc.list_annotations(session, investigation_id, user.id)
     tags = await svc.list_tags(session, investigation_id, user.id)
 
-    export_data = {
-        "investigation": investigation.model_dump(),
-        "annotations": [a.model_dump() for a in annotations],
-        "tags": [t.model_dump() for t in tags],
-    }
-    return JSONResponse(content=export_data)
+    return InvestigationExportBundle(
+        investigation=investigation,
+        annotations=annotations,
+        tags=tags,
+    )
 
 
 @router.get("/{investigation_id}/export/pdf")

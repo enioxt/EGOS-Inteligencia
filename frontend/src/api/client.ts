@@ -24,11 +24,16 @@ function getAuthHeaders(): Record<string, string> {
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers = new Headers(init?.headers);
+  const method = (init?.method ?? "GET").toUpperCase();
+  const hasBody = init?.body != null;
   for (const [key, value] of Object.entries(getAuthHeaders())) {
     if (!headers.has(key)) headers.set(key, value);
   }
   if (
-    !(typeof FormData !== "undefined" && init?.body instanceof FormData) &&
+    hasBody &&
+    method !== "GET" &&
+    method !== "HEAD" &&
+    !(typeof FormData !== "undefined" && init.body instanceof FormData) &&
     !headers.has("Content-Type")
   ) {
     headers.set("Content-Type", "application/json");

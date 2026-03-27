@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from neo4j import AsyncSession, Record
@@ -16,6 +17,30 @@ from bracc.services.neo4j_service import execute_query, execute_query_single
 def _str(value: object) -> str:
     """Coerce Neo4j temporal or other types to string."""
     return str(value) if value is not None else ""
+
+
+def _mask_public_entity_identifier(value: str) -> str:
+    digits = re.sub(r"\D", "", value)
+    if len(digits) != 11:
+        return value
+    return f"***.***.***.{digits[-2:]}"
+
+
+def _mask_public_investigation(investigation: InvestigationResponse) -> InvestigationResponse:
+    return investigation.model_copy(
+        update={
+            "entity_ids": [
+                _mask_public_entity_identifier(str(entity_id))
+                for entity_id in investigation.entity_ids
+            ]
+        }
+    )
+
+
+def _mask_public_annotation(annotation: Annotation) -> Annotation:
+    return annotation.model_copy(
+        update={"entity_id": _mask_public_entity_identifier(annotation.entity_id)}
+    )
 
 
 def _record_to_investigation(record: Record) -> InvestigationResponse:
@@ -301,7 +326,7 @@ async def get_by_share_token(
     )
     if record is None:
         return None
-    return _record_to_investigation(record)
+    return _mask_public_investigation(_record_to_investigation(record))
 
 
 async def list_shared_investigations(
@@ -319,7 +344,7 @@ async def list_shared_investigations(
     )
     if not records:
         return [], total
-    investigations = [_record_to_investigation(r) for r in records]
+    investigations = [_mask_public_investigation(_record_to_investigation(r)) for r in records]
     return investigations, total
 
 
@@ -328,7 +353,7 @@ async def list_annotations_by_share_token(
     token: str,
 ) -> list[Annotation]:
     records = await execute_query(session, "annotation_list_by_token", {"token": token})
-    return [_record_to_annotation(record) for record in records]
+    return [_mask_public_annotation(_record_to_annotation(record)) for record in records]
 
 
 async def list_tags_by_share_token(
@@ -372,6 +397,7 @@ async def import_investigation_bundle(
     imported_entities = 0
     skipped_entity_ids: list[str] = []
     seen_entity_ids: set[str] = set()
+    imported_entity_ids: set[str] = set()
 
     for entity_id in bundle.investigation.entity_ids:
         normalized = entity_id.strip()
@@ -380,17 +406,23 @@ async def import_investigation_bundle(
         seen_entity_ids.add(normalized)
         if await add_entity_to_investigation(session, created.id, normalized, user_id):
             imported_entities += 1
+            imported_entity_ids.add(normalized)
         else:
             skipped_entity_ids.append(normalized)
 
     imported_annotations = 0
     for annotation in bundle.annotations:
-        if not annotation.text.strip():
+        entity_id = annotation.entity_id.strip()
+        if (
+            not annotation.text.strip()
+            or not entity_id
+            or entity_id not in imported_entity_ids
+        ):
             continue
         await create_annotation(
             session,
             created.id,
-            annotation.entity_id.strip(),
+            entity_id,
             annotation.text,
             user_id,
         )

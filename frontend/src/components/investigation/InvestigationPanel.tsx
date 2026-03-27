@@ -5,6 +5,29 @@ import { useInvestigationStore } from "@/stores/investigation";
 
 import styles from "./InvestigationPanel.module.css";
 
+function isJsonImportFile(file: File) {
+  const filename = file.name.toLowerCase();
+  const type = file.type.toLowerCase();
+  return (
+    filename.endsWith(".json")
+    || type === "application/json"
+    || type === "text/json"
+  );
+}
+
+async function readFileText(file: File) {
+  if (typeof file.text === "function") {
+    return file.text();
+  }
+
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("failed to read file"));
+    reader.readAsText(file);
+  });
+}
+
 export function InvestigationPanel() {
   const { t } = useTranslation();
   const {
@@ -51,6 +74,20 @@ export function InvestigationPanel() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      if (!isJsonImportFile(file)) {
+        setImportStatus(t("investigation.importJsonOnly"));
+        e.target.value = "";
+        return;
+      }
+
+      try {
+        JSON.parse(await readFileText(file));
+      } catch {
+        setImportStatus(t("investigation.importInvalidJson"));
+        e.target.value = "";
+        return;
+      }
+
       setImporting(true);
       setImportStatus(null);
       try {

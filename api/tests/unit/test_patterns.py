@@ -135,6 +135,9 @@ async def test_specific_pattern_endpoint_returns_detector_payload(
     assert payload["entity_id"] == "test-id"
     assert payload["total"] == 1
     assert payload["patterns"][0]["pattern_id"] == pattern_name
+    assert payload["patterns"][0]["entity_ids"] == ["test-id"]
+    assert payload["patterns"][0]["data"]["risk_signal"] == 7.5
+    assert payload["patterns"][0]["sources"][0]["database"] == "neo4j_public"
     mock_run_one.assert_awaited_once()
 
 

@@ -5,3 +5,4 @@ RETURN a.id AS id,
        a.text AS text,
        a.created_at AS created_at
 ORDER BY a.created_at DESC
+LIMIT 1000

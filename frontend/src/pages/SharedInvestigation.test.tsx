@@ -56,12 +56,12 @@ describe("SharedInvestigation", () => {
       description: "Uma descri\u00E7\u00E3o",
       created_at: "2026-01-01T00:00:00Z",
       updated_at: "2026-01-01T00:00:00Z",
-      entity_ids: ["e1", "e2"],
+      entity_ids: ["12345678901", "e2"],
       share_token: "abc-123",
       annotations: [
         {
           id: "ann-1",
-          entity_id: "e1",
+          entity_id: "12345678901",
           investigation_id: "inv-1",
           text: "Anota\u00E7\u00E3o relevante",
           created_at: "2026-01-01T00:00:00Z",
@@ -84,7 +84,7 @@ describe("SharedInvestigation", () => {
     });
 
     expect(screen.getByText("Uma descri\u00E7\u00E3o")).toBeInTheDocument();
-    expect(screen.getAllByText("e1")).toHaveLength(2);
+    expect(screen.getAllByText("***.***.***.01")).toHaveLength(2);
     expect(screen.getByText("e2")).toBeInTheDocument();
     expect(screen.getByText("Anota\u00E7\u00E3o relevante")).toBeInTheDocument();
     expect(screen.getByText("Urgente")).toBeInTheDocument();

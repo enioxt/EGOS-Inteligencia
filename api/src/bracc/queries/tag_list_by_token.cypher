@@ -4,3 +4,4 @@ RETURN t.id AS id,
        t.name AS name,
        t.color AS color
 ORDER BY t.name
+LIMIT 1000

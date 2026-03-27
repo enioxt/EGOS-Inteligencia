@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Investigation } from "@/api/client";
 
@@ -32,6 +32,16 @@ vi.mock("@/stores/investigation", () => ({
 import { InvestigationPanel } from "./InvestigationPanel";
 
 describe("InvestigationPanel", () => {
+  beforeEach(() => {
+    mockStore.investigations = [];
+    mockStore.activeInvestigationId = null;
+    mockStore.loading = false;
+    mockStore.fetchInvestigations.mockReset();
+    mockStore.createInvestigation.mockReset();
+    mockStore.importInvestigation.mockReset();
+    mockStore.setActiveInvestigation.mockReset();
+  });
+
   it("renders 'New Investigation' button", () => {
     render(<InvestigationPanel />);
     expect(screen.getByText(/Nova pesquisa/i)).toBeDefined();
@@ -91,7 +101,43 @@ describe("InvestigationPanel", () => {
 
     await user.upload(input, file);
 
-    expect(mockStore.importInvestigation).toHaveBeenCalledWith(file);
-    expect(mockStore.setActiveInvestigation).toHaveBeenCalledWith("inv-imported");
+    await waitFor(() => {
+      expect(mockStore.importInvestigation).toHaveBeenCalledWith(file);
+    });
+    await waitFor(() => {
+      expect(mockStore.setActiveInvestigation).toHaveBeenCalledWith("inv-imported");
+    });
+  });
+
+  it("rejects non-json files before upload", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+
+    render(<InvestigationPanel />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["%PDF-1.4"], "investigation.pdf", { type: "application/pdf" });
+
+    await user.upload(input, file);
+
+    expect(mockStore.importInvestigation).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("Use um arquivo JSON exportado da pesquisa."),
+    ).toBeInTheDocument();
+  });
+
+  it("rejects malformed json before upload", async () => {
+    const user = userEvent.setup();
+
+    render(<InvestigationPanel />);
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["{"], "investigation.json", { type: "application/json" });
+
+    await user.upload(input, file);
+
+    expect(mockStore.importInvestigation).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("O arquivo JSON da pesquisa é inválido."),
+    ).toBeInTheDocument();
   });
 });

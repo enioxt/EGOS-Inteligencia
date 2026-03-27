@@ -9,9 +9,11 @@ Tools:
 """
 
 import asyncio
+import json
 import logging
 import os
 import re
+import time
 from typing import Any
 from urllib.parse import quote_plus
 
@@ -60,10 +62,32 @@ _PT_BASE = "https://api.portaldatransparencia.gov.br/api-de-dados"
 _TG_BASE = "https://api.transferegov.gestao.gov.br"
 _BRAVE_RETRY_DELAYS = (0.5, 1.0)
 _PNCP_MODALIDADE_CODES = tuple(str(code) for code in range(1, 15))
+_PNCP_GLOBAL_DEADLINE_SECONDS = 10.0
+_UNTRUSTED_SEARCH_PREFIX = "[source snippet - untrusted] "
+_PROMPT_LIKE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"ignore\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|rules?)", re.I),
+    re.compile(r"(disregard|forget|override)\s+(your|the|all)\s+(instructions?|rules?|prompts?)", re.I),
+    re.compile(r"you\s+are\s+now\s+(a|an|the)\s+", re.I),
+    re.compile(r"system\s*prompt", re.I),
+    re.compile(r"(system|assistant|developer)\s*:", re.I),
+    re.compile(r"<\|?(system|im_start|endoftext)\|?>|\[INST\]|\[/INST\]|<<SYS>>|<</SYS>>", re.I),
+)
 
 
 def _clean_html_fragment(fragment: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", fragment)).strip()
+
+
+def _sanitize_untrusted_search_text(fragment: str, max_length: int) -> str:
+    cleaned = _clean_html_fragment(fragment)
+    cleaned = re.sub(r"[\x00-\x1F\x7F]+", " ", cleaned)
+    for pattern in _PROMPT_LIKE_PATTERNS:
+        cleaned = pattern.sub("[redacted]", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if not cleaned:
+        return _UNTRUSTED_SEARCH_PREFIX.strip()
+    budget = max(1, max_length - len(_UNTRUSTED_SEARCH_PREFIX))
+    return f"{_UNTRUSTED_SEARCH_PREFIX}{cleaned[:budget].strip()}"
 
 
 async def _search_brave(
@@ -100,12 +124,20 @@ async def _search_brave(
 
             if resp.status_code == 200:
                 results: list[dict[str, str]] = []
-                data = resp.json()
+                try:
+                    data = resp.json()
+                except (json.JSONDecodeError, ValueError) as exc:
+                    last_reason = f"Brave Search JSON invalido: {exc}"
+                    logger.warning("Brave search returned invalid JSON, falling back to DDG: %s", exc)
+                    break
                 for item in data.get("web", {}).get("results", [])[:max_results]:
                     results.append({
-                        "title": item.get("title", ""),
+                        "title": _sanitize_untrusted_search_text(str(item.get("title", "")), 200),
                         "url": item.get("url", ""),
-                        "snippet": item.get("description", "")[:300],
+                        "snippet": _sanitize_untrusted_search_text(
+                            str(item.get("description", "")),
+                            300,
+                        ),
                     })
                 if results:
                     return results, None
@@ -185,9 +217,9 @@ async def _search_duckduckgo(
             if match:
                 actual_url = unquote(match.group(1))
         results.append({
-            "title": _clean_html_fragment(title)[:200],
+            "title": _sanitize_untrusted_search_text(title, 200),
             "url": actual_url,
-            "snippet": _clean_html_fragment(snippet)[:300],
+            "snippet": _sanitize_untrusted_search_text(snippet, 300),
         })
 
     if results:
@@ -1255,84 +1287,90 @@ async def tool_pncp_licitacoes(cnpj_orgao: str = "", uf: str = "", data_inicio: 
 
     try:
         seen_controls: set[str] = set()
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            for base_url in _PNCP_URLS:
-                for modalidade in _PNCP_MODALIDADE_CODES:
-                    params: dict[str, str] = {
-                        "dataInicial": date_ini,
-                        "dataFinal": date_end,
-                        "codigoModalidadeContratacao": modalidade,
-                        "pagina": "1",
-                        "tamanhoPagina": "10",
-                    }
-                    if cnpj_orgao:
-                        cnpj_clean = cnpj_orgao.replace(".", "").replace("/", "").replace("-", "")
-                        params["cnpj"] = cnpj_clean
-                    if uf:
-                        params["uf"] = uf.upper()
+        started_at = time.monotonic()
+        async with asyncio.timeout(_PNCP_GLOBAL_DEADLINE_SECONDS):
+            async with httpx.AsyncClient(timeout=3.0, follow_redirects=True) as client:
+                for base_url in _PNCP_URLS:
+                    for modalidade in _PNCP_MODALIDADE_CODES:
+                        if len(results) >= 10:
+                            break
+                        if time.monotonic() - started_at >= _PNCP_GLOBAL_DEADLINE_SECONDS:
+                            raise TimeoutError
+                        params: dict[str, str] = {
+                            "dataInicial": date_ini,
+                            "dataFinal": date_end,
+                            "codigoModalidadeContratacao": modalidade,
+                            "pagina": "1",
+                            "tamanhoPagina": "10",
+                        }
+                        if cnpj_orgao:
+                            cnpj_clean = cnpj_orgao.replace(".", "").replace("/", "").replace("-", "")
+                            params["cnpj"] = cnpj_clean
+                        if uf:
+                            params["uf"] = uf.upper()
 
-                    try:
-                        resp = await client.get(
-                            base_url,
-                            params=params,
-                            headers={"Accept": "application/json"},
-                        )
-                        if resp.status_code == 200:
-                            items = _extract_pncp_items(resp.json())
-                            for item in items:
-                                numero_controle = str(item.get("numeroControlePNCP", item.get("id", "")))
-                                if numero_controle and numero_controle in seen_controls:
-                                    continue
-                                if numero_controle:
-                                    seen_controls.add(numero_controle)
-                                orgao_ent = item.get("orgaoEntidade", {})
-                                orgao = item.get("nomeOrgao", "")
-                                if not orgao and isinstance(orgao_ent, dict):
-                                    orgao = str(
-                                        orgao_ent.get("razaoSocial", orgao_ent.get("razaosocial", ""))
-                                    )
-                                results.append({
-                                    "orgao": orgao,
-                                    "objeto": str(item.get("objetoCompra", item.get("descricao", "")))[:200],
-                                    "modalidade": item.get(
-                                        "modalidadeNome",
-                                        item.get("modalidadeLicitacao", ""),
-                                    ),
-                                    "valor_estimado": item.get(
-                                        "valorEstimado",
-                                        item.get("valorTotalEstimado", ""),
-                                    ),
-                                    "uf": item.get("uf", item.get("ufSigla", uf.upper())),
-                                    "data_publicacao": item.get("dataPublicacaoPncp", item.get("dataPublicacao", "")),
-                                    "situacao": item.get(
-                                        "situacaoCompraNome",
-                                        item.get("situacaoCompra", ""),
-                                    ),
-                                })
-                                if len(results) >= 10:
-                                    break
-                            if results:
-                                break
-                        elif resp.status_code == 204:
-                            continue
-                        elif resp.status_code == 400:
-                            logger.info(
-                                "PNCP %s returned 400 for modalidade %s, trying next combination",
+                        try:
+                            resp = await client.get(
                                 base_url,
-                                modalidade,
+                                params=params,
+                                headers={"Accept": "application/json"},
                             )
+                            if resp.status_code == 200:
+                                items = _extract_pncp_items(resp.json())
+                                for item in items:
+                                    numero_controle = str(item.get("numeroControlePNCP", item.get("id", "")))
+                                    if numero_controle and numero_controle in seen_controls:
+                                        continue
+                                    if numero_controle:
+                                        seen_controls.add(numero_controle)
+                                    orgao_ent = item.get("orgaoEntidade", {})
+                                    orgao = item.get("nomeOrgao", "")
+                                    if not orgao and isinstance(orgao_ent, dict):
+                                        orgao = str(
+                                            orgao_ent.get("razaoSocial", orgao_ent.get("razaosocial", ""))
+                                        )
+                                    results.append({
+                                        "orgao": orgao,
+                                        "objeto": str(item.get("objetoCompra", item.get("descricao", "")))[:200],
+                                        "modalidade": item.get(
+                                            "modalidadeNome",
+                                            item.get("modalidadeLicitacao", ""),
+                                        ),
+                                        "valor_estimado": item.get(
+                                            "valorEstimado",
+                                            item.get("valorTotalEstimado", ""),
+                                        ),
+                                        "uf": item.get("uf", item.get("ufSigla", uf.upper())),
+                                        "data_publicacao": item.get("dataPublicacaoPncp", item.get("dataPublicacao", "")),
+                                        "situacao": item.get(
+                                            "situacaoCompraNome",
+                                            item.get("situacaoCompra", ""),
+                                        ),
+                                    })
+                                    if len(results) >= 10:
+                                        break
+                            elif resp.status_code == 204:
+                                continue
+                            elif resp.status_code == 400:
+                                logger.info(
+                                    "PNCP %s returned 400 for modalidade %s, trying next combination",
+                                    base_url,
+                                    modalidade,
+                                )
+                                continue
+                            else:
+                                logger.warning(
+                                    "PNCP HTTP %s from %s: %s",
+                                    resp.status_code,
+                                    base_url,
+                                    resp.text[:200],
+                                )
+                        except Exception:
                             continue
-                        else:
-                            logger.warning(
-                                "PNCP HTTP %s from %s: %s",
-                                resp.status_code,
-                                base_url,
-                                resp.text[:200],
-                            )
-                    except Exception:
-                        continue
-                if results:
-                    break
+                    if len(results) >= 10:
+                        break
+    except TimeoutError:
+        logger.warning("PNCP search hit global deadline after %.1fs", _PNCP_GLOBAL_DEADLINE_SECONDS)
     except Exception as e:
         logger.warning("PNCP search failed: %s", e)
 

@@ -10,6 +10,14 @@ import { useInvestigationStore } from "@/stores/investigation";
 
 import styles from "./SharedInvestigation.module.css";
 
+function maskCpf(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length !== 11) {
+    return value;
+  }
+  return `***.***.***.${digits.slice(-2)}`;
+}
+
 export function SharedInvestigation() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -92,7 +100,7 @@ export function SharedInvestigation() {
           <h2 className={styles.sectionTitle}>{t("investigation.entities")}</h2>
           <div className={styles.entityList}>
             {(investigation.entity_ids ?? []).map((eid) => (
-              <span key={eid} className={styles.entityChip}>{eid}</span>
+              <span key={eid} className={styles.entityChip}>{maskCpf(eid)}</span>
             ))}
           </div>
         </div>
@@ -105,7 +113,7 @@ export function SharedInvestigation() {
             {investigation.annotations.map((annotation) => (
               <article key={annotation.id} className={styles.annotationCard}>
                 <p className={styles.annotationText}>{annotation.text}</p>
-                <span className={styles.annotationMeta}>{annotation.entity_id}</span>
+                <span className={styles.annotationMeta}>{maskCpf(annotation.entity_id)}</span>
               </article>
             ))}
           </div>

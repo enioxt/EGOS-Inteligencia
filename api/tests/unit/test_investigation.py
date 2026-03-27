@@ -4,6 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import AsyncClient
 
+from bracc.models.investigation import (
+    InvestigationExportBundle,
+    InvestigationResponse,
+)
 from bracc.services import investigation_service
 from bracc.services.neo4j_service import CypherLoader
 
@@ -41,6 +45,15 @@ def test_all_investigation_cypher_files_exist() -> None:
             pytest.fail(f"Missing .cypher file: {name}.cypher")
         finally:
             CypherLoader.clear_cache()
+
+
+def test_public_share_queries_are_bounded() -> None:
+    for name in ("annotation_list_by_token", "tag_list_by_token"):
+        try:
+            cypher = CypherLoader.load(name)
+        finally:
+            CypherLoader.clear_cache()
+        assert "LIMIT 1000" in cypher.upper(), f"{name}.cypher must be bounded"
 
 
 def _mock_record(data: dict[str, object]) -> MagicMock:
@@ -145,6 +158,119 @@ async def test_list_shared_investigations_preserves_total_on_empty_page() -> Non
         "investigation_shared_list",
         {"skip": 10, "limit": 10},
     )
+
+
+@pytest.mark.anyio
+async def test_get_by_share_token_masks_public_cpfs() -> None:
+    session = AsyncMock()
+    record = _mock_record({
+        "id": "shared-id",
+        "title": "Publica",
+        "description": "desc",
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "share_token": "token-1",
+        "entity_ids": ["12345678901", "12345678000190"],
+    })
+
+    with patch.object(
+        investigation_service,
+        "execute_query_single",
+        new=AsyncMock(return_value=record),
+    ):
+        investigation = await investigation_service.get_by_share_token(session, "token-1")
+
+    assert investigation is not None
+    assert investigation.entity_ids == ["***.***.***.01", "12345678000190"]
+
+
+@pytest.mark.anyio
+async def test_list_annotations_by_share_token_masks_public_cpfs() -> None:
+    session = AsyncMock()
+    record = _mock_record({
+        "id": "ann-1",
+        "entity_id": "12345678901",
+        "investigation_id": "shared-id",
+        "text": "nota",
+        "created_at": "2026-01-01T00:00:00Z",
+    })
+
+    with patch.object(
+        investigation_service,
+        "execute_query",
+        new=AsyncMock(return_value=[record]),
+    ):
+        annotations = await investigation_service.list_annotations_by_share_token(session, "token-1")
+
+    assert annotations[0].entity_id == "***.***.***.01"
+
+
+@pytest.mark.anyio
+async def test_import_investigation_bundle_skips_annotations_for_unimported_entities() -> None:
+    session = AsyncMock()
+    created = InvestigationResponse(
+        id="created-id",
+        title="Investigacao importada",
+        description="desc",
+        created_at="2026-01-01T00:00:00Z",
+        updated_at="2026-01-01T00:00:00Z",
+        entity_ids=[],
+        share_token=None,
+    )
+    bundle = InvestigationExportBundle.model_validate({
+        "investigation": {
+            "id": "old-id",
+            "title": "Investigacao importada",
+            "description": "desc",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+            "entity_ids": ["missing-entity"],
+            "share_token": None,
+        },
+        "annotations": [
+            {
+                "id": "ann-1",
+                "entity_id": "missing-entity",
+                "investigation_id": "old-id",
+                "text": "nota",
+                "created_at": "2026-01-01T00:00:00Z",
+            }
+        ],
+        "tags": [],
+    })
+
+    with (
+        patch.object(
+            investigation_service,
+            "create_investigation",
+            new=AsyncMock(return_value=created),
+        ),
+        patch.object(
+            investigation_service,
+            "add_entity_to_investigation",
+            new=AsyncMock(return_value=False),
+        ),
+        patch.object(
+            investigation_service,
+            "create_annotation",
+            new=AsyncMock(),
+        ) as create_annotation_mock,
+        patch.object(
+            investigation_service,
+            "get_investigation",
+            new=AsyncMock(return_value=created),
+        ),
+    ):
+        result = await investigation_service.import_investigation_bundle(
+            session,
+            bundle,
+            "user-1",
+        )
+
+    assert result.imported_entities == 0
+    assert result.imported_annotations == 0
+    assert result.skipped_entity_ids == ["missing-entity"]
+    create_annotation_mock.assert_not_awaited()
 
 
 @pytest.mark.anyio
@@ -470,6 +596,33 @@ async def test_import_investigation_rejects_non_json(
     )
 
     assert response.status_code == 415
+
+
+@pytest.mark.anyio
+async def test_import_investigation_rejects_oversized_json(
+    client: AsyncClient,
+    auth_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bracc.main import app
+    from bracc.routers import investigation as investigation_router
+
+    _setup_session_with_user_only(app.state.neo4j_driver)
+    monkeypatch.setattr(investigation_router.settings, "investigation_import_max_bytes", 16)
+
+    response = await client.post(
+        "/api/v1/investigations/import",
+        files={
+            "file": (
+                "investigation.json",
+                json.dumps({"payload": "x" * 32}),
+                "application/json",
+            )
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 413
 
 
 @pytest.mark.anyio
