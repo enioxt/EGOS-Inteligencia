@@ -1,0 +1,64 @@
+{
+  "theme": "dark",
+  "version": "1.0.0",
+  "description": "EGOS Orchestration Output Styling",
+  "symbols": {
+    "status": {
+      "success": "✅",
+      "error": "🔴",
+      "warning": "⚠️",
+      "info": "ℹ️",
+      "pending": "⏳",
+      "active": "🟢",
+      "inactive": "⚫",
+      "frozen": "🔒"
+    },
+    "agents": {
+      "kernel": "🔧",
+      "lab": "🧪",
+      "running": "🤖",
+      "scheduled": "📅",
+      "manual": "🎯",
+      "triggered": "⚡"
+    },
+    "general": {
+      "arrow": "→",
+      "branch": "├─",
+      "end": "└─",
+      "pipe": "│",
+      "separator": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    }
+  },
+  "colors": {
+    "dark": {
+      "success": "#00ff00",
+      "error": "#ff3333",
+      "warning": "#ffaa00",
+      "info": "#33aaff",
+      "muted": "#666666",
+      "accent": "#00ffff"
+    }
+  },
+  "sections": {
+    "header": {
+      "format": "${separator}\\n${title}\\n${separator}",
+      "color": "accent"
+    },
+    "error_message": {
+      "format": "${error_symbol} ${text}",
+      "color": "error",
+      "bold": true
+    },
+    "success_message": {
+      "format": "${success_symbol} ${text}",
+      "color": "success",
+      "bold": true
+    }
+  },
+  "logging": {
+    "level": "info",
+    "timestamps": true,
+    "colorize": true,
+    "format": "${timestamp} [${level}] ${message}"
+  }
+}

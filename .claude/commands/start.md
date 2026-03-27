@@ -1,0 +1,1 @@
+/home/enio/.egos/.claude/commands/start.md

@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "description": "EGOS Claude Code Permissions & Gates Configuration",
+  "type": "rbac",
+  "permission_level": "autonomous",
+  "human_approval_required": false,
+  "audit_all_actions": true,
+  "gates": [
+    {
+      "id": "frozen_zones_gate",
+      "scope": "frozen_zones",
+      "action": "edit",
+      "permission": "deny",
+      "rationale": "Core runtime files must not be modified",
+      "override_allowed": "user_explicit_only",
+      "requires_approval": true
+    },
+    {
+      "id": "agent_execution_gate",
+      "scope": "agent_execution",
+      "action": "run",
+      "permission": "allow",
+      "cost_tracking": true,
+      "cost_threshold_daily": 50,
+      "dry_run_always_allowed": true
+    },
+    {
+      "id": "git_operations_gate",
+      "scope": "git_operations",
+      "action": ["commit", "push", "merge"],
+      "permission": "allow",
+      "requires_validation": true,
+      "validation_checks": ["staged_files_clean", "commit_message_follows_convention", "no_secrets_detected"],
+      "sign_off_required": true
+    },
+    {
+      "id": "file_write_gate",
+      "scope": "file_write",
+      "action": "write",
+      "permission": "allow",
+      "excludes": [".git/**", "node_modules/**", ".env*", "secrets/**"],
+      "auto_backup_before_write": true
+    }
+  ],
+  "rbac": {
+    "roles": [
+      {
+        "name": "admin",
+        "permissions": ["all"],
+        "approval_required": false
+      },
+      {
+        "name": "operator",
+        "permissions": ["agent_run", "logs_read", "memory_read"],
+        "approval_required": false
+      }
+    ],
+    "current_role": "admin"
+  },
+  "rate_limits": {
+    "tokens_per_hour": 1000000,
+    "api_calls_per_minute": 100,
+    "cost_per_day": 50,
+    "file_writes_per_hour": 1000,
+    "git_commits_per_hour": 20
+  },
+  "audit": {
+    "enabled": true,
+    "log_all_actions": true,
+    "log_file": ".claude/logs/audit.jsonl",
+    "retention_days": 90
+  }
+}

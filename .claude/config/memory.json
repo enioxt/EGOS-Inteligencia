@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "description": "EGOS Claude Code Memory Configuration",
+  "type": "hybrid",
+  "components": [
+    {
+      "name": "session_memory",
+      "type": "temporary",
+      "provider": "claude-native",
+      "lifetime": "session",
+      "max_size_kb": 500,
+      "purpose": "Current conversation context within one session",
+      "enabled": true
+    },
+    {
+      "name": "knowledge_graph",
+      "type": "persistent",
+      "provider": "mcp-memory",
+      "lifetime": "permanent",
+      "backend": "supabase",
+      "max_nodes": 10000,
+      "auto_sync": true,
+      "purpose": "Cross-session learning, pattern recognition, relationships",
+      "enabled": true
+    },
+    {
+      "name": "agent_memory",
+      "type": "persistent",
+      "provider": "json-local",
+      "lifetime": "permanent",
+      "storage_path": ".claude/memory/agents/",
+      "auto_commit": true,
+      "purpose": "Per-agent learning, execution history, performance metrics",
+      "enabled": true
+    },
+    {
+      "name": "session_log",
+      "type": "audit",
+      "provider": "json-file",
+      "lifetime": "90_days",
+      "storage_path": ".claude/logs/",
+      "purpose": "Audit trail, debugging, analysis",
+      "enabled": true
+    }
+  ],
+  "learning": {
+    "enabled": true,
+    "auto_summarization": true,
+    "summarization_interval_hours": 24,
+    "pattern_detection": true,
+    "anomaly_detection": true
+  },
+  "persistence": {
+    "auto_save": true,
+    "save_interval_seconds": 300,
+    "backup_enabled": true,
+    "backup_interval_hours": 24,
+    "backup_retention_days": 30
+  },
+  "privacy": {
+    "pii_detection": true,
+    "pii_handling": "anonymize",
+    "data_retention_policy": "minimal",
+    "user_data_exclusion": ["API_KEYS", "PASSWORDS", "TOKENS", "CREDENTIALS"]
+  },
+  "sync": {
+    "enabled": true,
+    "direction": "bidirectional",
+    "conflict_resolution": "local_wins",
+    "sync_interval_seconds": 60,
+    "targets": [
+      {
+        "type": "local_filesystem",
+        "path": ".claude/memory/",
+        "priority": 1
+      },
+      {
+        "type": "git_repo",
+        "path": ".",
+        "auto_commit": true,
+        "priority": 2
+      }
+    ]
+  }
+}

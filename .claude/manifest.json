@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "description": "Claude Code Configuration for br-acc",
+  "repo": "br-acc",
+  "kernel": "/home/enio/egos",
+  "agent_registry": "agents/registry/agents.json",
+  "tasks_ssot": "TASKS.md",
+  "setup_timestamp": "2026-03-27T12:13:05Z",
+  "setup_host": "enioxt",
+  "config_strategy": "hybrid (symlinks + copies)"
+}

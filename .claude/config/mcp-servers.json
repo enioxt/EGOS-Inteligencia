@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "description": "EGOS MCP Servers Configuration for Agent Orchestration",
+  "$schema": "https://egos.ia.br/schemas/mcp-servers.v1.json",
+  "mcpServers": {
+    "exa": {
+      "enabled": true,
+      "type": "web_search",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-exa"],
+      "env": {"EXA_API_KEY": "${env:EXA_API_KEY}"},
+      "capabilities": ["search", "context_retrieval", "summarization"],
+      "description": "Web search + research via Exa API"
+    },
+    "sequential-thinking": {
+      "enabled": true,
+      "type": "reasoning",
+      "command": "node",
+      "args": ["~/.claude/mcp/sequential-thinking-server.js"],
+      "capabilities": ["extended_reasoning", "multi_step_thinking", "hypothesis_generation"],
+      "description": "Extended thinking for complex reasoning tasks"
+    },
+    "filesystem": {
+      "enabled": true,
+      "type": "file_operations",
+      "command": "node",
+      "args": ["~/.claude/mcp/filesystem-server.js"],
+      "capabilities": ["read_file", "write_file", "list_directory", "search_files"],
+      "description": "Local filesystem read/write/search operations"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "health_check_interval_seconds": 60,
+    "auto_restart_on_failure": true,
+    "log_level": "info"
+  }
+}

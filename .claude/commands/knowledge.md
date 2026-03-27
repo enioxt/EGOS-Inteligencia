@@ -1,0 +1,1 @@
+/home/enio/.egos/.claude/commands/knowledge.md

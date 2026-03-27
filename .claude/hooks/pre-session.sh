@@ -1,0 +1,1 @@
+/home/enio/.egos/.claude/hooks/pre-session.sh
