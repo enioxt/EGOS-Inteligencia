@@ -17,6 +17,7 @@ from bracc.middleware.request_id import RequestIDMiddleware
 from bracc.middleware.security_headers import SecurityHeadersMiddleware
 from bracc.routers import (
     activity,
+    agents,
     analytics,
     auth,
     baseline,
@@ -105,6 +106,7 @@ app.include_router(monitor.router)
 app.include_router(activity.router)
 app.include_router(gazette_monitor.router)
 app.include_router(interop.router)
+app.include_router(agents.router)
 
 
 @app.get("/health")
