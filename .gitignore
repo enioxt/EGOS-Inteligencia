@@ -100,3 +100,6 @@ AGENTS.md
 AGENTS*.md
 docs/ECOSYSTEM_DIAGNOSTIC_2026-03.md
 .egos
+
+# Context persistence state (local only)
+docs/_context_snapshots/.state.json
