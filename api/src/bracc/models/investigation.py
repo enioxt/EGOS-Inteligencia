@@ -17,7 +17,7 @@ class InvestigationResponse(BaseModel):
     description: str | None = None
     created_at: str
     updated_at: str
-    entity_ids: list[str] = []
+    entity_ids: list[str] = Field(default_factory=list)
     share_token: str | None = None
 
 
@@ -49,3 +49,26 @@ class Tag(BaseModel):
 class TagCreate(BaseModel):
     name: str = Field(max_length=50)
     color: str = Field(default="#E07A2F", max_length=7)
+
+
+class SharedInvestigationResponse(InvestigationResponse):
+    annotations: list[Annotation] = Field(default_factory=list)
+    tags: list[Tag] = Field(default_factory=list)
+
+
+class InvestigationExportBundle(BaseModel):
+    investigation: InvestigationResponse
+    annotations: list[Annotation] = Field(default_factory=list)
+    tags: list[Tag] = Field(default_factory=list)
+
+
+class InvestigationImportResponse(BaseModel):
+    investigation: InvestigationResponse
+    imported_entities: int
+    skipped_entity_ids: list[str] = Field(default_factory=list)
+    imported_annotations: int
+    imported_tags: int
+
+
+class InvestigationForkRequest(BaseModel):
+    title: str | None = Field(default=None, max_length=200)

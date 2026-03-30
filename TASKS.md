@@ -1,6 +1,6 @@
 # TASKS.md — EGOS Inteligência (SSOT)
 
-> **Updated:** 2026-03-18 | **Patterns:** 10 | **Nodes:** 77.0M | **Rels:** 25.1M | **Tools:** 27 | **Tasks:** 103/141 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
+> **Updated:** 2026-03-26 | **Patterns:** 10 | **Nodes:** 77.0M | **Rels:** 25.1M | **Tools:** 27 | **Tasks:** 105/141 ✅ | **GitHub Issues:** https://github.com/enioxt/EGOS-Inteligencia/issues
 
 ---
 
@@ -76,13 +76,13 @@
 - [ ] Paginação para large result sets
 > **Inspiração:** Palantir Gotham
 
-### TASK-007: Investigation Upload + Sharing ⬜
-- [ ] API: endpoint para upload de investigações (HTML, PDF, JSON)
-- [ ] API: listar investigações compartilhadas publicamente
-- [ ] Frontend: UI de upload no menu do usuário
-- [ ] Frontend: galeria de investigações compartilhadas
-- [ ] Frontend: "continuar a partir de" outra investigação (fork)
-> **Referência:** Intelink `components/shared/ShareJourneyDialog.tsx`
+### TASK-007: Investigation Upload + Sharing ✅ (26/03/2026)
+- [x] API: import de bundles JSON exportados + share bundle com anotações e tags
+- [x] API: listar investigações compartilhadas publicamente + endpoint de fork por token
+- [x] Frontend: upload JSON no painel de pesquisas
+- [x] Frontend: galeria pública `/shared` + página compartilhada com findings
+- [x] Frontend: "continuar a partir de" outra investigação (fork) para usuários autenticados
+> **Arquivos:** `api/src/bracc/routers/investigation.py`, `api/src/bracc/services/investigation_service.py`, `frontend/src/components/investigation/InvestigationPanel.tsx`, `frontend/src/pages/SharedInvestigation.tsx`, `frontend/src/pages/SharedInvestigations.tsx`
 
 ### TASK-008: Journey Tracker / Step Counter ✅ (02/03/2026)
 - [x] Journey lib: localStorage, 500 entries, dedup, export JSON/MD, Web Share API
@@ -762,11 +762,13 @@
 - [x] _call_openrouter aceita model + api_key params
 > **Arquivos:** `chat.py`
 
-### TASK-096: Bug Fixes — DDG Search + PNCP API ✅ (03/03/2026)
-- [x] DDG fallback: 3 regex patterns for resilience + graceful empty fallback
-- [x] PNCP: try 3 endpoint URLs (API changed), handle 400 gracefully, date normalization
+### TASK-096: Bug Fixes — DDG Search + PNCP API ✅ (26/03/2026)
+- [x] Brave: retry/backoff em `429/5xx` antes de cair para DDG
+- [x] DDG: erro não fica silencioso; fallback retorna `note` explícita com degradação
+- [x] PNCP: datas em `AAAAMMDD` + `codigoModalidadeContratacao` iterado por modalidade
+- [x] Cobertura dedicada em `tests/unit/test_transparency_tools.py`
 > **Issues:** #32 (P1), #33 (P2)
-> **Arquivos:** `api/src/bracc/services/transparency_tools.py`
+> **Arquivos:** `api/src/bracc/services/transparency_tools.py`, `api/tests/unit/test_transparency_tools.py`
 
 ### TASK-097: System Map — API/Routes/Pages Inventory ✅ (03/03/2026)
 - [x] Documentar 55+ endpoints em 13 routers
@@ -1037,7 +1039,7 @@
 - [x] `chat.py` reduzido de 1330 → 845 linhas (36% redução)
 > **Arquivos:** `chat_models.py`, `chat_tools.py`, `chat_prompt.py`
 
-### TASK-109: Testes Backend — Integration Tests ⏳
+### TASK-109: Testes Backend — Integration Tests ✅ (26/03/2026)
 - [x] Setup pytest + httpx AsyncClient fixtures (conftest.py with mock Neo4j)
 - [x] 219 unit tests passing (session 17: fixed 3 stale assertions)
 - [x] Test patterns endpoint (list, 503 disabled, 404 invalid, include_probable)
@@ -1049,11 +1051,11 @@
 - [x] Test patterns against live VPS (list 10, invalid 404)
 - [x] Test health/meta/activity/cache endpoints
 - [x] 955 ETL unit tests passing (0 warnings after Pandas fix)
-- [ ] Integration tests with testcontainers Neo4j
-- [ ] Test chat tool calling + tier fallback + rate limit
-> **Status (session 17-18):** 219 API unit + 18 live integration + 955 ETL = **1,192 tests**
-> **Arquivos:** `api/tests/integration/test_live_api.py`, `api/tests/unit/`, `etl/tests/`
-> **Esforço restante:** 2h | **Impacto:** Qualidade e confiança
+- [x] Integration tests with testcontainers Neo4j (skip gracefully when Docker daemon is unavailable)
+- [x] Test chat tool calling + tier fallback + rate limit
+> **Status (session 17-18, 25-26/03/2026):** 228 API unit + 18 live integration + 955 ETL = **1,201 tests**. Chat coverage agora inclui tool calling, fallback de modelo, aviso de limite diário e `429` real do endpoint; patterns cobre três detectores concretos no endpoint específico; a suíte `integration` com `Neo4jContainer` não falha mais em máquinas sem daemon Docker.
+> **Arquivos:** `api/tests/integration/test_live_api.py`, `api/tests/integration/conftest.py`, `api/tests/unit/test_chat.py`, `api/tests/unit/test_patterns.py`, `api/tests/unit/`, `etl/tests/`
+> **Impacto:** Qualidade e confiança
 
 ### TASK-110: Neo4j Backup Script (Cron) ✅ (03/03/2026)
 - [x] Hot tar backup do volume Docker (sem parar Neo4j) + count snapshot

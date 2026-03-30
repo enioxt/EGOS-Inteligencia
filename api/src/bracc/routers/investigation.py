@@ -1,9 +1,12 @@
+import json
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import Response
 from neo4j import AsyncSession
+from pydantic import ValidationError
 
+from bracc.config import settings
 from bracc.constants import PEP_ROLES
 from bracc.dependencies import CurrentUser, get_session
 from bracc.middleware.cpf_masking import mask_formatted_cpf, mask_raw_cpf
@@ -11,9 +14,13 @@ from bracc.models.investigation import (
     Annotation,
     AnnotationCreate,
     InvestigationCreate,
+    InvestigationExportBundle,
+    InvestigationForkRequest,
+    InvestigationImportResponse,
     InvestigationListResponse,
     InvestigationResponse,
     InvestigationUpdate,
+    SharedInvestigationResponse,
     Tag,
     TagCreate,
 )
@@ -56,6 +63,46 @@ async def list_investigations(
 ) -> InvestigationListResponse:
     investigations, total = await svc.list_investigations(session, page, size, user.id)
     return InvestigationListResponse(investigations=investigations, total=total)
+
+
+@router.post(
+    "/import",
+    response_model=InvestigationImportResponse,
+    status_code=201,
+)
+async def import_investigation(
+    file: Annotated[UploadFile, File(...)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: CurrentUser,
+) -> InvestigationImportResponse:
+    filename = (file.filename or "").lower()
+    content_type = (file.content_type or "").lower()
+    if not filename.endswith(".json") and content_type not in {
+        "application/json",
+        "text/json",
+    }:
+        raise HTTPException(
+            status_code=415,
+            detail="Investigation import currently supports exported JSON bundles only",
+        )
+
+    raw = await file.read(settings.investigation_import_max_bytes + 1)
+    if len(raw) > settings.investigation_import_max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail="Investigation import file is too large",
+        )
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid investigation JSON file") from exc
+
+    try:
+        bundle = InvestigationExportBundle.model_validate(payload)
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return await svc.import_investigation_bundle(session, bundle, user.id)
 
 
 @router.get(
@@ -239,23 +286,51 @@ async def generate_share_link(
     return {"share_token": token}
 
 
-@shared_router.get("/api/v1/shared/{token}", response_model=InvestigationResponse)
-async def get_shared_investigation(
+@shared_router.get("/api/v1/shared", response_model=InvestigationListResponse)
+async def list_shared_investigations(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    size: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> InvestigationListResponse:
+    investigations, total = await svc.list_shared_investigations(session, page, size)
+    return InvestigationListResponse(investigations=investigations, total=total)
+
+
+@shared_router.post(
+    "/api/v1/shared/{token}/fork",
+    response_model=InvestigationImportResponse,
+    status_code=201,
+)
+async def fork_shared_investigation(
     token: str,
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> InvestigationResponse:
-    result = await svc.get_by_share_token(session, token)
+    user: CurrentUser,
+    body: InvestigationForkRequest | None = None,
+) -> InvestigationImportResponse:
+    title = body.title if body else None
+    result = await svc.fork_shared_investigation(session, token, user.id, title)
     if result is None:
         raise HTTPException(status_code=404, detail="Shared investigation not found")
     return result
 
 
-@router.get("/{investigation_id}/export")
+@shared_router.get("/api/v1/shared/{token}", response_model=SharedInvestigationResponse)
+async def get_shared_investigation(
+    token: str,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SharedInvestigationResponse:
+    result = await svc.get_shared_investigation(session, token)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Shared investigation not found")
+    return result
+
+
+@router.get("/{investigation_id}/export", response_model=InvestigationExportBundle)
 async def export_investigation(
     investigation_id: str,
     session: Annotated[AsyncSession, Depends(get_session)],
     user: CurrentUser,
-) -> JSONResponse:
+) -> InvestigationExportBundle:
     investigation = await svc.get_investigation(session, investigation_id, user.id)
     if investigation is None:
         raise HTTPException(status_code=404, detail="Investigation not found")
@@ -263,12 +338,11 @@ async def export_investigation(
     annotations = await svc.list_annotations(session, investigation_id, user.id)
     tags = await svc.list_tags(session, investigation_id, user.id)
 
-    export_data = {
-        "investigation": investigation.model_dump(),
-        "annotations": [a.model_dump() for a in annotations],
-        "tags": [t.model_dump() for t in tags],
-    }
-    return JSONResponse(content=export_data)
+    return InvestigationExportBundle(
+        investigation=investigation,
+        annotations=annotations,
+        tags=tags,
+    )
 
 
 @router.get("/{investigation_id}/export/pdf")

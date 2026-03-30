@@ -4,7 +4,8 @@ import pytest
 from httpx import AsyncClient
 
 from bracc.config import settings
-from bracc.models.pattern import PATTERN_METADATA
+from bracc.models.entity import SourceAttribution
+from bracc.models.pattern import PATTERN_METADATA, PatternResult
 from bracc.services.intelligence_provider import COMMUNITY_PATTERN_IDS, COMMUNITY_PATTERN_QUERIES
 from bracc.services.neo4j_service import CypherLoader
 
@@ -94,6 +95,50 @@ async def test_specific_pattern_endpoint_forwards_include_probable(client: Async
     assert pattern_name == "debtor_contracts"
     assert entity_id == "test-id"
     assert mock_run_one.await_args.kwargs["include_probable"] is True
+
+
+@pytest.mark.parametrize(
+    "pattern_name",
+    [
+        "debtor_contracts",
+        "hhi_contract_concentration",
+        "benford_contract_values",
+    ],
+)
+@pytest.mark.anyio
+async def test_specific_pattern_endpoint_returns_detector_payload(
+    client: AsyncClient,
+    pattern_name: str,
+) -> None:
+    with patch("bracc.routers.patterns.run_pattern", new_callable=AsyncMock) as mock_run_one:
+        mock_run_one.return_value = [
+            PatternResult(
+                pattern_id=pattern_name,
+                pattern_name=f"Pattern {pattern_name}",
+                description="Detector result",
+                data={
+                    "risk_signal": 7.5,
+                    "amount_total": 1000.0,
+                    "window_start": "2024-01-01",
+                    "window_end": "2024-12-31",
+                    "evidence_refs": ["contract:1"],
+                    "evidence_count": 1,
+                },
+                entity_ids=["test-id"],
+                sources=[SourceAttribution(database="neo4j_public")],
+            )
+        ]
+        response = await client.get(f"/api/v1/patterns/test-id/{pattern_name}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["entity_id"] == "test-id"
+    assert payload["total"] == 1
+    assert payload["patterns"][0]["pattern_id"] == pattern_name
+    assert payload["patterns"][0]["entity_ids"] == ["test-id"]
+    assert payload["patterns"][0]["data"]["risk_signal"] == 7.5
+    assert payload["patterns"][0]["sources"][0]["database"] == "neo4j_public"
+    mock_run_one.assert_awaited_once()
 
 
 def test_community_queries_use_bind_params() -> None:

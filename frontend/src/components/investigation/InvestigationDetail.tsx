@@ -71,7 +71,7 @@ export function InvestigationDetail() {
   const handleShare = useCallback(async () => {
     if (!investigation) return;
     const { share_token } = await generateShareLink(investigation.id);
-    const url = `${window.location.origin}/investigations/shared/${share_token}`;
+    const url = `${window.location.origin}/shared/${share_token}`;
     await navigator.clipboard.writeText(url);
     showToast(t("investigation.shareCopied"));
   }, [investigation, showToast, t]);

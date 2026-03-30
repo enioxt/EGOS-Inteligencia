@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 
 import pytest
+from docker.errors import DockerException
 from httpx import ASGITransport, AsyncClient
 from neo4j import AsyncDriver, AsyncGraphDatabase, AsyncSession
 from testcontainers.neo4j import Neo4jContainer
@@ -12,8 +13,11 @@ from bracc.main import app
 @pytest.fixture(scope="session")
 def neo4j_container() -> Neo4jContainer:  # type: ignore[misc]
     """Start a Neo4j container for integration tests."""
-    container = Neo4jContainer("neo4j:5-community")
-    container.start()
+    try:
+        container = Neo4jContainer("neo4j:5-community")
+        container.start()
+    except DockerException as exc:
+        pytest.skip(f"Docker daemon unavailable for integration tests: {exc}")
     yield container  # type: ignore[misc]
     container.stop()
 

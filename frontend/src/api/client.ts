@@ -23,13 +23,24 @@ function getAuthHeaders(): Record<string, string> {
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const headers = new Headers(init?.headers);
+  const method = (init?.method ?? "GET").toUpperCase();
+  const hasBody = init?.body != null;
+  for (const [key, value] of Object.entries(getAuthHeaders())) {
+    if (!headers.has(key)) headers.set(key, value);
+  }
+  if (
+    hasBody &&
+    method !== "GET" &&
+    method !== "HEAD" &&
+    !(typeof FormData !== "undefined" && init.body instanceof FormData) &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
   const response = await fetch(url, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeaders(),
-      ...init?.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -233,6 +244,19 @@ export interface InvestigationListResponse {
   total: number;
 }
 
+export interface SharedInvestigation extends Investigation {
+  annotations: Annotation[];
+  tags: Tag[];
+}
+
+export interface InvestigationImportResult {
+  investigation: Investigation;
+  imported_entities: number;
+  skipped_entity_ids: string[];
+  imported_annotations: number;
+  imported_tags: number;
+}
+
 export interface Annotation {
   id: string;
   entity_id: string;
@@ -258,6 +282,15 @@ export function listInvestigations(
 
 export function getInvestigation(id: string): Promise<Investigation> {
   return apiFetch<Investigation>(`/api/v1/investigations/${encodeURIComponent(id)}`);
+}
+
+export function importInvestigation(file: File): Promise<InvestigationImportResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetch<InvestigationImportResult>("/api/v1/investigations/import", {
+    method: "POST",
+    body: formData,
+  });
 }
 
 export function createInvestigation(
@@ -360,8 +393,16 @@ export function deleteTag(
   );
 }
 
-export function getSharedInvestigation(token: string): Promise<Investigation> {
-  return apiFetch<Investigation>(`/api/v1/shared/${encodeURIComponent(token)}`);
+export function getSharedInvestigation(token: string): Promise<SharedInvestigation> {
+  return apiFetch<SharedInvestigation>(`/api/v1/shared/${encodeURIComponent(token)}`);
+}
+
+export function listSharedInvestigations(
+  page = 1,
+  size = 20,
+): Promise<InvestigationListResponse> {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  return apiFetch<InvestigationListResponse>(`/api/v1/shared?${params}`);
 }
 
 export function generateShareLink(
@@ -370,6 +411,19 @@ export function generateShareLink(
   return apiFetch<{ share_token: string }>(
     `/api/v1/investigations/${encodeURIComponent(investigationId)}/share`,
     { method: "POST" },
+  );
+}
+
+export function forkSharedInvestigation(
+  token: string,
+  title?: string,
+): Promise<InvestigationImportResult> {
+  return apiFetch<InvestigationImportResult>(
+    `/api/v1/shared/${encodeURIComponent(token)}/fork`,
+    {
+      method: "POST",
+      body: JSON.stringify(title ? { title } : {}),
+    },
   );
 }
 

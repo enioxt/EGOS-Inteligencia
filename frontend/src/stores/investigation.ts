@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
-import type { Annotation, Investigation, Tag } from "@/api/client";
+import type {
+  Annotation,
+  Investigation,
+  InvestigationImportResult,
+  Tag,
+} from "@/api/client";
 import * as api from "@/api/client";
 
 interface InvestigationState {
@@ -16,6 +21,8 @@ interface InvestigationState {
   setActiveInvestigation: (id: string | null) => void;
   fetchInvestigations: () => Promise<void>;
   createInvestigation: (title: string, description?: string) => Promise<Investigation>;
+  importInvestigation: (file: File) => Promise<InvestigationImportResult>;
+  forkInvestigation: (token: string, title?: string) => Promise<InvestigationImportResult>;
   deleteInvestigation: (id: string) => Promise<void>;
   updateInvestigation: (id: string, data: { title?: string; description?: string }) => Promise<void>;
   addEntity: (investigationId: string, entityId: string) => Promise<void>;
@@ -52,6 +59,18 @@ export const useInvestigationStore = create<InvestigationState>((set, get) => ({
     const inv = await api.createInvestigation(title, description);
     set((s) => ({ investigations: [inv, ...s.investigations] }));
     return inv;
+  },
+
+  importInvestigation: async (file) => {
+    const result = await api.importInvestigation(file);
+    set((s) => ({ investigations: [result.investigation, ...s.investigations] }));
+    return result;
+  },
+
+  forkInvestigation: async (token, title) => {
+    const result = await api.forkSharedInvestigation(token, title);
+    set((s) => ({ investigations: [result.investigation, ...s.investigations] }));
+    return result;
   },
 
   deleteInvestigation: async (id) => {

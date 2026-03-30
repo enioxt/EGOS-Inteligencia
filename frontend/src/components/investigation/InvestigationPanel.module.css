@@ -14,6 +14,12 @@
   gap: var(--space-sm);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
 .title {
   font-size: var(--font-size-lg);
   font-weight: 600;
@@ -83,6 +89,16 @@
 .empty {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.status {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  margin: 0;
 }
 
 @media (max-width: 768px) {

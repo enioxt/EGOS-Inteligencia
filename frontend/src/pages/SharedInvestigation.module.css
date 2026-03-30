@@ -12,6 +12,12 @@
   gap: var(--space-sm);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
 .title {
   font-size: var(--font-size-lg);
   font-weight: 600;
@@ -72,4 +78,62 @@
   padding: var(--space-xs) var(--space-sm);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
+}
+
+.linkButton,
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 36px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.annotationList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.annotationCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.annotationText {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.annotationMeta {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+}
+
+.tagChip {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-tertiary));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
 }
