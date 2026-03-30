@@ -1,3 +1,8 @@
+// SSOT-VISIT 2026-03-30: This is an INDEPENDENT implementation from egos-lab/apps/egos-web/src/pages/EagleEye.tsx
+// br-acc version: direct Querido Diário API, different keyword set
+// egos-lab version: reads pre-processed scan results from eagle-eye backend
+// disposition: independent — both canonical for their context
+// See: EGOS-133 in egos/TASKS.md
 import { useCallback, useEffect, useState } from "react";
 
 import styles from "./EagleEye.module.css";
