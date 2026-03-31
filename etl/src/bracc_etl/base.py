@@ -5,6 +5,19 @@ from datetime import UTC, datetime
 
 from neo4j import Driver
 
+# Guard Brasil — lazy import to avoid hard dependency
+_guard_client = None
+
+def _get_guard_client():
+    global _guard_client
+    if _guard_client is None:
+        try:
+            from bracc_etl.guard import GuardBrasilClient
+            _guard_client = GuardBrasilClient()
+        except ImportError:
+            pass
+    return _guard_client
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,6 +64,8 @@ class Pipeline(ABC):
             self.extract()
             logger.info("[%s] Starting transformation...", self.name)
             self.transform()
+            logger.info("[%s] Running Guard Brasil check...", self.name)
+            self._guard_check()
             logger.info("[%s] Starting load...", self.name)
             self.load()
             finished_at = datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -69,6 +84,62 @@ class Pipeline(ABC):
                 error=str(exc)[:1000],
             )
             raise
+
+    # ── Guard Brasil integration ───────────────────────────────────────
+
+    # Subclasses can override these to specify which columns contain free text
+    guard_text_columns: list[str] = []
+    # Set to True to block load on PII detection (default: log and mask)
+    guard_strict: bool = False
+
+    def _guard_check(self) -> None:
+        """Run Guard Brasil PII/ATRiAN check on transformed data.
+
+        Subclasses that set `guard_text_columns` will get automatic PII scanning.
+        Falls back gracefully if Guard Brasil is unavailable.
+        """
+        client = _get_guard_client()
+        if client is None:
+            logger.debug("[%s] Guard Brasil not available — skipping", self.name)
+            return
+
+        if not self.guard_text_columns:
+            logger.debug("[%s] No guard_text_columns defined — skipping", self.name)
+            return
+
+        # Check if subclass stored transformed data as a DataFrame
+        df = getattr(self, "_transformed_df", None)
+        if df is None:
+            logger.debug("[%s] No _transformed_df attribute — skipping guard", self.name)
+            return
+
+        try:
+            from bracc_etl.guard import guard_dataframe
+            cols_present = [c for c in self.guard_text_columns if c in df.columns]
+            if not cols_present:
+                return
+
+            guard_dataframe(df, columns=cols_present, client=client, mask_in_place=True)
+            pii_total = df.get("__guard_pii_count", [0]).sum() if "__guard_pii_count" in df.columns else 0
+
+            if pii_total > 0:
+                logger.warning(
+                    "[%s] Guard Brasil found %d PII occurrence(s) in columns %s",
+                    self.name, pii_total, cols_present,
+                )
+                if self.guard_strict:
+                    raise RuntimeError(
+                        f"Guard Brasil blocked load: {pii_total} PII finding(s) "
+                        f"in columns {cols_present}. Set guard_strict=False to mask instead."
+                    )
+            else:
+                logger.info("[%s] Guard Brasil: clean — 0 PII findings", self.name)
+        except ImportError:
+            logger.debug("[%s] bracc_etl.guard not importable — skipping", self.name)
+        except RuntimeError:
+            raise
+        except Exception as exc:
+            logger.warning("[%s] Guard check failed (non-fatal): %s", self.name, exc)
 
     def _upsert_ingestion_run(
         self,
