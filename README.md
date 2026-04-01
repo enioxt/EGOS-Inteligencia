@@ -1,5 +1,8 @@
 # EGOS Inteligência — Plataforma Aberta de Cruzamento de Dados Públicos
 
+> **Status:** ⏸️ Ritmo reduzido — renomeando para EGOS Inteligência. 77M entidades, Neo4j graph, ETL pipeline.  
+> Este projeto tem MVP funcional disponível. Interessados em contribuir ou co-fundar: entre em contato via [Issues](https://github.com/enioxt/br-acc/issues) ou enio@egos.ia.br
+
 <!-- RHO_BADGE --> **Rho Score:** 🟡 0.30 (WARNING) | Contributors: 4 | Commits (30d): 94 | Updated: 2026-03-02 <!-- /RHO_BADGE -->
 
 Idioma: **Português (Brasil)** | [English](#english)
