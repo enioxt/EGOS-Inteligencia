@@ -5,6 +5,18 @@
 
 ---
 
+<!-- llmrefs:start -->
+
+## LLM Reference Signature
+
+- **Role:** workspace map + governance entrypoint
+- **Summary:** Brazilian public accountability intelligence platform. Python ETL pipelines consuming 21 government APIs (Transparência, TCU, CNPJ, CEP). Neo4j graph database with 47 Cypher queries. Proof-of-research SHA-256 non-repudiation. Source of BRACC-001..003 (provenance, cache, pipeline-base modules extracted to EGOS shared).
+- **Read next:**
+  - `TASKS.md` — current priorities and blockers
+  - `docs/` — architecture and module documentation
+
+<!-- llmrefs:end -->
+
 ## Project Overview
 
 | Item | Value |
