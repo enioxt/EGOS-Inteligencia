@@ -60,7 +60,7 @@ def run_post_load_hooks(
 
     repo_root = Path(__file__).resolve().parents[3]
     scripts_dir = repo_root / "scripts"
-    params = {"run_id": run_id} if run_id else None
+    params = {"run_id": run_id or "manual_run"}
 
     script_names: list[str] = []
     if source == "cnpj":
