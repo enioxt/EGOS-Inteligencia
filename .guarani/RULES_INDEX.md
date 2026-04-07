@@ -1,0 +1,1 @@
+../.egos/guarani/RULES_INDEX.md

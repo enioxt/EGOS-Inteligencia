@@ -1,0 +1,107 @@
+# BR-ACC / EGOS Inteligência — Doc-Drift Manifest
+# Schema: ../egos/docs/DOC_DRIFT_SHIELD.md
+# Git remote: git@github.com:enioxt/EGOS-Inteligencia.git (128 stars)
+# This repo pushes to the public EGOS-Inteligencia repository.
+
+schema_version: "1.0.0"
+repo: "br-acc"
+github_repo: "enioxt/EGOS-Inteligencia"
+updated_at: "2026-04-07"
+updated_by: "enioxt"
+manifest_doc: "../egos/docs/DOC_DRIFT_SHIELD.md"
+
+claims:
+  - id: total_commits
+    description: "Total commits to main branch"
+    readme_location: "README.md (header)"
+    command: "git log --pretty=format:'%h' | wc -l | tr -d ' '"
+    tolerance: "min:360"
+    last_value: "360"
+    last_verified_at: "2026-04-07"
+    category: "commits"
+
+  - id: github_stars
+    description: "Stars on enioxt/EGOS-Inteligencia"
+    readme_location: "README.md badge"
+    command: "curl -s https://api.github.com/repos/enioxt/EGOS-Inteligencia | python3 -c \"import json,sys; print(json.load(sys.stdin)['stargazers_count'])\""
+    tolerance: "min:128"
+    last_value: "128"
+    last_verified_at: "2026-04-07"
+    category: "custom"
+
+  - id: github_forks
+    description: "Forks on enioxt/EGOS-Inteligencia"
+    readme_location: "README.md badge"
+    command: "curl -s https://api.github.com/repos/enioxt/EGOS-Inteligencia | python3 -c \"import json,sys; print(json.load(sys.stdin)['forks_count'])\""
+    tolerance: "min:16"
+    last_value: "16"
+    last_verified_at: "2026-04-07"
+    category: "custom"
+
+  - id: neo4j_nodes
+    description: "Total nodes in Neo4j graph (running on VPS bracc-neo4j container)"
+    readme_location: "README.md §Origem e Diferenças"
+    command: |
+      ssh -o ConnectTimeout=10 -i ~/.ssh/hetzner_ed25519 root@204.168.217.125 \
+        'curl -s -u neo4j:"$(docker exec bracc-neo4j env | grep NEO4J_AUTH | cut -d= -f2 | cut -d/ -f2)" \
+        http://localhost:7474/db/neo4j/query/v2 \
+        -H "Content-Type: application/json" \
+        -d "{\"statement\":\"MATCH (n) RETURN count(n) as nodes\"}"' \
+        | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['values'][0][0])"
+    tolerance: "min:83000000"
+    last_value: "83773683"
+    last_verified_at: "2026-04-07"
+    category: "entities"
+    note: "Captured via VPS Neo4j query 2026-04-07T00:00Z"
+
+  - id: neo4j_relationships
+    description: "Total relationships in Neo4j graph"
+    readme_location: "README.md §Origem e Diferenças"
+    command: |
+      ssh -o ConnectTimeout=10 -i ~/.ssh/hetzner_ed25519 root@204.168.217.125 \
+        'curl -s -u neo4j:"$(docker exec bracc-neo4j env | grep NEO4J_AUTH | cut -d= -f2 | cut -d/ -f2)" \
+        http://localhost:7474/db/neo4j/query/v2 \
+        -H "Content-Type: application/json" \
+        -d "{\"statement\":\"MATCH ()-[r]->() RETURN count(r) as rels\"}"' \
+        | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['values'][0][0])"
+    tolerance: "min:26000000"
+    last_value: "26808540"
+    last_verified_at: "2026-04-07"
+    category: "entities"
+
+  - id: neo4j_node_labels
+    description: "Distinct node labels (entity types) in Neo4j graph"
+    readme_location: "README.md"
+    command: |
+      ssh -o ConnectTimeout=10 -i ~/.ssh/hetzner_ed25519 root@204.168.217.125 \
+        'curl -s -u neo4j:"$(docker exec bracc-neo4j env | grep NEO4J_AUTH | cut -d= -f2 | cut -d/ -f2)" \
+        http://localhost:7474/db/neo4j/query/v2 \
+        -H "Content-Type: application/json" \
+        -d "{\"statement\":\"CALL db.labels() YIELD label RETURN count(label) as n\"}"' \
+        | python3 -c "import json,sys; print(json.load(sys.stdin)['data']['values'][0][0])"
+    tolerance: "±2"
+    last_value: "32"
+    last_verified_at: "2026-04-07"
+    category: "entities"
+    labels_list: ["Person","Partner","Company","Contract","Sanction","PublicOffice","Investigation","Amendment","Health","Finance","Embargo","Education","Convenio","LaborStats","Inquiry","InquiryRequirement","InquirySession","MunicipalBid","MunicipalContract","MunicipalBidItem","MunicipalGazetteAct","JudicialCase","SourceDocument","IngestionRun","TemporalViolation","Election","User","GlobalPEP","PEPRecord","BarredNGO","GovCardExpense","GovTravel"]
+
+  - id: python_source_files
+    description: "Python source files in api/ and etl/ packages"
+    readme_location: "README.md Stack"
+    command: "find api/ etl/ -name '*.py' 2>/dev/null | wc -l | tr -d ' '"
+    tolerance: "±10"
+    last_value: "0"
+    last_verified_at: "2026-04-07"
+    category: "custom"
+    note: "Baseline TBD — sentinel will populate"
+
+domains:
+  - url: "https://inteligencia.egos.ia.br/"
+    expected_status: "200"
+    checked_at: "2026-04-07"
+    note: "Public frontend"
+
+  - url: "https://api.github.com/repos/enioxt/EGOS-Inteligencia"
+    expected_status: "200"
+    checked_at: "2026-04-07"
+    note: "GitHub repo accessibility check"
