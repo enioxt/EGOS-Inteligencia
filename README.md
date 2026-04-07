@@ -1,6 +1,6 @@
 # EGOS Inteligência — Plataforma Aberta de Cruzamento de Dados Públicos
 
-> **Status:** ⏸️ Ritmo reduzido — renomeando para EGOS Inteligência. 83,7M nós, Neo4j graph, ETL pipeline.  
+> **Status:** ⏸️ Ritmo reduzido — renomeando para EGOS Inteligência. <!-- metric:neo4j_nodes -->83773683<!-- /metric:neo4j_nodes --> nós, Neo4j graph, ETL pipeline.  
 > Este projeto tem MVP funcional disponível. Interessados em contribuir ou co-fundar: entre em contato via [Issues](https://github.com/enioxt/br-acc/issues) ou enio@egos.ia.br
 
 <!-- RHO_BADGE --> **Rho Score:** 🟡 0.30 (WARNING) | Contributors: 4 | Commits (30d): 94 | Updated: 2026-03-02 <!-- /RHO_BADGE -->
@@ -70,7 +70,7 @@ O EGOS Inteligência faz isso automaticamente:
 | Processos no STF | STF | 2,38M casos |
 | Patrimônio de candidatos | TSE Bens | 14,3M bens declarados |
 
-**Status atual: 83.773.683 nós carregados** (32 labels, 26.808.540 relações — verificado 2026-04-07 via Neo4j Bolt). Meta: 141M nós e 92M conexões. CNPJ ETL ativo.
+**Status atual: <!-- metric:neo4j_nodes -->83773683<!-- /metric:neo4j_nodes --> nós carregados** (<!-- metric:neo4j_labels -->32<!-- /metric:neo4j_labels --> labels, <!-- metric:neo4j_rels -->26808540<!-- /metric:neo4j_rels --> relações — verificado via `.egos-manifest.yaml`). Meta: 141M nós e 92M conexões. CNPJ ETL ativo.
 
 > **Importante:** Padrões encontrados são **sinais**, não prova jurídica. Toda conclusão requer revisão humana.
 
