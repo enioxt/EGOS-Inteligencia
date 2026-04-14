@@ -110,7 +110,7 @@ fi
 step_time $T
 
 # README freshness gate
-bash ~/.egos/hooks/readme-freshness.sh "$1" || exit 1
+bash ~/.egos/hooks/readme-freshness.sh "${1:-}" || exit 1
 
 TOTAL=$(( $(date +%s) - PRE_START ))
 printf "${GREEN}✅ br-acc pre-commit: ${TOTAL}s${NC}\n"
