@@ -1,11 +1,9 @@
 # EGOS-KERNEL-PROPAGATED: 2026-04-15
 <!-- AUTO-INJECTED by disseminate-propagator.ts — DO NOT EDIT THIS BLOCK MANUALLY -->
-<!-- Kernel commit: 818a9eb | 3 rule section(s) changed -->
+<!-- Kernel commit: 432c04f | 1 rule section(s) changed -->
 <!-- Kernel rules: ~/.claude/CLAUDE.md (always authoritative) -->
 <!-- Re-run: bun ~/egos/scripts/disseminate-propagator.ts --all to update -->
-<!-- + .windsurfrules (2 lines) -->
-<!-- + .windsurfrules → ### Replace-not-Add Rule (MANDATORY) (9 lines) -->
-<!-- + .windsurfrules → ### Pre-commit Enforcement (1 lines) -->
+<!-- + CAPABILITY_REGISTRY.md → ## By Repo Group (Quick Navigation) (18 lines) -->
 
 > **EGOS Kernel rules apply to this repo.** See `~/.claude/CLAUDE.md` for full rules.
 > Critical non-negotiables: no force-push main, no secret logging, no git add -A in agents.
