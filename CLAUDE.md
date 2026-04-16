@@ -1,9 +1,9 @@
 # EGOS-KERNEL-PROPAGATED: 2026-04-16
 <!-- AUTO-INJECTED by disseminate-propagator.ts — DO NOT EDIT THIS BLOCK MANUALLY -->
-<!-- Kernel commit: 4514e9b | 1 rule section(s) changed -->
+<!-- Kernel commit: c250521 | 1 rule section(s) changed -->
 <!-- Kernel rules: ~/.claude/CLAUDE.md (always authoritative) -->
 <!-- Re-run: bun ~/egos/scripts/disseminate-propagator.ts --all to update -->
-<!-- + .windsurfrules (1 lines) -->
+<!-- + CAPABILITY_REGISTRY.md → ### Timeline Bilingual Publishing (2026-04-16) — LIVE/VERIFIED (14 lines) -->
 
 > **EGOS Kernel rules apply to this repo.** See `~/.claude/CLAUDE.md` for full rules.
 > Critical non-negotiables: no force-push main, no secret logging, no git add -A in agents.
