@@ -1,9 +1,9 @@
 # EGOS-KERNEL-PROPAGATED: 2026-04-17
 <!-- AUTO-INJECTED by disseminate-propagator.ts — DO NOT EDIT THIS BLOCK MANUALLY -->
-<!-- Kernel commit: a6d1ad7 | 1 rule section(s) changed -->
+<!-- Kernel commit: d73afaf | 1 rule section(s) changed -->
 <!-- Source of rules: egos/AGENTS.md (canonical). Kernel-only authoritative copy: ~/.claude/CLAUDE.md -->
 <!-- Re-run: bun ~/egos/scripts/disseminate-propagator.ts --all to update -->
-<!-- ~ CAPABILITY_REGISTRY.md → ### Existing MCPs Already Covering Needs (DO NOT REBUILD) (2 lines) -->
+<!-- + CAPABILITY_REGISTRY.md (5 lines) -->
 
 > ⚠️ **PROPAGATED FROM KERNEL** — Edits to this block are overwritten by next `bun governance:sync:exec`.
 > Edit kernel `egos/AGENTS.md` section between `<!-- PROPAGATE-RULES-BEGIN -->` and `<!-- PROPAGATE-RULES-END -->` instead.
@@ -50,6 +50,7 @@ This section is the single source of truth for agent rules. Claude Code reads th
 2. Independent tasks → all agents in ONE message. Dependent → sequential.
 3. After 10+ turns or compaction: re-read TASKS.md + current file.
 4. Cost control: 3 retries fail on same error → STOP, flag `[BLOCKER]`.
+5. **Session checkpoint:** when pre-commit emits `[CHECKPOINT-NEEDED]` (turns≥10/commits≥15/elapsed≥90min), invoke `/checkpoint` (Hard Reset). Use `bun scripts/session-init.ts --status` to check. Never ignore [CHECKPOINT-NEEDED].
 
 ### R6 — Incident-driven (always load when relevant)
 | Incident | Rule |
