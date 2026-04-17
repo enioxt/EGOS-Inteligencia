@@ -1,8 +1,9 @@
 # EGOS-KERNEL-PROPAGATED: 2026-04-17
 <!-- AUTO-INJECTED by disseminate-propagator.ts — DO NOT EDIT THIS BLOCK MANUALLY -->
-<!-- Kernel commit: dd6e593 | 0 rule section(s) changed -->
+<!-- Kernel commit: a6d1ad7 | 1 rule section(s) changed -->
 <!-- Source of rules: egos/AGENTS.md (canonical). Kernel-only authoritative copy: ~/.claude/CLAUDE.md -->
 <!-- Re-run: bun ~/egos/scripts/disseminate-propagator.ts --all to update -->
+<!-- ~ CAPABILITY_REGISTRY.md → ### Existing MCPs Already Covering Needs (DO NOT REBUILD) (2 lines) -->
 
 > ⚠️ **PROPAGATED FROM KERNEL** — Edits to this block are overwritten by next `bun governance:sync:exec`.
 > Edit kernel `egos/AGENTS.md` section between `<!-- PROPAGATE-RULES-BEGIN -->` and `<!-- PROPAGATE-RULES-END -->` instead.
